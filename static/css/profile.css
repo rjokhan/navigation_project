@@ -1,0 +1,26 @@
+@font-face {
+  font-family: BEBAS;
+  src: url("../fonts/BebasNeue_Bold__1178_aza_1179_sha__1241_ripter.otf");
+}
+body{
+    background-color: #4f0017;
+    color: white;
+    padding: 50px 20px 20px 20px;
+    font-family: "Raleway", sans-serif;
+    max-width: 450px;
+    margin: 0 auto;
+    margin-bottom: 150px;
+}
+
+.profile_container {
+  margin: 30px auto;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 16px;
+  font-family: 'Raleway', sans-serif;
+}
+
+.profile_container p {
+  margin: 10px 0;
+  font-size: 18px;
+}

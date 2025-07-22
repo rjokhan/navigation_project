@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Favourites</title>
+  <link rel="stylesheet" href="css/content.css">
+</head>
+<body>
+
+    <div class="header">
+        <a href="index.html"><div class="header_icon"><img src="/images/home_page.png"></div></a>
+        <a href="favourited.html"><div class="header_icon active"><img src="/images/fav.png"></div></a>
+        <a href="profile.html"><div class="header_icon"><img src="/images/profile.png"></div></a>
+        <a href="chat.html"><div class="header_icon"><img src="/images/chat.png"></div></a>
+    </div>
+
+  <div class="search_block">
+    <a href="index.html"><div class="back_button"></div></a>
+    <form class="searcher">
+      <img class="search_icon" src="images/search icon.png">
+      <input class="searcher_block" placeholder="Поиск избранного...">
+    </form>
+  </div>
+
+  <div class="choosed_genre"><span class="red">A </span>FAVOURITES:</div>
+
+  <div class="content_body"></div>
+
+  <script>
+    const container = document.querySelector('.content_body');
+    const searchInput = document.querySelector('.searcher_block');
+    let favourites = JSON.parse(localStorage.getItem('favourites') || '[]');
+
+    // Функция для отрисовки карточек
+    function renderFavourites(filteredItems) {
+      container.innerHTML = '';
+
+      if (filteredItems.length === 0) {
+        container.innerHTML = '<div class="no-results">Ничего не найдено</div>';
+        return;
+      }
+
+      filteredItems.forEach(item => {
+        const wrapper = document.createElement('div');
+        wrapper.className = item.content_type;
+
+        let innerHTML = '';
+
+        if (item.content_type === 'video') {
+          innerHTML = `
+            <div class="video_thumbnail" onclick="window.open('${item.telegram_url}', '_blank')">
+              <img src="${item.thumbnail}" alt="video_thumbnail">
+              <div class="video_duration">${item.duration}</div>
+            </div>
+            <div class="fav_icon favourited"></div>
+            <div class="video_info">
+              <div class="title">${item.title}</div>
+              <div class="subtitle">${item.subtitle || ''}</div>
+            </div>
+          `;
+        } else if (item.content_type === 'audio') {
+          innerHTML = `
+            <div class="audio_menu" onclick="window.open('${item.telegram_url}', '_blank')">
+              <div class="static_icon"><img src="/images/audio_icon.png"></div>
+              <div class="audio_duration">${item.duration}</div>
+            </div>
+            <div class="fav_icon favourited"></div>
+            <div class="audio_info">
+              <div class="title">${item.title}</div>
+              <div class="subtitle">${item.subtitle || ''}</div>
+            </div>
+          `;
+        } else if (item.content_type === 'file') {
+          innerHTML = `
+            <div class="file_menu" onclick="window.open('${item.telegram_url}', '_blank')">
+              <div class="static_icon"><img src="/images/file_icon.png"></div>
+              <div class="file_duration">${item.duration}</div>
+            </div>
+            <div class="fav_icon favourited"></div>
+            <div class="file_info">
+              <div class="title">${item.title}</div>
+              <div class="subtitle">${item.subtitle || ''}</div>
+            </div>
+          `;
+        }
+
+        wrapper.innerHTML = innerHTML;
+        container.appendChild(wrapper);
+
+        const favIcon = wrapper.querySelector('.fav_icon');
+        favIcon.addEventListener('click', (e) => {
+          e.stopPropagation();
+          favourites = favourites.filter(f => !(f.id === item.id && f.genreId === item.genreId));
+          localStorage.setItem('favourites', JSON.stringify(favourites));
+          wrapper.remove();
+        });
+      });
+    }
+
+    // Первая отрисовка
+    renderFavourites(favourites);
+
+    // Реакция на ввод
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.toLowerCase().trim();
+
+      const filtered = favourites.filter(item => {
+        const title = (item.title || '').toLowerCase();
+        const subtitle = (item.subtitle || '').toLowerCase();
+        return title.includes(query) || subtitle.includes(query);
+      });
+
+      renderFavourites(filtered);
+    });
+  </script>
+</body>
+</html>

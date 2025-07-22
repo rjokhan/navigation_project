@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>NAVIGATION</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    .popup {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(5px);
+      z-index: 99999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    .popup form {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 350px;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+
+    .popup input {
+      width: 90%;
+      padding: 10px;
+      margin: 15px 0;
+      font-size: 16px;
+    }
+
+    .popup button {
+      padding: 10px 20px;
+      font-weight: bold;
+      background: #6b0b23;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .popup label {
+      font-weight: bold;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <a href="index.html"><div class="header_icon active"><img src="{% static 'images/home_page.png' %}"></div></a>
+    <a href="favourited.html"><div class="header_icon"><img src="{% static 'images/fav.png' %}"></div></a>
+    <a href="profile.html"><div class="header_icon"><img src="{% static 'images/profile.png' %}"></div></a>
+    <a href="chat.html"><div class="header_icon"><img src="{% static 'images/chat.png' %}"></div></a>
+  </div>
+
+  <div class="name">Hello, JOHAN</div>
+
+  <form class="searcher">
+    <img class="search_icon" src="{% static 'images/search icon.png' %}">
+    <input class="searcher_block" placeholder="Поиск...">
+  </form>
+
+  <div class="container_genre">
+    <div class="loading">Загрузка жанров...</div>
+  </div>
+
+  <!-- Login Popup -->
+  <div id="login-popup" class="popup">
+    <form id="login-form">
+      <label>Введите Telegram ID или @username:</label>
+      <input type="text" id="telegramInput" placeholder="@username или ID" required>
+      <button type="submit">Войти</button>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const savedId = localStorage.getItem('telegram_id');
+      const popup = document.getElementById('login-popup');
+
+      if (!savedId) {
+        popup.style.display = 'flex';
+      } else {
+        loadGenres(savedId);
+      }
+
+      document.getElementById('login-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const input = document.getElementById('telegramInput').value.trim();
+
+        if (!input) return;
+
+        try {
+          const res = await fetch('https://api.ayolclub.uz/en/api/v1/telegram-bot/check-user/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-API-Token': 'b0e63095ee9d51fd0188f1877d63c0b850bc4965a61527c9',
+            },
+            body: JSON.stringify({ telegram_id: input })
+          });
+
+          const data = await res.json();
+
+          if (data.success) {
+            localStorage.setItem('telegram_id', input);
+            popup.style.display = 'none';
+            loadGenres(input);
+          } else {
+            alert(data.message || 'Ошибка авторизации');
+          }
+        } catch (error) {
+          alert('Ошибка подключения к серверу');
+        }
+      });
+    });
+
+    function loadGenres(telegram_id) {
+      fetch('/api/genres/')
+        .then(res => res.json())
+        .then(data => {
+          const container = document.querySelector('.container_genre');
+          container.innerHTML = '';
+
+          data.forEach(genre => {
+            const div = document.createElement('div');
+            div.className = 'genre';
+            div.innerHTML = `
+              <div class="count">${genre.items.length}</div>
+              <div class="genre_name"><span class="red">A </span>${genre.title.split(' ')[1]}</div>
+            `;
+
+            div.addEventListener('click', () => {
+              if (genre.items.length > 0) {
+                window.location.href = `content.html?genre_id=${genre.id}&genre_title=${encodeURIComponent(genre.title)}`;
+              } else {
+                alert('Контент пока не добавлен');
+              }
+            });
+
+            container.appendChild(div);
+          });
+        })
+        .catch(err => {
+          document.querySelector('.container_genre').innerHTML = '<div class="error">Ошибка загрузки жанров</div>';
+          console.error(err);
+        });
+    }
+
+    document.querySelector('.searcher').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const query = document.querySelector('.searcher_block').value.trim();
+      if (query) {
+        window.location.href = `searched.html?query=${encodeURIComponent(query)}`;
+      }
+    });
+  </script>
+</body>
+</html>
