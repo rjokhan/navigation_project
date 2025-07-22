@@ -1,16 +1,18 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
   <title>Search Results</title>
-  <link rel="stylesheet" href="css/content.css">
+  <link rel="stylesheet" href="{% static 'css/content.css' %}">
 </head>
 <body>
+
   <!-- 🔙 Назад и строка поиска -->
   <div class="search_block">
-    <a href="index.html"><div class="back_button"></div></a>
+    <a href="{% url 'index' %}"><div class="back_button"></div></a>
     <form class="searcher">
-      <img class="search_icon" src="images/search icon.png">
+      <img class="search_icon" src="{% static 'images/search icon.png' %}">
       <input class="searcher_block" placeholder="Поиск...">
     </form>
   </div>
@@ -70,7 +72,7 @@
         block = `
           <div class="audio">
             <div class="audio_menu" onclick="window.open('${item.telegram_url}', '_blank')">
-              <div class="static_icon"><img src="/images/audio_icon.png"></div>
+              <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}"></div>
               <div class="audio_duration">${item.duration}</div>
             </div>
             ${favIconHTML}
@@ -84,7 +86,7 @@
         block = `
           <div class="file">
             <div class="file_menu" onclick="window.open('${item.telegram_url}', '_blank')">
-              <div class="static_icon"><img src="/images/file_icon.png"></div>
+              <div class="static_icon"><img src="{% static 'images/file_icon.png' %}"></div>
               <div class="file_duration">${item.duration}</div>
             </div>
             ${favIconHTML}
@@ -98,7 +100,7 @@
 
       container.insertAdjacentHTML('beforeend', block);
 
-            const last = container.lastElementChild;
+      const last = container.lastElementChild;
       const favIcon = last.querySelector('.fav_icon');
 
       favIcon.addEventListener('click', (e) => {
@@ -119,7 +121,6 @@
 
         localStorage.setItem('favourites', JSON.stringify(favourites));
       });
-
     }
 
     if (filtered.length === 0) {
