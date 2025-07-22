@@ -8,7 +8,17 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('content.urls')),        # Контент и жанры
     path('api/auth/', include('users.urls')),     # Регистрация, логин, логаут
-    re_path(r'^$', TemplateView.as_view(template_name='index.html'), name='index'),  # Только /
+
+    # Основные HTML-страницы
+    re_path(r'^$', TemplateView.as_view(template_name='index.html'), name='index'),
+    path('favourites/', TemplateView.as_view(template_name='favourited.html'), name='favourited'),
+    path('profile/', TemplateView.as_view(template_name='profile.html'), name='profile'),
+    path('searched/', TemplateView.as_view(template_name='searched.html'), name='searched'),
+    path('chat/', TemplateView.as_view(template_name='chat.html'), name='chat'),
+
+
+    # Если в будущем появится chat.html, можно добавить:
+    # path('chat/', TemplateView.as_view(template_name='chat.html'), name='chat'),
 ]
 
 if settings.DEBUG:
