@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: navigation_project
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn navproject.wsgi:application
+    plan: free
+    branch: main
+    autoDeploy: true
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: navproject.settings
+      - key: SECRET_KEY
+        value: supersecretkey_change_this
+      - key: DEBUG
+        value: False
