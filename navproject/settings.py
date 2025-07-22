@@ -5,8 +5,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Безопасность
 SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-key")
-DEBUG = os.environ.get("DEBUG", "False") == "True"
-ALLOWED_HOSTS = ['.onrender.com']
+DEBUG = os.environ.get("DEBUG", "True") == "True"
+ALLOWED_HOSTS = ['.onrender.com', '127.0.0.1', 'localhost']
 
 # Приложения
 INSTALLED_APPS = [
@@ -85,7 +85,7 @@ USE_TZ = True
 # Статика
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # для Render
 
 # Медиа
 MEDIA_URL = '/media/'
@@ -93,10 +93,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Прочее
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Разрешённые источники CORS
 CORS_ALLOW_ALL_ORIGINS = True
 
-# CSRF доверенные домены (для локальной разработки и Render)
+# CSRF доверенные источники
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5500",
-    "https://*.onrender.com"
+    "http://localhost:8000",
+    "https://*.onrender.com",
 ]

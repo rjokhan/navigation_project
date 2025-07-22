@@ -2,15 +2,21 @@ services:
   - type: web
     name: navigation_project
     env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn navproject.wsgi:application
     plan: free
     branch: main
     autoDeploy: true
+
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+      python manage.py migrate
+
+    startCommand: gunicorn navproject.wsgi:application
+
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: navproject.settings
       - key: SECRET_KEY
-        value: supersecretkey_change_this
+        value: or4r0a!o83dr8wke$-_^l_u(zhm8rs70f0byctv@70sc)=y&h_
       - key: DEBUG
-        value: False
+        value: "False"
