@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Безопасность
 SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-key")
 DEBUG = os.environ.get("DEBUG", "True") == "True"
-ALLOWED_HOSTS = ['.onrender.com', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['.onrender.com', '127.0.0.1', 'localhost', 'navigation-project-3.onrender.com']
 
 # Приложения
 INSTALLED_APPS = [
@@ -84,8 +84,10 @@ USE_TZ = True
 
 # Статика
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # для Render
+
 
 # Медиа
 MEDIA_URL = '/media/'
