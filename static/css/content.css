@@ -3,53 +3,14 @@
   src: url("/static/fonts/BebasNeue_Bold__1178_aza_1179_sha__1241_ripter.otf");
 }
 body {
-      margin: 0;
-      padding: 50px 20px 20px 20px;
-      font-family: "Raleway", sans-serif;
-      color: white;
-      margin-bottom: 150px;
-      position: relative;
-      overflow: hidden;
-      z-index: 0;
-    }
-
-    /* Градиентный фон */
-    body::before {
-      content: "";
-      position: fixed;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle at 30% 30%, #ff0055, transparent 40%),
-                  radial-gradient(circle at 70% 70%, #ffa600, transparent 40%),
-                  radial-gradient(circle at 50% 50%, #8400ff, #4f0017 70%);
-      background-blend-mode: screen;
-      animation: waveMove 20s ease-in-out infinite;
-      z-index: -2;
-      opacity: 0.9;
-      filter: blur(40px);
-    }
-
-    /* Шум */
-    body::after {
-      content: "";
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: url('https://transparenttextures.com/patterns/noise.png');
-      opacity: 0.05;
-      z-index: -1;
-      pointer-events: none;
-    }
-
-    @keyframes waveMove {
-      0%   { transform: translate(0, 0) scale(1); }
-      50%  { transform: translate(10%, 10%) scale(1.05); }
-      100% { transform: translate(0, 0) scale(1); }
-    }
+  background-color: #4f0017;
+  color: white;
+  padding: 50px 20px 20px 20px;
+  font-family: "Raleway", sans-serif;
+  max-width: 4350px;
+  margin: 0 auto;
+  margin-bottom: 150px;
+}
 .choosed_genre {
   text-align: left;
   margin-top: 25px;
