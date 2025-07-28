@@ -67,10 +67,14 @@ const res = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    "X-API-Token": "b0e63095ee9d51fd0188f1877d63c0b85bc4965a61527c9",
+    // ⛔ Без X-API-Token, если он не прокидывается
   },
-  body: JSON.stringify({ telegram_id: input }),
+  body: JSON.stringify({
+    telegram_id: input,
+    token: "b0e63095ee9d51fd0188f1877d63c0b85bc4965a61527c9"  // <- если сервер разрешает
+  }),
 });
+
 
 
 
