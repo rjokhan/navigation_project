@@ -73,8 +73,8 @@
 
           if (data.success) {
             localStorage.setItem("telegram_id", input);
-            localStorage.setItem("name", data.name || input);
-            nameBlock.textContent = data.name || input;
+            localStorage.setItem("name", data.user.name || input);
+            nameBlock.textContent = data.user.name || input;
             popup.style.display = "none";
             loadGenres(input);
           } else {
