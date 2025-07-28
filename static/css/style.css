@@ -2,30 +2,17 @@
   font-family: BEBAS;
   src: url("../fonts/BebasNeue_Bold__1178_aza_1179_sha__1241_ripter.otf");
 }
-body{
-    background-color: #000000;
-    color: white;
-    padding: 50px 20px 20px 20px;
-    font-family: "Raleway", sans-serif;
-    max-width: 450px;
-    margin: 0 auto;
-    margin-bottom: 150px;
+
+body {
+  background-color: #4f0017;
+  color: white;
+  padding: 50px 20px 20px 20px;
+  font-family: "Raleway", sans-serif;
+  margin: 0 auto;
+  margin-bottom: 150px;
 }
-#square {
-      margin-top: 1000px;
-      width: 300px;
-      height: 200px;
-      background-color: black;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      font-family: sans-serif;
-      text-align: center;
-      padding: 10px;
-    }
-.searcher{
+
+.searcher {
   margin-top: 15px;
   background-color: #2e000dc7;
   width: 100%;
@@ -35,9 +22,9 @@ body{
   justify-content: space-around;
   align-items: center;
   gap: 10px;
-
 }
-.searcher_block{
+
+.searcher_block {
   background: none;
   border: none;
   color: white;
@@ -49,37 +36,44 @@ body{
 .searcher_block:focus-visible {
   outline: none;
 }
-.search_icon{
+
+.search_icon {
   width: 22px;
   height: 22px;
   margin: 0 auto;
   margin-left: 30px;
 }
-.name{
+
+.name {
   font-size: 24px;
 }
-input::placeholder{
+
+input::placeholder {
   font-family: "Raleway", sans-serif;
   color: white;
   opacity: 54%;
 }
-.container_genre{
+
+.container_genre {
   margin-top: 10px;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
 }
-.genre{
-  width: 208px;
-  height: 165px;
+
+.genre {
+  width: 400px;
+  height: 250px;
   background-image: url("../images/back.jpg");
   background-size: cover;
+  background-position: center;
   border: 1px solid #77263f;
   border-radius: 15px;
   position: relative;
-  margin-top: 10PX;
 }
-.count{
+
+.count {
   border-radius: 50%;
   width: 30px;
   height: 30px;
@@ -87,19 +81,20 @@ input::placeholder{
   font-family: Arial !important;
   line-height: 30px;
   text-align: center;
-  margin-top: 10px;
-  margin-right: 10px;
-  margin-left: 170px;
   font-size: 12px; 
   position: absolute;
+  top: 10px;
+  right: 10px;
 }
-.genre_name{
+
+.genre_name {
   text-align: center;
-  margin-top: 65px;
-  font-size: 35px;
+  margin-top: 70px;
+  font-size: 38px;
   font-family: BEBAS !important;
 }
-.red{
+
+.red {
   color: #ff0049;
 }
 
@@ -161,6 +156,7 @@ input::placeholder{
   margin-bottom: 8px;
   display: none;
 }
+
 .header {
   display: flex;
   flex-wrap: nowrap;
@@ -184,13 +180,11 @@ input::placeholder{
   z-index: 9999;
 }
 
-
-
-.header_icon{
+.header_icon {
   width: 30px;
   height: 30px;
 }
-.header_icon img{
+.header_icon img {
   width: 100%;
   height: auto;
 }

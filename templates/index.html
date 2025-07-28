@@ -54,11 +54,14 @@
         nameBlock.textContent = savedName;
       }
 
-      if (!savedId) {
-        popup.style.display = 'flex';
-      } else {
-        loadGenres(savedId);
-      }
+if (savedName) {
+  nameBlock.textContent = savedName;
+}
+
+// Временно загружаем жанры без проверки Telegram ID
+loadGenres(savedId || '');
+
+
 
       document.getElementById('login-form').addEventListener('submit', async function (e) {
         e.preventDefault();
