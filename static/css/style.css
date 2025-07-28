@@ -2,33 +2,33 @@
   font-family: BEBAS;
   src: url("../fonts/BebasNeue_Bold__1178_aza_1179_sha__1241_ripter.otf");
 }
+body{
+    background-color: #4f0017;
+    color: white;
+    padding: 50px 50px 20px 50px;
+    font-family: "Raleway", sans-serif;
 
-body {
-  background-color: #4f0017;
-  color: white;
-  padding: 50px 20px 20px 20px;
-  font-family: "Raleway", sans-serif;
-  margin: 0 auto;
-  margin-bottom: 150px;
+    margin: 0 auto;
+    margin-bottom: 150px;
 }
 
-.searcher {
-  margin-top: 15px;
+.searcher{
+  margin-top: 25px;
   background-color: #2e000dc7;
   width: 100%;
-  height: 60px;
-  border-radius: 30px;
+  height: 120px;
+  border-radius: 500px;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  gap: 10px;
-}
+  gap: 30px;
 
-.searcher_block {
+}
+.searcher_block{
   background: none;
   border: none;
   color: white;
-  font-size: 14px;
+  font-size: 32px;
   outline: none;
   width: 100%;
   margin-right: 20px;
@@ -36,65 +36,57 @@ body {
 .searcher_block:focus-visible {
   outline: none;
 }
-
-.search_icon {
-  width: 22px;
-  height: 22px;
+.search_icon{
+  width: 50px;
+  height: 50px;
   margin: 0 auto;
-  margin-left: 30px;
+  margin-left: 60px;
 }
-
-.name {
-  font-size: 24px;
+.name{
+  font-size: 40px;
 }
-
-input::placeholder {
+input::placeholder{
   font-family: "Raleway", sans-serif;
   color: white;
   opacity: 54%;
 }
-
-.container_genre {
-  margin-top: 10px;
+.container_genre{
+  margin-top: 15px;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
-
-.genre {
-  width: 400px;
-  height: 250px;
+.genre{
+  width: 430px;
+  height: 300px;
   background-image: url("../images/back.jpg");
   background-size: cover;
-  background-position: center;
   border: 1px solid #77263f;
-  border-radius: 15px;
+  border-radius: 30px;
   position: relative;
+  margin-top: 10PX;
 }
-
-.count {
+.count{
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  width: 60px;
+  height: 60px;
   background-color: #ff0049;
   font-family: Arial !important;
-  line-height: 30px;
+  line-height: 60px;
   text-align: center;
-  font-size: 12px; 
+  margin-top: 15px;
+  margin-right: 10px;
+  margin-left: 355px;
+  font-size: 30px; 
   position: absolute;
-  top: 10px;
-  right: 10px;
 }
-
-.genre_name {
+.genre_name{
   text-align: center;
-  margin-top: 70px;
-  font-size: 38px;
+  margin-top: 120px;
+  font-size: 70px;
   font-family: BEBAS !important;
 }
-
-.red {
+.red{
   color: #ff0049;
 }
 
@@ -156,23 +148,21 @@ input::placeholder {
   margin-bottom: 8px;
   display: none;
 }
-
 .header {
   display: flex;
   flex-wrap: nowrap;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-
+  gap: 150px;
   background: linear-gradient(45deg, rgba(46, 0, 13, 0.8), rgba(100, 0, 36, 0.8));
   border: 1px solid #7726408f;
-  border-radius: 50px;
+  border-radius: 500px;
   backdrop-filter: blur(5px);
-
   position: fixed;
   left: 20px;
   right: 20px;
   width: auto;
-  height: 100px;
+  height: 200px;
   bottom: 20px;
 
   padding: 20px 60px;
@@ -180,11 +170,13 @@ input::placeholder {
   z-index: 9999;
 }
 
-.header_icon {
-  width: 30px;
-  height: 30px;
+
+
+.header_icon{
+  width: 60px;
+  height: 60px;
 }
-.header_icon img {
+.header_icon img{
   width: 100%;
   height: auto;
 }
@@ -194,11 +186,26 @@ input::placeholder {
 .header_icon.active::after {
   content: "";
   position: absolute;
-  bottom: -8px;
+  bottom: -15px;
   left: 50%;
   transform: translateX(-50%);
-  width: 25px;
-  height: 2px;
+  width: 50px;
+  height: 4px;
   background-color: white;
   border-radius: 2px;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
