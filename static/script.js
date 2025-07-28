@@ -14,7 +14,14 @@ fetch('http://127.0.0.1:8000/api/genres/')
 
       const name = document.createElement('div');
       name.className = 'genre_name';
-      name.innerHTML = `<span class="red">A </span>${genre.title.split(' ')[1]}`;
+
+      // Убираем лишний "A " в начале названия жанра, если есть
+      let cleanTitle = genre.title;
+      if (cleanTitle.startsWith('A ')) {
+        cleanTitle = cleanTitle.slice(2);
+      }
+
+      name.innerHTML = `<span class="red">A </span>${cleanTitle}`;
 
       genreDiv.appendChild(count);
       genreDiv.appendChild(name);

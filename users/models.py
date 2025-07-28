@@ -1,21 +1,12 @@
 from django.db import models
-from content.models import ContentItem
 
-
-class User(models.Model):
-    telegram_id = models.CharField(max_length=32, unique=True)
-    full_name = models.CharField(max_length=255)
-    city = models.CharField(max_length=100, blank=True)
-    is_resident = models.BooleanField(default=False)
+class UserProfile(models.Model):
+    username = models.CharField(max_length=100)
+    name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=20)
+    subscription_status = models.BooleanField(default=False)
+    city = models.CharField(max_length=100)
     subscription_until = models.DateField(null=True, blank=True)
 
     def __str__(self):
-        return self.full_name or f"User {self.telegram_id}"
-
-
-class Favourite(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favourites')
-    content = models.ForeignKey(ContentItem, on_delete=models.CASCADE, related_name='user_favourites')  # <--- вот тут ключевое
-
-    class Meta:
-        unique_together = ('user', 'content')
+        return f"{self.username} ({self.name})"

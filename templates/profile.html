@@ -20,6 +20,7 @@
     <div id="user_info">
       <p>Загрузка данных...</p>
     </div>
+    <button id="logout-btn" style="margin-top:20px; padding:8px 16px; cursor:pointer;">Выйти</button>
   </div>
 
   <script>
@@ -32,11 +33,10 @@
       }
 
       try {
-        const response = await fetch("https://api.ayolclub.uz/en/api/v1/telegram-bot/check-user/", {
+        const response = await fetch("/api/users/check/", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            "X-API-Token": "b0e63095ee9d51fd0188f1877d63c0b850bc4965a61527c9"
+            "Content-Type": "application/json"
           },
           body: JSON.stringify({ telegram_id: id })
         });
@@ -59,6 +59,12 @@
         document.getElementById("user_info").innerHTML = '<p>Ошибка загрузки данных.</p>';
         console.error(error);
       }
+    });
+
+    document.getElementById("logout-btn").addEventListener("click", () => {
+      localStorage.removeItem("telegram_id");
+      localStorage.removeItem("name");
+      location.reload();
     });
   </script>
 </body>

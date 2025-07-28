@@ -1,41 +1,264 @@
-<!DOCTYPE html>
 {% load static %}
-
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>NAVIGATION</title> 
-  <link rel="stylesheet" href="css/content.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>NAVIGATION</title>
+  <link rel="stylesheet" href="{% static 'css/content.css' %}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    /* Чтобы кнопка избранного была поверх всего */
+    .fav_icon {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 35px;
+      height: 35px;
+      cursor: pointer;
+      border-radius: 50%;
+      background-size: contain;
+      background-repeat: no-repeat;
+      z-index: 10;
+      background-color: transparent;
+    }
+    .not_favourited {
+      background-image: url('{% static "images/fav_icon.png" %}');
+      background-color: white;
+    }
+    .favourited {
+      background-image: url('{% static "images/fav_icon_active.png" %}');
+      background-color: #ff0049;
+    }
+    /* Позиционируем контейнеры, чтобы кнопка правильно отображалась */
+    .video, .audio, .file {
+      position: relative;
+    }
+  </style>
 </head>
-
 <body>
-<div class="header">
-        <a href="index.html"><div class="header_icon"><img src="/images/home_page.png"></div></a>
-        <a href="favourited.html"><div class="header_icon"><img src="/images/fav.png"></div></a>
-        <a href="profile.html"><div class="header_icon"><img src="/images/profile.png"></div></a>
-        <a href="chat.html"><div class="header_icon"><img src="/images/chat.png"></div></a>
-    </div>
-
+  <div class="header">
+    <a href="{% url 'index' %}">
+      <div class="header_icon">
+        <img src="{% static 'images/home_page.png' %}" />
+      </div>
+    </a>
+    <a href="{% url 'favourited' %}">
+      <div class="header_icon">
+        <img src="{% static 'images/fav.png' %}" />
+      </div>
+    </a>
+    <a href="{% url 'profile' %}">
+      <div class="header_icon">
+        <img src="{% static 'images/profile.png' %}" />
+      </div>
+    </a>
+    <a href="{% url 'chat' %}">
+      <div class="header_icon">
+        <img src="{% static 'images/chat.png' %}" />
+      </div>
+    </a>
+  </div>
 
   <div class="search_block">
-    <a href="index.html"><div class="back_button"></div></a>
+    <a href="{% url 'index' %}"><div class="back_button"></div></a>
     <form class="searcher">
-      <img class="search_icon" src="images/search icon.png">
-      <input class="searcher_block" placeholder="Поиск...">
+      <img
+        class="search_icon"
+        src="{% static 'images/search icon.png' %}"
+        alt="search"
+      />
+      <input
+        class="searcher_block"
+        placeholder="Поиск..."
+        autocomplete="off"
+        type="text"
+      />
     </form>
   </div>
 
-  <div class="choosed_genre"><span class="red">A </span>GENRE:</div>  
-
-  <div class="content_body">
-    <!-- Контент будет добавлен через JS -->
+  <div class="choosed_genre">
+    <span class="red">A </span><span id="genre-title"></span>
   </div>
 
+  <div class="content_body">
+    <!-- Контент загрузится сюда -->
+  </div>
 
-  <script src="script.js"></script>
-  <script src="content_script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+      }
+
+      const genreId = getQueryParam('genre_id');
+      const genreTitleRaw = getQueryParam('genre_title');
+
+      const genreTitle = genreTitleRaw && genreTitleRaw.length > 2 && genreTitleRaw.startsWith('A ')
+        ? genreTitleRaw.slice(2).trim()
+        : genreTitleRaw || '';
+
+      const genreTitleElem = document.getElementById('genre-title');
+      const contentBody = document.querySelector('.content_body');
+
+      if (genreTitleElem && genreTitle) {
+        genreTitleElem.textContent = decodeURIComponent(genreTitle);
+      }
+
+      if (!genreId) {
+        contentBody.innerHTML = '<p>Не указан жанр</p>';
+        return;
+      }
+
+      const telegramId = localStorage.getItem('telegram_id');
+      if (!telegramId) {
+        alert('Ошибка: Telegram ID не найден. Пожалуйста, войдите.');
+        return;
+      }
+
+      let userFavourites = [];
+
+      fetch(`/api/favourites/?telegram_id=${telegramId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          userFavourites = data.favourites || [];
+          loadGenre();
+        })
+        .catch(() => {
+          userFavourites = [];
+          loadGenre();
+        });
+
+      function loadGenre() {
+        fetch(`/api/genres/`)
+          .then((response) => response.json())
+          .then((data) => {
+            const genre = data.find((g) => g.id == genreId);
+            if (!genre) {
+              contentBody.innerHTML = '<p>Жанр не найден</p>';
+              return;
+            }
+
+            if (genre.items.length === 0) {
+              contentBody.innerHTML = '<p>Контент пока не добавлен</p>';
+              return;
+            }
+
+            contentBody.innerHTML = '';
+            const allCards = [];
+
+            genre.items.forEach((item) => {
+              const isFavourited = userFavourites.includes(item.id);
+              const favClass = isFavourited ? 'favourited' : 'not_favourited';
+              const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}" title="Добавить в избранное"></div>`;
+
+              let block = '';
+              const openLink = `window.open('${item.telegram_url}', '_blank')`;
+
+              if (item.content_type === 'video') {
+                block = `
+                  <div class="video">
+                    <div class="video_thumbnail" onclick="${openLink}">
+                      <img src="${item.thumbnail}" alt="video_thumbnail" />
+                      <div class="video_duration">${item.duration}</div>
+                    </div>
+                    ${favIconHTML}
+                    <div class="video_info">
+                      <div class="title">${item.title}</div>
+                      <div class="subtitle">${item.subtitle || ''}</div>
+                    </div>
+                  </div>
+                `;
+              } else if (item.content_type === 'audio') {
+                block = `
+                  <div class="audio">
+                    <div class="audio_menu" onclick="${openLink}">
+                      <div class="static_icon">
+                        <img src="{% static 'images/audio_icon.png' %}" alt="audio icon"/>
+                      </div>
+                      <div class="audio_duration">${item.duration}</div>
+                    </div>
+                    ${favIconHTML}
+                    <div class="audio_info">
+                      <div class="title">${item.title}</div>
+                      <div class="subtitle">${item.subtitle || ''}</div>
+                    </div>
+                  </div>
+                `;
+              } else if (item.content_type === 'file') {
+                block = `
+                  <div class="file">
+                    <div class="file_menu" onclick="${openLink}">
+                      <div class="static_icon">
+                        <img src="{% static 'images/file_icon.png' %}" alt="file icon"/>
+                      </div>
+                      <div class="file_duration">${item.duration}</div>
+                    </div>
+                    ${favIconHTML}
+                    <div class="file_info">
+                      <div class="title">${item.title}</div>
+                      <div class="subtitle">${item.subtitle || ''}</div>
+                    </div>
+                  </div>
+                `;
+              }
+
+              contentBody.insertAdjacentHTML('beforeend', block);
+
+              const last = contentBody.lastElementChild;
+              const favIcon = last.querySelector('.fav_icon');
+
+              if (favIcon) {
+                favIcon.addEventListener('click', (e) => {
+                  e.stopPropagation();
+
+                  const isFavouritedNow = favIcon.classList.contains('favourited');
+                  const url = isFavouritedNow
+                    ? `/api/favourites/remove/${item.id}/`
+                    : `/api/favourites/add/${item.id}/`;
+
+                  fetch(url, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ telegram_id: telegramId }),
+                  })
+                    .then((res) => res.json())
+                    .then((data) => {
+                      if (data.status === 'added') {
+                        favIcon.classList.remove('not_favourited');
+                        favIcon.classList.add('favourited');
+                      } else if (data.status === 'removed') {
+                        favIcon.classList.remove('favourited');
+                        favIcon.classList.add('not_favourited');
+                      } else {
+                        alert('Ошибка обновления избранного');
+                      }
+                    })
+                    .catch((err) => {
+                      console.error('Ошибка при обновлении избранного:', err);
+                      alert('Ошибка сети при обновлении избранного');
+                    });
+                });
+              }
+
+              allCards.push({ ...item, genreId: genre.id });
+            });
+
+            localStorage.setItem('allCards', JSON.stringify(allCards));
+          })
+          .catch((err) => {
+            console.error('Ошибка загрузки жанра:', err);
+            contentBody.innerHTML = '<p>Ошибка загрузки контента</p>';
+          });
+      }
+    });
+  </script>
 </body>
 </html>

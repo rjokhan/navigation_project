@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Безопасность
 SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-key")
 DEBUG = os.environ.get("DEBUG", "True") == "True"
-ALLOWED_HOSTS = ['.onrender.com', '127.0.0.1', 'localhost', 'navigation-project-3.onrender.com']
+ALLOWED_HOSTS = ['89.39.95.53', 'localhost', '127.0.0.1']
 
 # Приложения
 INSTALLED_APPS = [

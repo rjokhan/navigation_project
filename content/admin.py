@@ -1,11 +1,19 @@
 from django.contrib import admin
-from .models import Genre, ContentItem
-from .models import Favourite
+from .models import Genre, ContentItem, Favourite, UserProfile
+
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ['username', 'name', 'phone', 'subscription_status', 'city', 'subscription_until']
+    search_fields = ['username', 'name', 'phone', 'city']
+    list_filter = ['subscription_status', 'city']
+    ordering = ['-subscription_until']
 
 
 @admin.register(Favourite)
 class FavouriteAdmin(admin.ModelAdmin):
     list_display = ['telegram_id', 'content_item']
+    search_fields = ['telegram_id', 'content_item__title']
 
 
 @admin.register(ContentItem)
@@ -27,7 +35,12 @@ class ContentItemAdmin(admin.ModelAdmin):
             form.base_fields['thumbnail'].required = False
         return form
 
+    list_display = ['title', 'genre', 'content_type']
+    search_fields = ['title', 'subtitle']
+    list_filter = ['genre', 'content_type']
+
 
 @admin.register(Genre)
 class GenreAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['title']
+    search_fields = ['title']

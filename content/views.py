@@ -1,6 +1,6 @@
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404
 from .models import Genre, ContentItem, Favourite
 import json
@@ -10,7 +10,6 @@ import json
 def genre_list(request):
     data = []
     for genre in Genre.objects.prefetch_related('items').all():
-        items = genre.items.all()
         genre_data = {
             'id': genre.id,
             'title': genre.title,
@@ -24,14 +23,14 @@ def genre_list(request):
                     'duration': item.duration,
                     'thumbnail': request.build_absolute_uri(item.thumbnail.url) if item.thumbnail else None
                 }
-                for item in items
+                for item in genre.items.all()
             ]
         }
         data.append(genre_data)
     return JsonResponse(data, safe=False)
 
 
-# ✅ Получение избранных по telegram_id
+# ✅ Получение избранного контента по telegram_id
 def get_favourites(request):
     telegram_id = request.GET.get('telegram_id')
     if not telegram_id:
@@ -42,7 +41,7 @@ def get_favourites(request):
     return JsonResponse({'favourites': fav_ids})
 
 
-# ✅ Добавить в избранное
+# ✅ Добавление в избранное
 @csrf_exempt
 @require_POST
 def add_to_favourites(request, content_id):
@@ -59,7 +58,7 @@ def add_to_favourites(request, content_id):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-# ✅ Удалить из избранного
+# ✅ Удаление из избранного
 @csrf_exempt
 @require_POST
 def remove_from_favourites(request, content_id):
