@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Безопасность
 SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-key")
 DEBUG = os.environ.get("DEBUG", "True") == "True"
-ALLOWED_HOSTS = ['89.39.95.53', 'localhost', '127.0.0.1', 'nav.ayolclub.uz']
+ALLOWED_HOSTS = ['89.39.95.53', 'localhost', '127.0.0.1', 'navigation.ayolclub.uz']
 
 # Приложения
 INSTALLED_APPS = [
