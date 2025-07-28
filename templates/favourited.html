@@ -10,11 +10,31 @@
 </head>
 <body>
 
-  <div class="header">
-    <a href="{% url 'index' %}"><div class="header_icon"><img src="{% static 'images/home_page.png' %}"></div></a>
-    <a href="{% url 'favourited' %}"><div class="header_icon active"><img src="{% static 'images/fav.png' %}"></div></a>
-    <a href="{% url 'profile' %}"><div class="header_icon"><img src="{% static 'images/profile.png' %}"></div></a>
-    <a href="{% url 'chat' %}"><div class="header_icon"><img src="{% static 'images/chat.png' %}"></div></a>
+   <div class="header">
+    <a href="{% url 'index' %}">
+      <div class="header_icon">
+        <img src="{% static 'images/home_page.png' %}">
+        <p>A CLUB</p>
+      </div>
+    </a>
+    <a href="{% url 'favourited' %}">
+      <div class="header_icon active">
+        <img src="{% static 'images/fav.png' %}">
+        <p>Севимли</p>
+      </div>
+    </a>
+    <a href="{% url 'profile' %}">
+      <div class="header_icon">
+        <img src="{% static 'images/profile.png' %}">
+        <p>Профиль</p>
+      </div>
+    </a>
+    <a href="{% url 'chat' %}">
+      <div class="header_icon">
+        <img src="{% static 'images/chat.png' %}">
+        <p>Чатлар</p>
+      </div>
+    </a>
   </div>
 
   <div class="search_block">

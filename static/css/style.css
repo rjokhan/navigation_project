@@ -201,20 +201,23 @@ input::placeholder{
   margin-bottom: 8px;
   display: none;
 }
+
+
 .header {
   display: flex;
   flex-wrap: nowrap;
   justify-content: space-between;
   align-items: center;
   padding: 5px;
-
+  left: 50%;
+transform: translateX(-50%);
   background: linear-gradient(45deg, rgba(128, 26, 48, 0.164), rgba(78, 5, 21, 0.281));
   border: 1px solid #ffffff8f;
   border-radius: 50px;
   backdrop-filter: blur(5px);
 
   position: fixed;
-  width: 95vw;
+  width: 90vw;
   height: 100px;
   bottom: 20px;
 
@@ -225,9 +228,6 @@ input::placeholder{
     inset 0 20px 30px -20px rgba(255, 255, 255, 0.3),  /* верх */
     inset 0 -20px 30px -20px rgba(255, 255, 255, 0.3); /* низ */
 }
-
-
-
 .header_icon{
   width: 22vw;
   height: 90px;
@@ -243,12 +243,17 @@ input::placeholder{
  
 }
 .header_icon p{
+  font-family: Arial, Helvetica, sans-serif;
   color: white;
   padding: 0;
   margin: 0;margin-top: 5px;
   text-align: center;
   font-size: 14px;
+  font-weight: 700;
 }
 .header_icon.active {
   background-color: #31000f9f;
+}
+a {
+  all: unset;
 }
