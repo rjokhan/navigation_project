@@ -57,7 +57,7 @@
   </form>
 
   <div class="container_genre">
-    <div class="loading">Загрузка жанров...</div>
+    <div class="loading">Загрузка...</div>
   </div>
 
   <script>
@@ -107,16 +107,16 @@
     });
   </script>
 
-  <script>
+<script>
   document.addEventListener("DOMContentLoaded", () => {
     const overlay = document.querySelector('.blur_overlay');
 
-    // При появлении новой страницы — скрыть размытие
+    // После загрузки — убираем размытие
     requestAnimationFrame(() => {
       overlay.classList.remove("active");
     });
 
-    // При клике на любую ссылку в header — запустить размытие и перейти
+    // При клике — показываем размытие, затем переходим
     document.querySelectorAll('.header a').forEach(link => {
       link.addEventListener('click', e => {
         e.preventDefault();
@@ -126,11 +126,54 @@
 
         setTimeout(() => {
           window.location.href = href;
-        }, 100); // 0.1 сек
+        }, 300); // ⏱ 0.3 сек
       });
     });
   });
+
+
+
+  let popup = document.getElementById("popup");
+let popupYes = document.getElementById("popup_yes");
+let popupNo = document.getElementById("popup_no");
+let targetToRemove = null;
+
+popupNo.onclick = () => popup.classList.remove("show");
+
+popupYes.onclick = () => {
+  if (targetToRemove) {
+    const { favIcon, id } = targetToRemove;
+    let favs = JSON.parse(localStorage.getItem("favourites") || "[]");
+    favs = favs.filter(f => f !== id);
+    localStorage.setItem("favourites", JSON.stringify(favs));
+    favIcon.classList.remove("favourited");
+    favIcon.classList.add("not_favourited");
+    popup.classList.remove("show");
+    targetToRemove = null;
+  }
+};
+
+favIcon.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const id = parseInt(favIcon.dataset.id);
+
+  if (favIcon.classList.contains("favourited")) {
+    targetToRemove = { favIcon, id };
+    popup.classList.add("show");
+  } else {
+    favIcon.classList.add("favourited");
+    favIcon.classList.remove("not_favourited");
+    let favs = JSON.parse(localStorage.getItem("favourites") || "[]");
+    favs.push(id);
+    localStorage.setItem("favourites", JSON.stringify(favs));
+  }
+});
+
+
+
 </script>
+
+
 
 </body>
 </html>

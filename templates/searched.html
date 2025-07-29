@@ -10,6 +10,15 @@
 </head>
 <body>
 
+
+  <div class="blur_overlay"></div>
+    <div class="vertical-waves">
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
+  </div>
+
+
   <!-- 🔙 Назад и строка поиска -->
   <div class="search_block">
     <a href="{% url 'index' %}"><div class="back_button"></div></a>
@@ -129,5 +138,33 @@
       container.innerHTML = '<div class="no-results">Ничего не найдено</div>';
     }
   </script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const overlay = document.querySelector('.blur_overlay');
+
+    // После загрузки — убираем размытие
+    requestAnimationFrame(() => {
+      overlay.classList.remove("active");
+    });
+
+    // При клике — показываем размытие, затем переходим
+    document.querySelectorAll('.header a').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const href = link.getAttribute('href');
+
+        overlay.classList.add('active');
+
+        setTimeout(() => {
+          window.location.href = href;
+        }, 300); // ⏱ 0.3 сек
+      });
+    });
+  });
+</script>
+
+
+
 </body>
 </html>

@@ -283,17 +283,18 @@ a {
 
 
 
+
 .blur_overlay {
   position: fixed;
   top: 0; left: 0;
   width: 100vw;
   height: 100vh;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
   background: rgba(0, 0, 0, 0.2);
   z-index: 9998;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.1s ease-in-out;
+  transition: opacity 0.3s ease-in-out;
 }
 .blur_overlay.active {
   opacity: 1;

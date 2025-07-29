@@ -14,6 +14,15 @@
 </head>
 
 <body>
+
+<div class="blur_overlay"></div>
+  <div class="vertical-waves">
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
+  </div>
+
+
 <div class="header">
          <div class="header">
     <a href="{% url 'index' %}">
@@ -61,5 +70,34 @@
 
   <script src="script.js"></script>
   <script src="content_script.js"></script>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const overlay = document.querySelector('.blur_overlay');
+
+    // После загрузки — убираем размытие
+    requestAnimationFrame(() => {
+      overlay.classList.remove("active");
+    });
+
+    // При клике — показываем размытие, затем переходим
+    document.querySelectorAll('.header a').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const href = link.getAttribute('href');
+
+        overlay.classList.add('active');
+
+        setTimeout(() => {
+          window.location.href = href;
+        }, 300); // ⏱ 0.3 сек
+      });
+    });
+  });
+</script>
+
+
+
 </body>
 </html>
