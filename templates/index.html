@@ -18,146 +18,90 @@
   <div class="wave"></div>
 </div>
 
+<div class="header">
+  <a href="{% url 'index' %}">
+    <div class="header_icon active">
+      <img src="{% static 'images/home_page.png' %}">
+      <p>A CLUB</p>
+    </div>
+  </a>
+  <a href="{% url 'favourited' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/fav.png' %}">
+      <p>Севимли</p>
+    </div>
+  </a>
+  <a href="{% url 'profile' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/profile.png' %}">
+      <p>Профиль</p>
+    </div>
+  </a>
+  <a href="{% url 'chat' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/chat.png' %}">
+      <p>Чатлар</p>
+    </div>
+  </a>
+</div>
 
+<div class="name">Hello, <span id="user-name">Гость</span></div>
 
+<form class="searcher">
+  <img class="search_icon" src="{% static 'images/search icon.png' %}">
+  <input class="searcher_block" placeholder="Поиск...">
+</form>
 
-  <div class="header">
-    <a href="{% url 'index' %}">
-      <div class="header_icon active">
-        <img src="{% static 'images/home_page.png' %}">
-        <p>A CLUB</p>
-      </div>
-    </a>
-    <a href="{% url 'favourited' %}">
-      <div class="header_icon">
-        <img src="{% static 'images/fav.png' %}">
-        <p>Севимли</p>
-      </div>
-    </a>
-    <a href="{% url 'profile' %}">
-      <div class="header_icon">
-        <img src="{% static 'images/profile.png' %}">
-        <p>Профиль</p>
-      </div>
-    </a>
-    <a href="{% url 'chat' %}">
-      <div class="header_icon">
-        <img src="{% static 'images/chat.png' %}">
-        <p>Чатлар</p>
-      </div>
-    </a>
-  </div>
+<div class="container_genre">
+  <div class="loading">Загрузка жанров...</div>
+</div>
 
-  
+<script>
+  // 🔹 Загружаем жанры сразу без авторизации
+  document.addEventListener("DOMContentLoaded", function () {
+    loadGenres();
+  });
 
-  <div class="name">Hello, <span id="user-name">...</span></div>
+  function loadGenres() {
+    fetch("/api/genres/")
+      .then((res) => res.json())
+      .then((data) => {
+        const container = document.querySelector(".container_genre");
+        container.innerHTML = "";
 
-  <form class="searcher">
-    <img class="search_icon" src="{% static 'images/search icon.png' %}">
-    <input class="searcher_block" placeholder="Поиск...">
-  </form>
+        data.forEach((genre) => {
+          const div = document.createElement("div");
+          div.className = "genre";
+          div.innerHTML = `
+            <div class="count">${genre.items.length}</div>
+            <div class="genre_name"><span class="red">A </span>${genre.title.split(" ")[1] || genre.title}</div>
+          `;
 
-  <div class="container_genre">
-    <div class="loading">Загрузка жанров...</div>
-  </div>
-
-  <!-- ✅ Login Popup -->
-  <div id="login-popup" class="popup" style="display: none;">
-    <form id="login-form">
-      <label>Введите Telegram ID или @username:</label>
-      <input type="text" id="telegramInput" placeholder="@username или ID" required />
-      <button type="submit">Войти</button>
-    </form>
-  </div>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const savedId = localStorage.getItem("telegram_id");
-      const savedName = localStorage.getItem("name");
-      const popup = document.getElementById("login-popup");
-      const nameBlock = document.getElementById("user-name");
-
-      if (savedName) {
-        nameBlock.textContent = savedName;
-        loadGenres(savedId);
-      } else {
-        popup.style.display = "flex";
-      }
-
-      document.getElementById("login-form").addEventListener("submit", async function (e) {
-        e.preventDefault();
-        const rawInput = document.getElementById("telegramInput").value.trim();
-        if (!rawInput) return;
-        const input = rawInput.startsWith("@") ? rawInput.slice(1) : rawInput;
-
-        try {
-          const res = await fetch("https://api.ayolclub.uz/en/api/v1/telegram-bot/check-user/", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-API-Token": "b0e63095ee9d51fd0188f1877d63c0b85bc4965a61527c9"
-            },
-            body: JSON.stringify({ telegram_id: input })
+          div.addEventListener("click", () => {
+            if (genre.items.length > 0) {
+              window.location.href = `content/?genre_id=${genre.id}&genre_title=${encodeURIComponent(genre.title)}`;
+            } else {
+              alert("Контент пока не добавлен");
+            }
           });
 
-          const data = await res.json();
-
-          if (data.success) {
-            localStorage.setItem("telegram_id", input);
-            localStorage.setItem("name", data.user.name || input);
-            nameBlock.textContent = data.user.name || input;
-            popup.style.display = "none";
-            loadGenres(input);
-          } else {
-            alert(data.message || "Ошибка авторизации");
-          }
-        } catch (err) {
-          alert("Ошибка подключения к серверу");
-          console.error(err);
-        }
-      });
-    });
-
-    function loadGenres(telegram_id) {
-      fetch("/api/genres/")
-        .then((res) => res.json())
-        .then((data) => {
-          const container = document.querySelector(".container_genre");
-          container.innerHTML = "";
-
-          data.forEach((genre) => {
-            const div = document.createElement("div");
-            div.className = "genre";
-            div.innerHTML = `
-              <div class="count">${genre.items.length}</div>
-              <div class="genre_name"><span class="red">A </span>${genre.title.split(" ")[1] || genre.title}</div>
-            `;
-
-            div.addEventListener("click", () => {
-              if (genre.items.length > 0) {
-                window.location.href = `content/?genre_id=${genre.id}&genre_title=${encodeURIComponent(genre.title)}`;
-              } else {
-                alert("Контент пока не добавлен");
-              }
-            });
-
-            container.appendChild(div);
-          });
-        })
-        .catch((err) => {
-          const container = document.querySelector(".container_genre");
-          container.innerHTML = '<div class="error">Ошибка загрузки жанров</div>';
-          console.error(err);
+          container.appendChild(div);
         });
-    }
+      })
+      .catch((err) => {
+        const container = document.querySelector(".container_genre");
+        container.innerHTML = '<div class="error">Ошибка загрузки жанров</div>';
+        console.error(err);
+      });
+  }
 
-    document.querySelector(".searcher").addEventListener("submit", function (e) {
-      e.preventDefault();
-      const query = document.querySelector(".searcher_block").value.trim();
-      if (query) {
-        window.location.href = `searched.html?query=${encodeURIComponent(query)}`;
-      }
-    });
-  </script>
+  document.querySelector(".searcher").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const query = document.querySelector(".searcher_block").value.trim();
+    if (query) {
+      window.location.href = `searched.html?query=${encodeURIComponent(query)}`;
+    }
+  });
+</script>
 </body>
 </html>
