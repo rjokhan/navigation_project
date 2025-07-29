@@ -114,7 +114,7 @@ input::placeholder{
 .container_genre{
   margin-top: 10px;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: wrap !important; 
   justify-content: center;
   gap: 10px;
 }
