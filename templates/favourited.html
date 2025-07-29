@@ -2,15 +2,45 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Favourites</title>
   <link rel="stylesheet" href="{% static 'css/content.css' %}">
+  <style>
+    .fav_icon {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 35px;
+      height: 35px;
+      cursor: pointer;
+      border-radius: 50%;
+      background-size: contain;
+      background-repeat: no-repeat;
+      z-index: 10;
+      background-color: white;
+    }
+
+    .favourited {
+      background-image: url('{% static "images/fav_icon_active.png" %}');
+      background-color: #ff0049;
+    }
+
+    .video, .audio, .file {
+      position: relative;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 50px;
+      font-size: 18px;
+      color: #aaa;
+    }
+  </style>
 </head>
 <body>
 
-   <div class="header">
+  <div class="header">
     <a href="{% url 'index' %}">
       <div class="header_icon">
         <img src="{% static 'images/home_page.png' %}">
@@ -51,119 +81,102 @@
 
   <script>
     const container = document.querySelector('.content_body');
-const searchInput = document.querySelector('.searcher_block');
+    const searchInput = document.querySelector('.searcher_block');
 
-const telegramId = localStorage.getItem('telegram_id');
-if (!telegramId) {
-  alert('Ошибка: Telegram ID не найден. Пожалуйста, войдите.');
-  throw new Error('Telegram ID не найден');
-}
-
-let favourites = [];
-
-function renderFavourites(filteredItems) {
-  container.innerHTML = '';
-
-  if (filteredItems.length === 0) {
-    container.innerHTML = '<div class="no-results">Ничего не найдено</div>';
-    return;
-  }
-
-  filteredItems.forEach(item => {
-    const wrapper = document.createElement('div');
-    wrapper.className = item.content_type;
-
-    let innerHTML = '';
-
-    if (item.content_type === 'video') {
-      innerHTML = `
-        <div class="video_thumbnail" onclick="window.open('${item.telegram_url}', '_blank')">
-          <img src="${item.thumbnail}" alt="video_thumbnail">
-          <div class="video_duration">${item.duration}</div>
-        </div>
-        <div class="fav_icon favourited"></div>
-        <div class="video_info">
-          <div class="title">${item.title}</div>
-          <div class="subtitle">${item.subtitle || ''}</div>
-        </div>
-      `;
-    } else if (item.content_type === 'audio') {
-      innerHTML = `
-        <div class="audio_menu" onclick="window.open('${item.telegram_url}', '_blank')">
-          <div class="static_icon"><img src="/static/images/audio_icon.png"></div>
-          <div class="audio_duration">${item.duration}</div>
-        </div>
-        <div class="fav_icon favourited"></div>
-        <div class="audio_info">
-          <div class="title">${item.title}</div>
-          <div class="subtitle">${item.subtitle || ''}</div>
-        </div>
-      `;
-    } else if (item.content_type === 'file') {
-      innerHTML = `
-        <div class="file_menu" onclick="window.open('${item.telegram_url}', '_blank')">
-          <div class="static_icon"><img src="/static/images/file_icon.png"></div>
-          <div class="file_duration">${item.duration}</div>
-        </div>
-        <div class="fav_icon favourited"></div>
-        <div class="file_info">
-          <div class="title">${item.title}</div>
-          <div class="subtitle">${item.subtitle || ''}</div>
-        </div>
-      `;
-    }
-
-    wrapper.innerHTML = innerHTML;
-    container.appendChild(wrapper);
-
-    const favIcon = wrapper.querySelector('.fav_icon');
-    favIcon.addEventListener('click', (e) => {
-      e.stopPropagation();
-      // Удаляем из избранного в localStorage и обновляем отображение
-      favourites = favourites.filter(f => !(f.id === item.id && f.genreId === item.genreId));
-      localStorage.setItem('favourites', JSON.stringify(favourites));
-      wrapper.remove();
-
-      // Здесь можно добавить вызов API для удаления из избранного на сервере, если нужно
-    });
-  });
-}
-
-// Получаем избранное с сервера и потом рендерим
-fetch(`/api/favourites/?telegram_id=${telegramId}`)
-  .then(res => res.json())
-  .then(data => {
-    const favIds = data.favourites || [];
-    if (favIds.length === 0) {
-      renderFavourites([]);
-      return;
-    }
-
-    // Получаем все карточки из localStorage
+    let favourites = [];
+    const favIds = JSON.parse(localStorage.getItem('favourites') || '[]');
     const allCards = JSON.parse(localStorage.getItem('allCards') || '[]');
-    // Фильтруем по избранным ID
+
+    // Получаем избранные карточки
     favourites = allCards.filter(item => favIds.includes(item.id));
 
+    function renderFavourites(filteredItems) {
+      container.innerHTML = '';
+
+      if (filteredItems.length === 0) {
+        container.innerHTML = '<div class="no-results">Ничего не найдено</div>';
+        return;
+      }
+
+      filteredItems.forEach(item => {
+        const wrapper = document.createElement('div');
+        wrapper.className = item.content_type;
+
+        let innerHTML = '';
+
+        const favIconHTML = `<div class="fav_icon favourited" data-id="${item.id}"></div>`;
+
+        if (item.content_type === 'video') {
+          innerHTML = `
+            <div class="video_thumbnail" onclick="window.open('${item.telegram_url}', '_blank')">
+              <img src="${item.thumbnail}" alt="video_thumbnail">
+              <div class="video_duration">${item.duration}</div>
+            </div>
+            ${favIconHTML}
+            <div class="video_info">
+              <div class="title">${item.title}</div>
+              <div class="subtitle">${item.subtitle || ''}</div>
+            </div>
+          `;
+        } else if (item.content_type === 'audio') {
+          innerHTML = `
+            <div class="audio_menu" onclick="window.open('${item.telegram_url}', '_blank')">
+              <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}"></div>
+              <div class="audio_duration">${item.duration}</div>
+            </div>
+            ${favIconHTML}
+            <div class="audio_info">
+              <div class="title">${item.title}</div>
+              <div class="subtitle">${item.subtitle || ''}</div>
+            </div>
+          `;
+        } else if (item.content_type === 'file') {
+          innerHTML = `
+            <div class="file_menu" onclick="window.open('${item.telegram_url}', '_blank')">
+              <div class="static_icon"><img src="{% static 'images/file_icon.png' %}"></div>
+              <div class="file_duration">${item.duration}</div>
+            </div>
+            ${favIconHTML}
+            <div class="file_info">
+              <div class="title">${item.title}</div>
+              <div class="subtitle">${item.subtitle || ''}</div>
+            </div>
+          `;
+        }
+
+        wrapper.innerHTML = innerHTML;
+        container.appendChild(wrapper);
+
+        const favIcon = wrapper.querySelector('.fav_icon');
+        favIcon.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = parseInt(favIcon.dataset.id);
+
+          // Обновляем localStorage
+          let updated = JSON.parse(localStorage.getItem("favourites") || "[]");
+          updated = updated.filter(f => f !== id);
+          localStorage.setItem("favourites", JSON.stringify(updated));
+
+          // Удаляем элемент из DOM и из локального списка
+          wrapper.remove();
+          favourites = favourites.filter(item => item.id !== id);
+        });
+      });
+    }
+
+    // Инициализация
     renderFavourites(favourites);
-  })
-  .catch(err => {
-    console.error('Ошибка при загрузке избранного:', err);
-    renderFavourites([]);
-  });
 
-// Поиск по избранным
-searchInput.addEventListener('input', () => {
-  const query = searchInput.value.toLowerCase().trim();
-
-  const filtered = favourites.filter(item => {
-    const title = (item.title || '').toLowerCase();
-    const subtitle = (item.subtitle || '').toLowerCase();
-    return title.includes(query) || subtitle.includes(query);
-  });
-
-  renderFavourites(filtered);
-});
-
+    // Поиск
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.toLowerCase().trim();
+      const filtered = favourites.filter(item => {
+        const title = (item.title || '').toLowerCase();
+        const subtitle = (item.subtitle || '').toLowerCase();
+        return title.includes(query) || subtitle.includes(query);
+      });
+      renderFavourites(filtered);
+    });
   </script>
 </body>
 </html>

@@ -10,6 +10,10 @@
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
+
+<div class="blur_overlay"></div>
+
+
    <div class="header">
     <a href="{% url 'index' %}">
       <div class="header_icon">
@@ -89,5 +93,31 @@
       location.reload();
     });
   </script>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const overlay = document.querySelector('.blur_overlay');
+
+    // При появлении новой страницы — скрыть размытие
+    requestAnimationFrame(() => {
+      overlay.classList.remove("active");
+    });
+
+    // При клике на любую ссылку в header — запустить размытие и перейти
+    document.querySelectorAll('.header a').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const href = link.getAttribute('href');
+
+        overlay.classList.add('active');
+
+        setTimeout(() => {
+          window.location.href = href;
+        }, 100); // 0.1 сек
+      });
+    });
+  });
+</script>
+
 </body>
 </html>

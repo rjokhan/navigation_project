@@ -12,96 +12,125 @@
 </head>
 
 <body>
-<div class="vertical-waves">
-  <div class="wave"></div>
-  <div class="wave"></div>
-  <div class="wave"></div>
-</div>
 
-<div class="header">
-  <a href="{% url 'index' %}">
-    <div class="header_icon active">
-      <img src="{% static 'images/home_page.png' %}">
-      <p>A CLUB</p>
-    </div>
-  </a>
-  <a href="{% url 'favourited' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/fav.png' %}">
-      <p>Севимли</p>
-    </div>
-  </a>
-  <a href="{% url 'profile' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/profile.png' %}">
-      <p>Профиль</p>
-    </div>
-  </a>
-  <a href="{% url 'chat' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/chat.png' %}">
-      <p>Чатлар</p>
-    </div>
-  </a>
-</div>
+<div class="blur_overlay"></div>
 
-<div class="name">Hello, <span id="user-name">Гость</span></div>
 
-<form class="searcher">
-  <img class="search_icon" src="{% static 'images/search icon.png' %}">
-  <input class="searcher_block" placeholder="Поиск...">
-</form>
+  <div class="vertical-waves">
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
+  </div>
 
-<div class="container_genre">
-  <div class="loading">Загрузка жанров...</div>
-</div>
+  <div class="header">
+    <a href="{% url 'index' %}">
+      <div class="header_icon active">
+        <img src="{% static 'images/home_page.png' %}">
+        <p>A CLUB</p>
+      </div>
+    </a>
+    <a href="{% url 'favourited' %}">
+      <div class="header_icon">
+        <img src="{% static 'images/fav.png' %}">
+        <p>Севимли</p>
+      </div>
+    </a>
+    <a href="{% url 'profile' %}">
+      <div class="header_icon">
+        <img src="{% static 'images/profile.png' %}">
+        <p>Профиль</p>
+      </div>
+    </a>
+    <a href="{% url 'chat' %}">
+      <div class="header_icon">
+        <img src="{% static 'images/chat.png' %}">
+        <p>Чатлар</p>
+      </div>
+    </a>
+  </div>
 
-<script>
-  // 🔹 Загружаем жанры сразу без авторизации
-  document.addEventListener("DOMContentLoaded", function () {
-    loadGenres();
-  });
+  <div class="name">Hello, <span id="user-name">Гость</span></div>
 
-  function loadGenres() {
-    fetch("/api/genres/")
-      .then((res) => res.json())
-      .then((data) => {
-        const container = document.querySelector(".container_genre");
-        container.innerHTML = "";
+  <form class="searcher">
+    <img class="search_icon" src="{% static 'images/search icon.png' %}">
+    <input class="searcher_block" placeholder="Поиск...">
+  </form>
 
-        data.forEach((genre) => {
-          const div = document.createElement("div");
-          div.className = "genre";
-          div.innerHTML = `
-            <div class="count">${genre.items.length}</div>
-            <div class="genre_name"><span class="red">A </span>${genre.title.split(" ")[1] || genre.title}</div>
-          `;
+  <div class="container_genre">
+    <div class="loading">Загрузка жанров...</div>
+  </div>
 
-          div.addEventListener("click", () => {
-            if (genre.items.length > 0) {
-              window.location.href = `content/?genre_id=${genre.id}&genre_title=${encodeURIComponent(genre.title)}`;
-            } else {
-              alert("Контент пока не добавлен");
-            }
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      loadGenres();
+    });
+
+    function loadGenres() {
+      fetch("/api/genres/")
+        .then((res) => res.json())
+        .then((data) => {
+          const container = document.querySelector(".container_genre");
+          container.innerHTML = "";
+
+          data.forEach((genre) => {
+            const div = document.createElement("div");
+            div.className = "genre";
+            div.innerHTML = `
+              <div class="count">${genre.items.length}</div>
+              <div class="genre_name"><span class="red">A </span>${genre.title.split(" ")[1] || genre.title}</div>
+            `;
+
+            div.addEventListener("click", () => {
+              if (genre.items.length > 0) {
+                window.location.href = `content/?genre_id=${genre.id}&genre_title=${encodeURIComponent(genre.title)}`;
+              } else {
+                alert("Контент пока не добавлен");
+              }
+            });
+
+            container.appendChild(div);
           });
-
-          container.appendChild(div);
+        })
+        .catch((err) => {
+          const container = document.querySelector(".container_genre");
+          container.innerHTML = '<div class="error">Ошибка загрузки жанров</div>';
+          console.error(err);
         });
-      })
-      .catch((err) => {
-        const container = document.querySelector(".container_genre");
-        container.innerHTML = '<div class="error">Ошибка загрузки жанров</div>';
-        console.error(err);
-      });
-  }
-
-  document.querySelector(".searcher").addEventListener("submit", function (e) {
-    e.preventDefault();
-    const query = document.querySelector(".searcher_block").value.trim();
-    if (query) {
-      window.location.href = `searched.html?query=${encodeURIComponent(query)}`;
     }
+
+    document.querySelector(".searcher").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const query = document.querySelector(".searcher_block").value.trim();
+      if (query) {
+        window.location.href = `searched.html?query=${encodeURIComponent(query)}`;
+      }
+    });
+  </script>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const overlay = document.querySelector('.blur_overlay');
+
+    // При появлении новой страницы — скрыть размытие
+    requestAnimationFrame(() => {
+      overlay.classList.remove("active");
+    });
+
+    // При клике на любую ссылку в header — запустить размытие и перейти
+    document.querySelectorAll('.header a').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const href = link.getAttribute('href');
+
+        overlay.classList.add('active');
+
+        setTimeout(() => {
+          window.location.href = href;
+        }, 100); // 0.1 сек
+      });
+    });
   });
 </script>
+
 </body>
 </html>

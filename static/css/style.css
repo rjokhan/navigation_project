@@ -2,6 +2,14 @@
   font-family: BEBAS;
   src: url("../fonts/BebasNeue_Bold__1178_aza_1179_sha__1241_ripter.otf");
 }
+* {
+  scrollbar-width: none;            /* Firefox */
+  -ms-overflow-style: none;         /* IE 10+ */
+}
+*::-webkit-scrollbar {
+  display: none;                    /* Chrome, Safari */
+}
+
 body{
     background-color: #4f0017;
     color: white;
@@ -9,7 +17,7 @@ body{
     font-family: "Raleway", sans-serif;
     margin: 0 auto;
     margin-bottom: 150px;
-    overflow: hidden;
+
 }
 .vertical-waves {
   position: fixed;
@@ -96,6 +104,7 @@ body{
 }
 .name{
   font-size: 24px;
+  margin-left: 10px;
 }
 input::placeholder{
   font-family: "Raleway", sans-serif;
@@ -105,19 +114,22 @@ input::placeholder{
 .container_genre{
   margin-top: 10px;
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
 }
 .genre{
-  width: 208px;
+  width: calc(50% - 10px);
   height: 165px;
   background-image: url("../images/back.jpg");
   background-size: cover;
-  border: 1px solid #77263f;
-  border-radius: 15px;
+  border: 1px solid #ffffff8f;
+  box-shadow:
+    inset 0 20px 30px -20px rgba(255, 255, 255, 0.3),  /* верх */
+    inset 0 -20px 30px -20px rgba(255, 255, 255, 0.3); /* низ */
+  border-radius: 20px;
   position: relative;
-  margin-top: 10PX;
+  margin-top: 10px;
 }
 .count{
   border-radius: 50%;
@@ -129,7 +141,7 @@ input::placeholder{
   text-align: center;
   margin-top: 10px;
   margin-right: 10px;
-  margin-left: 150px;
+  margin-left: calc(100% - 40px);
   font-size: 12px; 
   position: absolute;
 }
@@ -252,8 +264,38 @@ transform: translateX(-50%);
   font-weight: 700;
 }
 .header_icon.active {
-  background-color: #31000f9f;
+  background-color: #0000009c;
+  animation: fadeInActive 0.5s ease-out forwards;
+  opacity: 0;
+  transform: scale(0.8);
 }
+
+@keyframes fadeInActive {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 a {
   all: unset;
+}
+
+
+
+.blur_overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.2);
+  z-index: 9998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s ease-in-out;
+}
+.blur_overlay.active {
+  opacity: 1;
+  pointer-events: all;
 }
