@@ -1,7 +1,14 @@
 @font-face {
-  font-family: BEBAS;
-  src: url("../fonts/BebasNeue_Bold__1178_aza_1179_sha__1241_ripter.otf");
+  font-family: 'BEBAS';
+  src: url("{% static 'fonts/BebasNeue_Bold.otf' %}") format("opentype");
+  font-weight: bold;
 }
+@font-face {
+  font-family: 'BEBAS';
+  src: url("{% static 'fonts/BebasNeue_Regular.otf' %}") format("opentype");
+  font-weight: normal;
+}
+
 * {
   scrollbar-width: none;            /* Firefox */
   -ms-overflow-style: none;         /* IE 10+ */
