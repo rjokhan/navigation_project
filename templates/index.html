@@ -121,20 +121,28 @@
   window.addEventListener('load', () => {
     const loader = document.getElementById('loading-screen');
 
-    // Если зашёл напрямую (не через кнопку внутри)
-    const cameDirectly = document.referrer === '' || !document.referrer.includes(location.hostname);
+    // Если элемент уже удалён — ничего не делаем
+    if (!loader) return;
 
-    if (cameDirectly) {
-      // Прямой заход — показываем заставку
+    // Показать загрузку
+    loader.classList.remove('hidden');
+
+    // Через N секунд скрыть и удалить элемент и код
+    setTimeout(() => {
+      loader.classList.add('hidden');
+
+      // Удаляем сам элемент из DOM (на всякий)
       setTimeout(() => {
-        loader.classList.add('hidden');
-      }, 2000); // или 5000 если видео
-    } else {
-      // Перешёл с других страниц — скрываем сразу
-      loader.style.display = 'none';
-    }
+        loader.remove();
+
+        // Удаляем сам скрипт — отключаем его повторное выполнение
+        const script = document.currentScript;
+        if (script) script.remove();
+      }, 700); // после анимации fadeOut
+    }, 2000); // длительность заставки
   });
 </script>
+
 
 
 
