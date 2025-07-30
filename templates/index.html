@@ -119,19 +119,36 @@
   }
 
   // Скрыть загрузочный экран после 2 сек
+
+  // Если нет данных — значит новое открытие → сбрасываем флаг
+  if (!localStorage.getItem('a_club_loader_reset')) {
+    localStorage.removeItem('a_club_loader_shown');
+    localStorage.setItem('a_club_loader_reset', 'true');
+  }
+
+  // Устанавливаем имя
+  if (user?.username) {
+    document.getElementById('user-name').textContent = '@' + user.username;
+  } else if (user?.first_name) {
+    document.getElementById('user-name').textContent = user.first_name;
+  }
+
   window.addEventListener('load', () => {
     const loader = document.getElementById('loading-screen');
 
-    // Если уже показывали в этой сессии — скрываем сразу
-    if (sessionStorage.getItem('a_club_loader_shown')) {
+    if (localStorage.getItem('a_club_loader_shown')) {
       loader.style.display = 'none';
     } else {
-      // Показываем и запоминаем, что уже показали
       setTimeout(() => {
         loader.classList.add('hidden');
-        sessionStorage.setItem('a_club_loader_shown', 'true');
-      }, 2000); // можно заменить на 4000 или 5000 если видео дольше
+        localStorage.setItem('a_club_loader_shown', 'true');
+      }, 2000); // адаптируй под длину видео
     }
+  });
+
+  // Обнуляем reset-флаг при закрытии вкладки (или выгрузке MiniApp)
+  window.addEventListener('unload', () => {
+    localStorage.removeItem('a_club_loader_reset');
   });
 </script>
 
