@@ -11,47 +11,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet" />
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-  <style>
-    /* Загрузочный экран */
-    #loading-screen {
-      position: fixed;
-      z-index: 10000;
-      top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: #0e0e0e;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      animation: fadeOut 0.6s ease forwards;
-      animation-delay: 1.8s;
-    }
-    #loading-screen.hidden {
-      display: none;
-    }
-
-    .logo-loader {
-      font-size: 42px;
-      color: #fff;
-      font-family: 'Bebas Neue', sans-serif;
-      letter-spacing: 6px;
-      position: relative;
-      opacity: 0;
-      animation: rise 1.4s ease-out forwards 0.3s;
-    }
-
-    @keyframes rise {
-      0% { transform: translateY(40px); opacity: 0; }
-      100% { transform: translateY(0); opacity: 1; }
-    }
-
-    @keyframes fadeOut {
-      0% { opacity: 1; }
-      100% { opacity: 0; pointer-events: none; display: none; }
-    }
-  </style>
 </head>
 
 <body>
@@ -106,48 +65,6 @@
 <div class="container_genre">
   <div class="loading">Загрузка...</div>
 </div>
-
-<script>
-  const tg = window.Telegram.WebApp;
-  const user = tg.initDataUnsafe?.user;
-
-  // Установка имени
-  if (user?.username) {
-    document.getElementById('user-name').textContent = '@' + user.username;
-  } else if (user?.first_name) {
-    document.getElementById('user-name').textContent = user.first_name;
-  }
-
-  window.addEventListener('load', () => {
-    const loader = document.getElementById('loading-screen');
-
-    // Если элемент уже удалён — ничего не делаем
-    if (!loader) return;
-
-    // Показать загрузку
-    loader.classList.remove('hidden');
-
-    // Через N секунд скрыть и удалить элемент и код
-    setTimeout(() => {
-      loader.classList.add('hidden');
-
-      // Удаляем сам элемент из DOM (на всякий)
-      setTimeout(() => {
-        loader.remove();
-
-        // Удаляем сам скрипт — отключаем его повторное выполнение
-        const script = document.currentScript;
-        if (script) script.remove();
-      }, 700); // после анимации fadeOut
-    }, 2000); // длительность заставки
-  });
-</script>
-
-
-
-
-
-
 
 <script>
   function loadGenres() {
@@ -213,4 +130,87 @@
 </script>
 
 </body>
+
+
+<script>
+  const tg = window.Telegram.WebApp;
+  const user = tg.initDataUnsafe?.user;
+
+  async function checkUserAccess() {
+    const overlay = document.querySelector('.blur_overlay');
+    const loading = document.querySelector('.container_genre');
+    const nameBlock = document.getElementById('user-name');
+
+    if (!user || !user.id) {
+      nameBlock.textContent = 'Гость';
+      loading.innerHTML = '<div class="error">Telegram ID не получен</div>';
+      return;
+    }
+
+    try {
+      const res = await fetch("https://api.ayolclub.uz/en/api/v1/telegram-bot/check-user/", {
+        method: "POST",
+        headers: {
+          "X-API-Token": "b0e63095ee9d51fd0188f1877d63c0b850bc4965a61527c9",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          telegram_id: user.id
+        })
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        overlay.classList.add('active');
+        document.body.innerHTML = `
+          <div style="display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;font-size:22px;padding:20px;line-height:1.6;">
+            ⛔ Доступ запрещён<br>${data.message || "Вы не являетесь резидентом клуба."}
+          </div>
+        `;
+        return;
+      }
+
+      // ✅ Успешная проверка
+      nameBlock.textContent = user.first_name || '@' + user.username || 'Пользователь';
+      loadGenres(); // загружаем контент
+
+    } catch (err) {
+      console.error("Ошибка при обращении к API:", err);
+      loading.innerHTML = '<div class="error">Ошибка связи с сервером</div>';
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    checkUserAccess();
+  });
+
+  document.querySelector(".searcher").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const query = document.querySelector(".searcher_block").value.trim();
+    if (query) {
+      window.location.href = `searched.html?query=${encodeURIComponent(query)}`;
+    }
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const overlay = document.querySelector('.blur_overlay');
+    requestAnimationFrame(() => {
+      overlay.classList.remove("active");
+    });
+
+    document.querySelectorAll('.header a').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const href = link.getAttribute('href');
+        overlay.classList.add('active');
+        setTimeout(() => {
+          window.location.href = href;
+        }, 300);
+      });
+    });
+  });
+</script>
+
+
 </html>
