@@ -108,47 +108,32 @@
 </div>
 
 <script>
-  // Telegram SDK
   const tg = window.Telegram.WebApp;
   const user = tg.initDataUnsafe?.user;
 
+  // Установить имя
   if (user?.username) {
     document.getElementById('user-name').textContent = '@' + user.username;
   } else if (user?.first_name) {
     document.getElementById('user-name').textContent = user.first_name;
   }
 
-  // Скрыть загрузочный экран после 2 сек
-
-  // Если нет данных — значит новое открытие → сбрасываем флаг
-  if (!localStorage.getItem('a_club_loader_reset')) {
-    localStorage.removeItem('a_club_loader_shown');
-    localStorage.setItem('a_club_loader_reset', 'true');
-  }
-
-  // Устанавливаем имя
-  if (user?.username) {
-    document.getElementById('user-name').textContent = '@' + user.username;
-  } else if (user?.first_name) {
-    document.getElementById('user-name').textContent = user.first_name;
-  }
-
+  // Скрыть загрузочный экран после 2 сек, если он не был показан в этой сессии
   window.addEventListener('load', () => {
     const loader = document.getElementById('loading-screen');
+    const currentSessionKey = tg.initData || 'fallback-session';
 
-    if (localStorage.getItem('a_club_loader_shown')) {
+    // Проверка: был ли уже показан загрузочный экран в этой сессии
+    const shownKey = 'loader_shown_' + currentSessionKey;
+
+    if (sessionStorage.getItem(shownKey)) {
       loader.style.display = 'none';
     } else {
       setTimeout(() => {
         loader.classList.add('hidden');
-        localStorage.setItem('a_club_loader_shown', 'true');
-      }, 2000); // адаптируй под длину видео
+        sessionStorage.setItem(shownKey, 'true');
+      }, 2000); // можно заменить на 4000 для видео
     }
-  });
-
-  // Обнуляем reset-флаг при закрытии вкладки (или выгрузке MiniApp)
-  window.addEventListener('unload', () => {
-    localStorage.removeItem('a_club_loader_reset');
   });
 </script>
 
