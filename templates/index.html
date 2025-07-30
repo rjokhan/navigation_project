@@ -111,29 +111,30 @@
   const tg = window.Telegram.WebApp;
   const user = tg.initDataUnsafe?.user;
 
-  // Установка имени
+  // Отображение имени пользователя
   if (user?.username) {
     document.getElementById('user-name').textContent = '@' + user.username;
   } else if (user?.first_name) {
     document.getElementById('user-name').textContent = user.first_name;
   }
 
-  // Загрузочный экран — только при первом открытии Mini App
   window.addEventListener('load', () => {
     const loader = document.getElementById('loading-screen');
 
-    // Проверка: в sessionStorage нет флага — значит это первое открытие
-    if (!sessionStorage.getItem('a_club_loader_shown')) {
+    // Проверяем: если это первый вход, window.name ещё не установлен
+    if (window.name !== 'a_club_loaded') {
+      // Показываем заставку
       setTimeout(() => {
         loader.classList.add('hidden');
-        sessionStorage.setItem('a_club_loader_shown', 'true');
-      }, 2000); // длительность заставки
+        window.name = 'a_club_loaded'; // сохраняем флаг
+      }, 2000); // заменить на 4000-5000 если есть видео
     } else {
-      // Уже внутри MiniApp — скрыть заставку моментально
+      // Уже заходили — скрыть сразу
       loader.style.display = 'none';
     }
   });
 </script>
+
 
 
 
