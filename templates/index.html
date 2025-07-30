@@ -118,25 +118,25 @@
     document.getElementById('user-name').textContent = user.first_name;
   }
 
-  // Обработка загрузочного экрана
   window.addEventListener('load', () => {
     const loader = document.getElementById('loading-screen');
 
-    // Проверяем: если это первый вход в Mini App (а не переход внутри)
-    const isFreshSession =
-      document.referrer === '' || !document.referrer.includes(location.host);
+    // Проверка на первое открытие сайта
+    const navEntry = performance.getEntriesByType("navigation")[0];
+    const isFirstEntry = navEntry && navEntry.type === "navigate";
 
-    if (isFreshSession) {
-      // Первый вход — показываем заставку
+    if (isFirstEntry) {
+      // Впервые зашли на сайт — показываем заставку
       setTimeout(() => {
         loader.classList.add('hidden');
-      }, 2000); // ← настрой длину под видео
+      }, 2000); // или 5000, если будет видео
     } else {
-      // Переход внутри — скрыть заставку сразу
+      // Переход внутри сайта — сразу скрываем
       loader.style.display = 'none';
     }
   });
 </script>
+
 
 
 <script>
