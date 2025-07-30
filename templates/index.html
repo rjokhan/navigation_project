@@ -10,13 +10,60 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    .access_popup {
+      position: fixed;
+      z-index: 9999;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .access_popup .popup_inner {
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .access_popup input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-top: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .access_popup button {
+      margin-top: 15px;
+      padding: 12px 20px;
+      background: #cc0044;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .popup_error {
+      margin-top: 10px;
+      color: red;
+      font-size: 14px;
+    }
+  </style>
 </head>
 
 <body>
 
-<!-- Загрузочный экран -->
-<div id="loading-screen">
-  <div class="logo-loader">A CLUB</div>
+<div class="access_popup" id="access-popup">
+  <div class="popup_inner">
+    <p>Введите ваш username или номер телефона</p>
+    <input type="text" id="user-input" placeholder="@username или +998..." />
+    <button id="check-access-btn">Войти</button>
+    <div class="popup_error" id="popup-error"></div>
+  </div>
 </div>
 
 <div class="blur_overlay active"></div>
@@ -66,51 +113,6 @@
 </div>
 
 <script>
-  const tg = window.Telegram.WebApp;
-  const user = tg.initDataUnsafe?.user;
-
-  async function checkUserAccess() {
-    const overlay = document.querySelector('.blur_overlay');
-    const loading = document.querySelector('.container_genre');
-    const nameBlock = document.getElementById('user-name');
-
-    if (!user || !user.id) {
-      nameBlock.textContent = 'Гость';
-      loading.innerHTML = '<div class="error">Telegram ID не получен</div>';
-      return;
-    }
-
-    try {
-      const res = await fetch("https://api.ayolclub.uz/en/api/v1/telegram-bot/check-user/", {
-        method: "POST",
-        headers: {
-          "X-API-Token": "b0e63095ee9d51fd0188f1877d63c0b850bc4965a61527c9",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ telegram_id: user.id })
-      });
-
-      const data = await res.json();
-
-      if (!data.success) {
-        overlay.classList.add('active');
-        document.body.innerHTML = `
-          <div style="display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;font-size:22px;padding:20px;line-height:1.6;">
-            ⛔ Доступ запрещён<br>${data.message || "Вы не являетесь резидентом клуба."}
-          </div>
-        `;
-        return;
-      }
-
-      nameBlock.textContent = user.first_name || '@' + user.username || 'Пользователь';
-      loadGenres(); // загружаем контент после успешной проверки
-
-    } catch (err) {
-      console.error("Ошибка при обращении к API:", err);
-      loading.innerHTML = '<div class="error">Ошибка связи с сервером</div>';
-    }
-  }
-
   function loadGenres() {
     fetch("/api/genres/")
       .then((res) => res.json())
@@ -143,16 +145,6 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    checkUserAccess();
-
-    document.querySelector(".searcher").addEventListener("submit", function (e) {
-      e.preventDefault();
-      const query = document.querySelector(".searcher_block").value.trim();
-      if (query) {
-        window.location.href = `searched.html?query=${encodeURIComponent(query)}`;
-      }
-    });
-
     const overlay = document.querySelector('.blur_overlay');
     requestAnimationFrame(() => {
       overlay.classList.remove("active");
@@ -167,6 +159,51 @@
           window.location.href = href;
         }, 300);
       });
+    });
+
+    document.querySelector(".searcher").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const query = document.querySelector(".searcher_block").value.trim();
+      if (query) {
+        window.location.href = `searched.html?query=${encodeURIComponent(query)}`;
+      }
+    });
+
+    document.getElementById("check-access-btn").addEventListener("click", async () => {
+      const input = document.getElementById("user-input").value.trim();
+      const errorBlock = document.getElementById("popup-error");
+      const nameBlock = document.getElementById("user-name");
+
+      if (!input) {
+        errorBlock.textContent = "Введите значение";
+        return;
+      }
+
+      try {
+        const res = await fetch("https://api.ayolclub.uz/en/api/v1/telegram-bot/check-user/", {
+          method: "POST",
+          headers: {
+            "X-API-Token": "b0e63095ee9d51fd0188f1877d63c0b850bc4965a61527c9",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ telegram_id: input })
+        });
+
+        const data = await res.json();
+
+        if (!data.success) {
+          errorBlock.textContent = "Резидент не найден";
+          return;
+        }
+
+        nameBlock.textContent = input;
+        document.getElementById("access-popup").remove();
+        loadGenres();
+
+      } catch (err) {
+        console.error("Ошибка при обращении к API:", err);
+        errorBlock.textContent = "Ошибка сервера";
+      }
     });
   });
 </script>
