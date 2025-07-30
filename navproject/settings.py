@@ -5,7 +5,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Безопасность
 SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-key")
-DEBUG = os.environ.get("DEBUG", "True") == "True"
+DEBUG = False
 ALLOWED_HOSTS = ['89.39.95.53', 'localhost', '127.0.0.1', 'navigation.ayolclub.uz']
 
 # Приложения
@@ -101,7 +101,5 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # CSRF доверенные источники
 CSRF_TRUSTED_ORIGINS = [
-    "http://127.0.0.1:5500",
-    "http://localhost:8000",
-    "https://*.onrender.com",
+    "https://navigation.ayolclub.uz"
 ]

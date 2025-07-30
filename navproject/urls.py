@@ -7,7 +7,7 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('content.urls')),         # Контент и жанры
-    path('api/users/', include('users.urls')),     # ✅ Проверка пользователя
+    path('api/users/', include('users.urls')),     # Проверка пользователя
 
     # Основные HTML-страницы
     re_path(r'^$', TemplateView.as_view(template_name='index.html'), name='index'),
@@ -18,6 +18,8 @@ urlpatterns = [
     path('chat/', TemplateView.as_view(template_name='chat.html'), name='chat'),
 ]
 
+# Только при отладке (локально)
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
+    if settings.STATICFILES_DIRS:
+        urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
