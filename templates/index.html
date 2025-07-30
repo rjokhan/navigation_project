@@ -6,8 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NAVIGATION</title>
   <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
@@ -66,8 +64,6 @@
   </div>
 </div>
 
-<div class="blur_overlay active"></div>
-
 <div class="vertical-waves">
   <div class="wave"></div>
   <div class="wave"></div>
@@ -119,7 +115,6 @@
       .then((data) => {
         const container = document.querySelector(".container_genre");
         container.innerHTML = "";
-
         data.forEach((genre) => {
           const div = document.createElement("div");
           div.className = "genre";
@@ -145,16 +140,10 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    const overlay = document.querySelector('.blur_overlay');
-    requestAnimationFrame(() => {
-      overlay.classList.remove("active");
-    });
-
     document.querySelectorAll('.header a').forEach(link => {
       link.addEventListener('click', e => {
         e.preventDefault();
         const href = link.getAttribute('href');
-        overlay.classList.add('active');
         setTimeout(() => {
           window.location.href = href;
         }, 300);
@@ -192,17 +181,22 @@
         const data = await res.json();
 
         if (!data.success) {
-          errorBlock.textContent = "Резидент не найден";
+          errorBlock.textContent = "Пользователь не найден";
           return;
         }
 
-        nameBlock.textContent = input;
+        if (!data.tariff) {
+          errorBlock.textContent = "Вы не являетесь резидентом";
+          return;
+        }
+
+        nameBlock.textContent = data.first_name || input;
         document.getElementById("access-popup").remove();
         loadGenres();
 
       } catch (err) {
         console.error("Ошибка при обращении к API:", err);
-        errorBlock.textContent = "Ошибка сервера";
+        document.getElementById("popup-error").textContent = "Ошибка сервера";
       }
     });
   });
