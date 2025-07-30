@@ -111,31 +111,33 @@
   const tg = window.Telegram.WebApp;
   const user = tg.initDataUnsafe?.user;
 
-  // Установить имя
+  // Показываем имя пользователя
   if (user?.username) {
     document.getElementById('user-name').textContent = '@' + user.username;
   } else if (user?.first_name) {
     document.getElementById('user-name').textContent = user.first_name;
   }
 
-  // Скрыть загрузочный экран после 2 сек, если он не был показан в этой сессии
+  // Обработка загрузочного экрана
   window.addEventListener('load', () => {
     const loader = document.getElementById('loading-screen');
-    const currentSessionKey = tg.initData || 'fallback-session';
 
-    // Проверка: был ли уже показан загрузочный экран в этой сессии
-    const shownKey = 'loader_shown_' + currentSessionKey;
+    // Проверяем: если это первый вход в Mini App (а не переход внутри)
+    const isFreshSession =
+      document.referrer === '' || !document.referrer.includes(location.host);
 
-    if (sessionStorage.getItem(shownKey)) {
-      loader.style.display = 'none';
-    } else {
+    if (isFreshSession) {
+      // Первый вход — показываем заставку
       setTimeout(() => {
         loader.classList.add('hidden');
-        sessionStorage.setItem(shownKey, 'true');
-      }, 2000); // можно заменить на 4000 для видео
+      }, 2000); // ← настрой длину под видео
+    } else {
+      // Переход внутри — скрыть заставку сразу
+      loader.style.display = 'none';
     }
   });
 </script>
+
 
 <script>
   function loadGenres() {
