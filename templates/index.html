@@ -111,7 +111,7 @@
   const tg = window.Telegram.WebApp;
   const user = tg.initDataUnsafe?.user;
 
-  // Отображение имени пользователя
+  // Установка имени
   if (user?.username) {
     document.getElementById('user-name').textContent = '@' + user.username;
   } else if (user?.first_name) {
@@ -121,19 +121,21 @@
   window.addEventListener('load', () => {
     const loader = document.getElementById('loading-screen');
 
-    // Проверяем: если это первый вход, window.name ещё не установлен
-    if (window.name !== 'a_club_loaded') {
-      // Показываем заставку
+    // Если зашёл напрямую (не через кнопку внутри)
+    const cameDirectly = document.referrer === '' || !document.referrer.includes(location.hostname);
+
+    if (cameDirectly) {
+      // Прямой заход — показываем заставку
       setTimeout(() => {
         loader.classList.add('hidden');
-        window.name = 'a_club_loaded'; // сохраняем флаг
-      }, 2000); // заменить на 4000-5000 если есть видео
+      }, 2000); // или 5000 если видео
     } else {
-      // Уже заходили — скрыть сразу
+      // Перешёл с других страниц — скрываем сразу
       loader.style.display = 'none';
     }
   });
 </script>
+
 
 
 
