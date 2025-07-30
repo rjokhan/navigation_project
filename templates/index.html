@@ -9,7 +9,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet" />
-
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 
@@ -67,6 +66,51 @@
 </div>
 
 <script>
+  const tg = window.Telegram.WebApp;
+  const user = tg.initDataUnsafe?.user;
+
+  async function checkUserAccess() {
+    const overlay = document.querySelector('.blur_overlay');
+    const loading = document.querySelector('.container_genre');
+    const nameBlock = document.getElementById('user-name');
+
+    if (!user || !user.id) {
+      nameBlock.textContent = 'Гость';
+      loading.innerHTML = '<div class="error">Telegram ID не получен</div>';
+      return;
+    }
+
+    try {
+      const res = await fetch("https://api.ayolclub.uz/en/api/v1/telegram-bot/check-user/", {
+        method: "POST",
+        headers: {
+          "X-API-Token": "b0e63095ee9d51fd0188f1877d63c0b850bc4965a61527c9",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ telegram_id: user.id })
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        overlay.classList.add('active');
+        document.body.innerHTML = `
+          <div style="display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;font-size:22px;padding:20px;line-height:1.6;">
+            ⛔ Доступ запрещён<br>${data.message || "Вы не являетесь резидентом клуба."}
+          </div>
+        `;
+        return;
+      }
+
+      nameBlock.textContent = user.first_name || '@' + user.username || 'Пользователь';
+      loadGenres(); // загружаем контент после успешной проверки
+
+    } catch (err) {
+      console.error("Ошибка при обращении к API:", err);
+      loading.innerHTML = '<div class="error">Ошибка связи с сервером</div>';
+    }
+  }
+
   function loadGenres() {
     fetch("/api/genres/")
       .then((res) => res.json())
@@ -99,18 +143,16 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    loadGenres();
-  });
+    checkUserAccess();
 
-  document.querySelector(".searcher").addEventListener("submit", function (e) {
-    e.preventDefault();
-    const query = document.querySelector(".searcher_block").value.trim();
-    if (query) {
-      window.location.href = `searched.html?query=${encodeURIComponent(query)}`;
-    }
-  });
+    document.querySelector(".searcher").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const query = document.querySelector(".searcher_block").value.trim();
+      if (query) {
+        window.location.href = `searched.html?query=${encodeURIComponent(query)}`;
+      }
+    });
 
-  document.addEventListener("DOMContentLoaded", () => {
     const overlay = document.querySelector('.blur_overlay');
     requestAnimationFrame(() => {
       overlay.classList.remove("active");
@@ -130,87 +172,4 @@
 </script>
 
 </body>
-
-
-<script>
-  const tg = window.Telegram.WebApp;
-  const user = tg.initDataUnsafe?.user;
-
-  async function checkUserAccess() {
-    const overlay = document.querySelector('.blur_overlay');
-    const loading = document.querySelector('.container_genre');
-    const nameBlock = document.getElementById('user-name');
-
-    if (!user || !user.id) {
-      nameBlock.textContent = 'Гость';
-      loading.innerHTML = '<div class="error">Telegram ID не получен</div>';
-      return;
-    }
-
-    try {
-      const res = await fetch("https://api.ayolclub.uz/en/api/v1/telegram-bot/check-user/", {
-        method: "POST",
-        headers: {
-          "X-API-Token": "b0e63095ee9d51fd0188f1877d63c0b850bc4965a61527c9",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          telegram_id: user.id
-        })
-      });
-
-      const data = await res.json();
-
-      if (!data.success) {
-        overlay.classList.add('active');
-        document.body.innerHTML = `
-          <div style="display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;font-size:22px;padding:20px;line-height:1.6;">
-            ⛔ Доступ запрещён<br>${data.message || "Вы не являетесь резидентом клуба."}
-          </div>
-        `;
-        return;
-      }
-
-      // ✅ Успешная проверка
-      nameBlock.textContent = user.first_name || '@' + user.username || 'Пользователь';
-      loadGenres(); // загружаем контент
-
-    } catch (err) {
-      console.error("Ошибка при обращении к API:", err);
-      loading.innerHTML = '<div class="error">Ошибка связи с сервером</div>';
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    checkUserAccess();
-  });
-
-  document.querySelector(".searcher").addEventListener("submit", function (e) {
-    e.preventDefault();
-    const query = document.querySelector(".searcher_block").value.trim();
-    if (query) {
-      window.location.href = `searched.html?query=${encodeURIComponent(query)}`;
-    }
-  });
-
-  document.addEventListener("DOMContentLoaded", () => {
-    const overlay = document.querySelector('.blur_overlay');
-    requestAnimationFrame(() => {
-      overlay.classList.remove("active");
-    });
-
-    document.querySelectorAll('.header a').forEach(link => {
-      link.addEventListener('click', e => {
-        e.preventDefault();
-        const href = link.getAttribute('href');
-        overlay.classList.add('active');
-        setTimeout(() => {
-          window.location.href = href;
-        }, 300);
-      });
-    });
-  });
-</script>
-
-
 </html>
