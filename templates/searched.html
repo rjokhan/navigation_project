@@ -20,10 +20,11 @@
   <!-- Назад и строка поиска -->
   <div class="search_block">
     <a href="{% url 'index' %}"><div class="back_button"></div></a>
-    <form id="searchFrom" class="searcher">
-      <img class="search_icon" src="{% static 'images/search icon.png' %}">
-      <input class="searcher_block" placeholder="Поиск...">
-    </form>
+    <form id="searchForm" class="searcher">
+  <img class="search_icon" src="{% static 'images/search icon.png' %}">
+  <input class="searcher_block" placeholder="Поиск...">
+</form>
+
   </div>
 
   <!-- Заголовок -->
@@ -42,6 +43,12 @@
 
 
 <script>
+  // Устанавливаем введённый запрос в input
+  const query = new URLSearchParams(window.location.search).get("query");
+  console.log("🔍 Переход с запросом:", query);
+  document.querySelector(".searcher_block").value = query || "";
+
+  // Обработка формы поиска
   document.querySelector(".searcher").addEventListener("submit", function(e) {
     e.preventDefault();
     const input = document.querySelector(".searcher_block");
@@ -52,6 +59,7 @@
     }
   });
 </script>
+
 
 
 </body>
