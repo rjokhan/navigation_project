@@ -173,6 +173,7 @@ body{
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 20px;
   margin-top: 10px;
+  font-family: 'Inter', sans-serif !important;
 }
 .video_thumbnail {
   position: relative;
