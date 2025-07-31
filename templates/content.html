@@ -3,28 +3,44 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NAVIGATION</title>
-  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet" />
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="{% static 'css/content.css' %}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+  <style>
+    .audio_menu, .file_menu {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
 </head>
-
 <body>
 
-<div class="blur_overlay active"></div>
+<div id="popup" class="confirm_popup">
+  <div class="popup_box">
+    <p>Севимлилардан олиб ташлашни хоҳлайсизми?</p>
+    <div class="popup_buttons">
+      <button id="popup_yes">ҲА</button>
+      <button id="popup_no">ЙЎҚ</button>
+    </div>
+  </div>
+</div>
 
-<!-- BACKGROUND -->
+<div class="blur_overlay"></div>
+
 <div class="vertical-waves">
   <div class="wave"></div>
   <div class="wave"></div>
   <div class="wave"></div>
 </div>
 
-<!-- NAVIGATION -->
 <div class="header">
   <a href="{% url 'index' %}">
-    <div class="header_icon active">
+    <div class="header_icon">
       <img src="{% static 'images/home_page.png' %}">
       <p>A CLUB</p>
     </div>
@@ -49,122 +65,126 @@
   </a>
 </div>
 
-<!-- GREETING -->
-<div class="name">Hello, <span id="user-name">Гость</span></div>
-
-<!-- SEARCH -->
-<form class="searcher">
-  <img class="search_icon" src="{% static 'images/search icon.png' %}">
-  <input class="searcher_block" placeholder="Поиск...">
-</form>
-
-<!-- GENRES -->
-<div class="container_genre">
-  <div class="loading">Загрузка...</div>
+<div class="search_block">
+  <a href="{% url 'index' %}"><div class="back_button"></div></a>
+  <form class="searcher">
+    <img class="search_icon" src="{% static 'images/search icon.png' %}" alt="search" />
+    <input class="searcher_block" placeholder="Поиск..." autocomplete="off" type="text" />
+  </form>
 </div>
 
-<!-- SCRIPT -->
+<div class="choosed_genre">
+  <span class="red">A </span><span id="genre-title"></span>
+</div>
+
+<div class="content_body"></div>
+
 <script>
-document.addEventListener("DOMContentLoaded", async function () {
-  const tg = window.Telegram.WebApp;
-  const user = tg.initDataUnsafe?.user;
-  const nameBlock = document.getElementById("user-name");
-  const genreContainer = document.querySelector(".container_genre");
+document.addEventListener('DOMContentLoaded', () => {
+  const raw = new URLSearchParams(window.location.search).get('genre_title') || '';
+  const decoded = decodeURIComponent(raw);
+  const genreTitle = decoded.startsWith("A ") ? decoded.slice(2).trim() : decoded;
+  document.getElementById("genre-title").textContent = genreTitle;
 
-  if (!user || !user.id) {
-    genreContainer.innerHTML = "<div class='error'>Ошибка авторизации через Telegram</div>";
-    return;
-  }
+  const genreId = new URLSearchParams(window.location.search).get('genre_id');
+  const contentBody = document.querySelector('.content_body');
+  if (!genreId) return contentBody.innerHTML = '<p>Не указан жанр</p>';
 
-  try {
-    const res = await fetch("/api/users/proxy-check-user/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ telegram_id: user.id })
-    });
+  const favourites = JSON.parse(localStorage.getItem('favourites') || '[]');
 
-    const data = await res.json();
+  fetch('/api/genres/')
+    .then(r => r.json())
+    .then(data => {
+      const genre = data.find(g => g.id == genreId);
+      if (!genre) return contentBody.innerHTML = '<p>Жанр не найден</p>';
+      if (!genre.items || genre.items.length === 0) return contentBody.innerHTML = '<p>Контент пока не добавлен</p>';
 
-    if (!data.success) {
-      genreContainer.innerHTML = `<div class='error'>${data.message || "Ошибка пользователя"}</div>`;
-      return;
-    }
+      contentBody.innerHTML = '';
+      genre.items.forEach(item => {
+        const isFavourited = favourites.includes(item.id);
+        const favClass = isFavourited ? 'favourited' : 'not_favourited';
+        const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
+        let block = '';
+        const open = `window.open('${item.telegram_url}', '_blank')`;
 
-    const hasAccess = data.tariffs?.length > 0 || data.subscription_status || data.subscription_until;
-    if (!hasAccess) {
-      genreContainer.innerHTML = "<div class='error'>Вы не являетесь резидентом</div>";
-      return;
-    }
+        if (item.content_type === 'video') {
+          block = `<div class="video">
+            <div class="video_thumbnail" onclick="${open}">
+              <img src="${item.thumbnail}" />
+              <div class="video_duration">${item.duration}</div>
+            </div>
+            ${favIcon}
+            <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+          </div>`;
+        } else if (item.content_type === 'audio') {
+          block = `<div class="audio" onclick="${open}">
+            <div class="audio_menu">
+              <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}" /></div>
+              <div class="audio_duration">${item.duration}</div>
+            </div>
+            ${favIcon}
+            <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+          </div>`;
+        } else if (item.content_type === 'file') {
+          block = `<div class="file" onclick="${open}">
+            <div class="file_menu">
+              <div class="static_icon"><img src="{% static 'images/file_icon.png' %}" /></div>
+              <div class="file_duration">${item.duration}</div>
+            </div>
+            ${favIcon}
+            <div class="file_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+          </div>`;
+        }
 
-    nameBlock.textContent = data.first_name || data.name || user.first_name || "Гость";
+        contentBody.insertAdjacentHTML('beforeend', block);
+        const favEl = contentBody.lastElementChild.querySelector('.fav_icon');
 
-    loadGenres();
+        favEl.addEventListener('click', e => {
+          e.stopPropagation();
+          const id = parseInt(favEl.dataset.id);
+          let favs = JSON.parse(localStorage.getItem('favourites') || '[]');
+          const popup = document.getElementById('popup');
 
-  } catch (err) {
-    console.error("Ошибка при проверке пользователя:", err);
-    genreContainer.innerHTML = "<div class='error'>Ошибка сервера</div>";
-  }
+          if (favEl.classList.contains('favourited')) {
+            popup.classList.add('show');
+            document.getElementById('popup_yes').onclick = () => {
+              favEl.classList.remove('favourited');
+              favEl.classList.add('not_favourited');
+              favs = favs.filter(f => f !== id);
+              localStorage.setItem('favourites', JSON.stringify(favs));
+              popup.classList.remove('show');
+            };
+            document.getElementById('popup_no').onclick = () => popup.classList.remove('show');
+          } else {
+            favEl.classList.add('favourited');
+            favEl.classList.remove('not_favourited');
+            favEl.classList.add('animate-pulse');
+            setTimeout(() => favEl.classList.remove('animate-pulse'), 600);
 
-  async function loadGenres() {
-    const container = document.querySelector('.container_genre');
-    container.innerHTML = '<div class="loading">Загрузка жанров...</div>';
+            const block = favEl.closest('.video, .audio, .file');
+            const explosion = document.createElement('div');
+            explosion.classList.add('fav_explosion');
+            block.appendChild(explosion);
+            setTimeout(() => explosion.remove(), 600);
 
-    try {
-      const res = await fetch("/api/genres/");
-      const genres = await res.json();
-
-      if (!Array.isArray(genres)) {
-        container.innerHTML = "<div class='error'>Неверный формат данных жанров</div>";
-        return;
-      }
-
-      container.innerHTML = "";
-
-      genres.forEach(genre => {
-        const count = genre.items?.length || 0;
-        const genreId = genre.id;
-        const titleRaw = genre.name || genre.title || genre.slug || "Без названия";
-        const encodedTitle = encodeURIComponent(titleRaw);  // ❗️ Без "A " тут
-
-        const genreBlock = document.createElement("div");
-        genreBlock.className = "genre";
-        genreBlock.style.cursor = "pointer";
-        genreBlock.innerHTML = `
-          <div class="count">${count}</div>
-          <div class="genre_name"><span class="red">A </span>${titleRaw}</div>
-        `;
-
-        genreBlock.addEventListener("click", () => {
-          const overlay = document.querySelector(".blur_overlay");
-          overlay.classList.add("active");
-          setTimeout(() => {
-            window.location.href = `content.html?genre_id=${genreId}&genre_title=${encodedTitle}`;
-          }, 300);
+            favs.push(id);
+            localStorage.setItem('favourites', JSON.stringify(favs));
+          }
         });
-
-        container.appendChild(genreBlock);
       });
-
-    } catch (error) {
-      console.error("Ошибка загрузки жанров:", error);
-      container.innerHTML = "<div class='error'>Ошибка загрузки жанров</div>";
-    }
-  }
+    });
 });
 </script>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const overlay = document.querySelector(".blur_overlay");
-  requestAnimationFrame(() => {
-    overlay.classList.remove("active");
-  });
-
-  document.querySelectorAll(".header a").forEach(link => {
-    link.addEventListener("click", e => {
+document.addEventListener('DOMContentLoaded', () => {
+  const overlay = document.querySelector('.blur_overlay');
+  requestAnimationFrame(() => overlay.classList.remove('active'));
+  document.querySelectorAll('.header a').forEach(link => {
+    link.addEventListener('click', e => {
       e.preventDefault();
-      const href = link.getAttribute("href");
-      overlay.classList.add("active");
+      const href = link.getAttribute('href');
+      overlay.classList.add('active');
       setTimeout(() => window.location.href = href, 300);
     });
   });

@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const count = genre.items?.length || 0;
         const genreId = genre.id;
         const titleRaw = genre.name || genre.title || genre.slug || "Без названия";
-        const encodedTitle = encodeURIComponent("A " + titleRaw);
+        const encodedTitle = encodeURIComponent(titleRaw);  // ❗️ Без "A " тут
 
         const genreBlock = document.createElement("div");
         genreBlock.className = "genre";
