@@ -12,6 +12,8 @@
 
 <body>
 
+<div class="blur_overlay active"></div>
+
 <!-- BACKGROUND -->
 <div class="vertical-waves">
   <div class="wave"></div>
@@ -132,9 +134,13 @@ document.addEventListener("DOMContentLoaded", async function () {
           <div class="genre_name"><span class="red">A </span>${titleRaw}</div>
         `;
 
-        genreBlock.onclick = () => {
-          window.location.href = `content.html?genre_id=${genreId}&genre_title=${encodedTitle}`;
-        };
+        genreBlock.addEventListener("click", () => {
+          const overlay = document.querySelector(".blur_overlay");
+          overlay.classList.add("active");
+          setTimeout(() => {
+            window.location.href = `content.html?genre_id=${genreId}&genre_title=${encodedTitle}`;
+          }, 300);
+        });
 
         container.appendChild(genreBlock);
       });
@@ -144,6 +150,24 @@ document.addEventListener("DOMContentLoaded", async function () {
       container.innerHTML = "<div class='error'>Ошибка загрузки жанров</div>";
     }
   }
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const overlay = document.querySelector(".blur_overlay");
+  requestAnimationFrame(() => {
+    overlay.classList.remove("active");
+  });
+
+  document.querySelectorAll(".header a").forEach(link => {
+    link.addEventListener("click", e => {
+      e.preventDefault();
+      const href = link.getAttribute("href");
+      overlay.classList.add("active");
+      setTimeout(() => window.location.href = href, 300);
+    });
+  });
 });
 </script>
 
