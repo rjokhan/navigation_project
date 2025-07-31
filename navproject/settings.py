@@ -7,6 +7,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-key")
 DEBUG = False
 ALLOWED_HOSTS = ['89.39.95.53', 'localhost', '127.0.0.1', 'navigation.ayolclub.uz']
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 # Приложения
 INSTALLED_APPS = [

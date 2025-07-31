@@ -25,7 +25,7 @@ def genre_list(request):
                     'content_type': item.content_type,
                     'telegram_url': item.telegram_url,
                     'duration': item.duration,
-                    'thumbnail': request.build_absolute_uri(item.thumbnail.url) if item.thumbnail else None
+                    'thumbnail': request.build_absolute_uri(item.thumbnail.url).replace('http://', 'https://') if item.thumbnail else None
                 }
                 for item in genre.items.all()
             ]
