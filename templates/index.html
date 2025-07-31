@@ -91,21 +91,19 @@ document.addEventListener("DOMContentLoaded", async function () {
       return;
     }
 
-const hasAccess = data.tariffs?.length > 0 || data.subscription_status || data.subscription_until;
 const popup = document.getElementById("noAccessPopup");
+const overlay = document.querySelector(".blur_overlay");
 
 if (!hasAccess) {
+  // Оставляем блюр, показываем попап через 2 сек
   setTimeout(() => {
     popup.style.display = "flex";
-    requestAnimationFrame(() => {
-      popup.style.opacity = "1";
-    });
-  }, 10000);
+  }, 2000);
   return;
-} else {
-  popup.style.display = "none";
-  popup.style.opacity = "0";
 }
+
+// ✅ Если резидент — снимаем блюр
+overlay.classList.remove("active");
 
 
 
@@ -225,11 +223,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 <!-- POPUP: Нет резидентства -->
-<div id="noAccessPopup" style="display: none; z-index: 99999; position: fixed; backdrop-filter: blur(5px); top: 0; left: 0; width: 100%; height: 100%;
-     background-color: rgba(0, 0, 0, 0.85); color: white; display: flex; align-items: center; justify-content: center;
-     font-size: 24px; font-weight: 600; font-family: 'Raleway', sans-serif;">
+<!-- Попап -->
+<div id="noAccessPopup" style="
+  display: none;
+  z-index: 99999;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 600;
+  font-family: 'Raleway', sans-serif;
+  text-align: center;
+  padding: 20px;
+">
   Сиз резидент емассиз
 </div>
+
 
 
 </body>
