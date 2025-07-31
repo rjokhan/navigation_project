@@ -54,10 +54,11 @@
 <div class="name">Hello, <span id="user-name">Гость</span></div>
 
 <!-- SEARCH -->
-<form class="searcher" id="searchForm">
+<form class="searcher">
   <img class="search_icon" src="{% static 'images/search icon.png' %}">
-  <input class="searcher_block" id="searchInput" placeholder="Поиск..." autocomplete="off">
+  <input class="searcher_block" placeholder="Поиск..." autocomplete="off">
 </form>
+
 
 <!-- GENRES -->
 <div class="container_genre">
@@ -200,6 +201,28 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("telegram_id", user.id);
       localStorage.setItem("name", user.first_name || "");
     }
+  });
+</script>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.querySelector(".searcher");
+    const input = document.querySelector(".searcher_block");
+
+    if (!form || !input) {
+      console.error("⛔ Поисковая форма не найдена");
+      return;
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const query = input.value.trim();
+      if (query) {
+        const encoded = encodeURIComponent(query);
+        window.location.href = `/searched/?query=${encoded}`;
+      }
+    });
   });
 </script>
 
