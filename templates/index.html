@@ -64,13 +64,35 @@
   <div class="loading">Загрузка...</div>
 </div>
 
-<!-- SCRIPT -->
+<!-- POPUP for non-residents -->
+<div id="noAccessPopup" style="
+  display: none;
+  z-index: 99999;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 600;
+  font-family: 'Raleway', sans-serif;
+  text-align: center;
+  padding: 20px;
+">
+  Сиз резидент емассиз
+</div>
+
+<!-- SCRIPTS -->
 <script>
 document.addEventListener("DOMContentLoaded", async function () {
   const tg = window.Telegram.WebApp;
   const user = tg.initDataUnsafe?.user;
   const nameBlock = document.getElementById("user-name");
   const genreContainer = document.querySelector(".container_genre");
+  const popup = document.getElementById("noAccessPopup");
+  const overlay = document.querySelector(".blur_overlay");
 
   if (!user || !user.id) {
     genreContainer.innerHTML = "<div class='error'>Ошибка авторизации через Telegram</div>";
@@ -86,31 +108,18 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const data = await res.json();
 
-    if (!data.success) {
-      genreContainer.innerHTML = `<div class='error'>${data.message || "Ошибка пользователя"}</div>`;
-      return;
+    const hasAccess = data.tariffs?.length > 0 || data.subscription_status || data.subscription_until;
+
+    if (hasAccess) {
+      overlay.classList.remove("active");
+      popup.style.display = "none";
+      nameBlock.textContent = data.first_name || data.name || user.first_name || "Гость";
+      loadGenres();
+    } else {
+      setTimeout(() => {
+        popup.style.display = "flex";
+      }, 2000);
     }
-
-const hasAccess = data.tariffs?.length > 0 || data.subscription_status || data.subscription_until;
-const popup = document.getElementById("noAccessPopup");
-const overlay = document.querySelector(".blur_overlay");
-
-if (!hasAccess) {
-  // Оставляем блюр, показываем попап через 2 сек
-  setTimeout(() => {
-    popup.style.display = "flex";
-  }, 2000);
-  return;
-}
-
-// ✅ Если резидент — снимаем блюр
-overlay.classList.remove("active");
-
-
-
-    nameBlock.textContent = data.first_name || data.name || user.first_name || "Гость";
-
-    loadGenres();
 
   } catch (err) {
     console.error("Ошибка при проверке пользователя:", err);
@@ -130,11 +139,8 @@ overlay.classList.remove("active");
         return;
       }
 
-      // 🧠 Сохраняем весь контент во всех жанрах для поиска
       let allCards = [];
-      genres.forEach(g => {
-        g.items.forEach(item => allCards.push(item));
-      });
+      genres.forEach(g => g.items.forEach(item => allCards.push(item)));
       localStorage.setItem("allCards", JSON.stringify(allCards));
 
       container.innerHTML = "";
@@ -154,7 +160,6 @@ overlay.classList.remove("active");
         `;
 
         genreBlock.addEventListener("click", () => {
-          const overlay = document.querySelector(".blur_overlay");
           overlay.classList.add("active");
           setTimeout(() => {
             window.location.href = `/content/?genre_id=${genreId}&genre_title=${encodedTitle}`;
@@ -187,63 +192,30 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => window.location.href = href, 300);
     });
   });
-});
-</script>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
+  // сохранить user в localStorage
   const tg = window.Telegram.WebApp;
   const user = tg.initDataUnsafe?.user;
   if (user?.id) {
     localStorage.setItem("telegram_id", user.id);
     localStorage.setItem("name", user.first_name || "");
   }
-});
-</script>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
+  // обработка формы поиска
   const form = document.querySelector(".searcher");
   const input = document.querySelector(".searcher_block");
-
-  if (!form || !input) {
-    console.error("⛔ Поисковая форма не найдена");
-    return;
+  if (form && input) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const query = input.value.trim();
+      if (query) {
+        const encoded = encodeURIComponent(query);
+        window.location.href = `/searched/?query=${encoded}`;
+      }
+    });
   }
-
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const query = input.value.trim();
-    if (query) {
-      const encoded = encodeURIComponent(query);
-      window.location.href = `/searched/?query=${encoded}`;
-    }
-  });
 });
 </script>
-
-
-<!-- Попап -->
-<div id="noAccessPopup" style="
-  z-index: 99999;
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background-color: rgba(0, 0, 0, 0.9);
-  color: white;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  font-weight: 600;
-  font-family: 'Raleway', sans-serif;
-  text-align: center;
-  padding: 20px;
-  display: none;  /* ⬅️ ставим только один display здесь! */
-">
-  Сиз резидент емассиз
-</div>
-
-
 
 </body>
 </html>
