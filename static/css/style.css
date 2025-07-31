@@ -337,4 +337,6 @@ a {
   font-family: 'Raleway' !important;
   font-size: 24px;
   margin-top: 10px;
+  height: 100px !important;
+  line-height: 100px !important;
 }
