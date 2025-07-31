@@ -9,22 +9,25 @@ def proxy_check_user(request):
         return HttpResponseBadRequest("Only POST requests allowed")
 
     try:
-        data = json.loads(request.body)
-        telegram_id = data.get("telegram_id")
+        # Декодируем входящий JSON с явным указанием UTF-8
+        data = json.loads(request.body.decode("utf-8"))
+        telegram_id = str(data.get("telegram_id"))
 
         if not telegram_id:
             return JsonResponse({"success": False, "message": "telegram_id is required"}, status=400)
 
+        # Подготовка запроса к внешнему API
         api_url = "https://api.ayolclub.uz/en/api/v1/telegram-bot/check-user/"
         headers = {
-            "X-API-Token": "ВАШ_СЕКРЕТНЫЙ_ТОКЕН"
+            "X-API-Token": "ВАШ_СЕКРЕТНЫЙ_ТОКЕН",
+            "Content-Type": "application/json; charset=utf-8"
         }
-        payload = {
-            "telegram_id": telegram_id
-        }
+        payload = json.dumps({"telegram_id": telegram_id}, ensure_ascii=False).encode("utf-8")
 
-        response = requests.post(api_url, json=payload, headers=headers, timeout=5)
+        # Отправка запроса
+        response = requests.post(api_url, data=payload, headers=headers, timeout=5)
 
+        # Возвращаем ответ от API
         return JsonResponse(response.json(), status=response.status_code)
 
     except Exception as e:
