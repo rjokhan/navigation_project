@@ -113,12 +113,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       if (!Array.isArray(genres)) {
         container.innerHTML = "<div class='error'>Неверный формат данных жанров</div>";
-        console.warn("Неверный формат:", genres);
-        return;
-      }
-
-      if (genres.length === 0) {
-        container.innerHTML = "<div class='error'>Жанры не найдены</div>";
         return;
       }
 
@@ -128,14 +122,14 @@ document.addEventListener("DOMContentLoaded", async function () {
         const count = genre.items?.length || 0;
         const genreId = genre.id;
         const titleRaw = genre.name || genre.title || genre.slug || "Без названия";
-        const encodedTitle = encodeURIComponent(titleRaw);
+        const encodedTitle = encodeURIComponent("A " + titleRaw);
 
         const genreBlock = document.createElement("div");
         genreBlock.className = "genre";
         genreBlock.style.cursor = "pointer";
         genreBlock.innerHTML = `
           <div class="count">${count}</div>
-          <div class="genre_name">${titleRaw}</div>
+          <div class="genre_name"><span class="red">A </span>${titleRaw}</div>
         `;
 
         genreBlock.onclick = () => {
