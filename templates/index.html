@@ -91,12 +91,13 @@ document.addEventListener("DOMContentLoaded", async function () {
       return;
     }
 
-    const hasAccess = data.tariffs?.length > 0 || data.subscription_status || data.subscription_until;
+const hasAccess = data.tariffs?.length > 0 || data.subscription_status || data.subscription_until;
+const popup = document.getElementById("noAccessPopup");
+
 if (!hasAccess) {
-  document.getElementById("noAccessPopup").style.display = "flex";
+  popup.style.display = "flex";
   return;
-}else {
-  // если доступ есть, гарантируем, что попап скрыт
+} else {
   popup.style.display = "none";
 }
 
