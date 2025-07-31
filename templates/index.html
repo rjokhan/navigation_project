@@ -48,6 +48,16 @@
       color: red;
       font-size: 14px;
     }
+    .genre_card {
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 10px auto;
+      max-width: 300px;
+      color: white;
+      font-size: 18px;
+      text-align: center;
+    }
   </style>
 </head>
 
@@ -111,7 +121,19 @@
   <div class="loading">Загрузка...</div>
 </div>
 
-<!-- SCRIPT -->
+<!-- FAKE GENRE LOADER -->
+<script>
+function loadGenres() {
+  const container = document.querySelector('.container_genre');
+  container.innerHTML = `
+    <div class="genre_card">🎧 Аудио</div>
+    <div class="genre_card">📁 Файлы</div>
+    <div class="genre_card">🎬 Видео</div>
+  `;
+}
+</script>
+
+<!-- MAIN LOGIC -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const nameBlock = document.getElementById("user-name");
@@ -153,7 +175,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      // ✅ НОВАЯ ПРОВЕРКА на наличие тарифа
       const hasAccess = Array.isArray(data.tariffs) && data.tariffs.length > 0;
       if (!hasAccess) {
         statusEl.innerText = "Вы не являетесь резидентом";
@@ -161,13 +182,8 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       document.querySelector(".popup_overlay").remove();
-      nameBlock.textContent = data.first_name || data.name || "Пользователь";
-
-      if (typeof loadGenres === "function") {
-        loadGenres();
-      } else {
-        genreContainer.innerHTML = "<div class='success'>Добро пожаловать, доступ открыт</div>";
-      }
+      nameBlock.textContent = data.first_name || data.name || input || "Пользователь";
+      loadGenres();
 
     } catch (err) {
       console.error("Ошибка запроса:", err);
