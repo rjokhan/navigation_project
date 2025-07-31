@@ -53,6 +53,7 @@
 
 <body>
 
+<!-- POPUP -->
 <div class="popup_overlay">
   <div class="popup_box">
     <h3>Добро пожаловать!</h3>
@@ -63,6 +64,7 @@
   </div>
 </div>
 
+<!-- BACKGROUND + NAVIGATION -->
 <div class="vertical-waves">
   <div class="wave"></div>
   <div class="wave"></div>
@@ -96,6 +98,7 @@
   </a>
 </div>
 
+<!-- GREETING & SEARCH -->
 <div class="name">Hello, <span id="user-name">Гость</span></div>
 
 <form class="searcher">
@@ -103,22 +106,28 @@
   <input class="searcher_block" placeholder="Поиск...">
 </form>
 
+<!-- CONTENT -->
 <div class="container_genre">
   <div class="loading">Загрузка...</div>
 </div>
 
+<!-- SCRIPT -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const nameBlock = document.getElementById("user-name");
   const genreContainer = document.querySelector(".container_genre");
+  const statusEl = document.getElementById("popup_status");
 
   document.getElementById("submit_btn").addEventListener("click", async function () {
-    const input = document.getElementById("user_input").value.trim();
-    const statusEl = document.getElementById("popup_status");
+    let input = document.getElementById("user_input").value.trim();
 
     if (!input) {
       statusEl.innerText = 'Пожалуйста, введите данные';
       return;
+    }
+
+    if (input.startsWith("@")) {
+      input = input.slice(1); // Убираем @, если это username
     }
 
     try {
@@ -130,26 +139,40 @@ document.addEventListener("DOMContentLoaded", function () {
         body: JSON.stringify({ telegram_id: input })
       });
 
-      const data = await res.json();
+      const text = await res.text(); // получаем как текст
+
+      let data;
+      try {
+        data = JSON.parse(text); // безопасно парсим JSON
+      } catch (e) {
+        statusEl.innerText = `SERVER ERROR: ${text}`;
+        return;
+      }
 
       if (!data.success) {
-        statusEl.innerText = data.message || 'Пользователь не найден';
+        statusEl.innerText = data.message || "Пользователь не найден";
         return;
       }
 
       const hasAccess = data.tariff || data.subscription_status || data.subscription_until;
       if (!hasAccess) {
-        statusEl.innerText = 'Вы не являетесь резидентом';
+        statusEl.innerText = "Вы не являетесь резидентом";
         return;
       }
 
       document.querySelector(".popup_overlay").remove();
       nameBlock.textContent = data.first_name || data.name || "Пользователь";
-      loadGenres();
+
+      // подгрузи контент
+      if (typeof loadGenres === "function") {
+        loadGenres();
+      } else {
+        genreContainer.innerHTML = "<div class='success'>Добро пожаловать, доступ открыт</div>";
+      }
 
     } catch (err) {
       console.error("Ошибка запроса:", err);
-      statusEl.innerText = 'Ошибка подключения к серверу';
+      statusEl.innerText = "Ошибка подключения к серверу";
     }
   });
 });
