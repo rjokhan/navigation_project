@@ -172,5 +172,17 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const tg = window.Telegram.WebApp;
+    const user = tg.initDataUnsafe?.user;
+    if (user?.id) {
+      localStorage.setItem("telegram_id", user.id);
+      localStorage.setItem("name", user.first_name || "");
+    }
+  });
+</script>
+
+
 </body>
 </html>
