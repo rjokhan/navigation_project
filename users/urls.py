@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import check_user
+from .views import proxy_check_user
 
 urlpatterns = [
-    path('check/', check_user, name='check_user'),
+    path("proxy-check-user/", proxy_check_user),
 ]
