@@ -20,11 +20,10 @@
   <!-- Назад и строка поиска -->
   <div class="search_block">
     <a href="{% url 'index' %}"><div class="back_button"></div></a>
-    <form id="searchForm" class="searcher">
-  <img class="search_icon" src="{% static 'images/search icon.png' %}">
-  <input class="searcher_block" placeholder="Поиск...">
-</form>
-
+    <form class="searcher">
+      <img class="search_icon" src="{% static 'images/search icon.png' %}">
+      <input class="searcher_block" placeholder="Поиск..." autocomplete="off">
+    </form>
   </div>
 
   <!-- Заголовок -->
@@ -36,31 +35,25 @@
   </div>
 
   <script>
-    const query = new URLSearchParams(window.location.search).get("query");
-    console.log("🔍 Переход с запросом:", query);
-    document.querySelector(".searcher_block").value = query || "";
+    document.addEventListener("DOMContentLoaded", () => {
+      const query = new URLSearchParams(window.location.search).get("query");
+      console.log("🔍 Переход с запросом:", query);
+
+      // Подставляем в input
+      document.querySelector(".searcher_block").value = query || "";
+
+      // Перенаправляем при новом поиске
+      document.querySelector(".searcher").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const input = document.querySelector(".searcher_block");
+        const newQuery = input.value.trim();
+        if (newQuery) {
+          const encoded = encodeURIComponent(newQuery);
+          window.location.href = `/searched/?query=${encoded}`;
+        }
+      });
+    });
   </script>
-
-
-<script>
-  // Устанавливаем введённый запрос в input
-  const query = new URLSearchParams(window.location.search).get("query");
-  console.log("🔍 Переход с запросом:", query);
-  document.querySelector(".searcher_block").value = query || "";
-
-  // Обработка формы поиска
-  document.querySelector(".searcher").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const input = document.querySelector(".searcher_block");
-    const query = input.value.trim();
-    if (query) {
-      const encoded = encodeURIComponent(query);
-      window.location.href = `/searched/?query=${encoded}`;
-    }
-  });
-</script>
-
-
 
 </body>
 </html>
