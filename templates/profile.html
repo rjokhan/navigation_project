@@ -7,6 +7,7 @@
   <title>Профиль</title>
   <link rel="stylesheet" href="{% static 'css/profile.css' %}">
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <div class="blur_overlay active"></div>
@@ -17,18 +18,10 @@
   </div>
 
   <div class="header">
-    <a href="{% url 'index' %}">
-      <div class="header_icon"><img src="{% static 'images/home_page.png' %}"><p>A CLUB</p></div>
-    </a>
-    <a href="{% url 'favourited' %}">
-      <div class="header_icon"><img src="{% static 'images/fav.png' %}"><p>Севимли</p></div>
-    </a>
-    <a href="{% url 'profile' %}">
-      <div class="header_icon active"><img src="{% static 'images/profile.png' %}"><p>Профиль</p></div>
-    </a>
-    <a href="{% url 'chat' %}">
-      <div class="header_icon"><img src="{% static 'images/chat.png' %}"><p>Чатлар</p></div>
-    </a>
+    <a href="{% url 'index' %}"><div class="header_icon"><img src="{% static 'images/home_page.png' %}"><p>A CLUB</p></div></a>
+    <a href="{% url 'favourited' %}"><div class="header_icon"><img src="{% static 'images/fav.png' %}"><p>Севимли</p></div></a>
+    <a href="{% url 'profile' %}"><div class="header_icon active"><img src="{% static 'images/profile.png' %}"><p>Профиль</p></div></a>
+    <a href="{% url 'chat' %}"><div class="header_icon"><img src="{% static 'images/chat.png' %}"><p>Чатлар</p></div></a>
   </div>
 
   <div class="profile_container">
@@ -52,16 +45,16 @@
       try {
         const res = await fetch("/api/users/proxy-check-user/", {
           method: "POST",
-          headers: {"Content-Type": "application/json"},
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ telegram_id: user.id })
         });
         const data = await res.json();
 
-        if (data.success && data.first_name) {
+        if (data.success && (data.first_name || data.name)) {
           infoEl.innerHTML = `
-            <p><strong>Имя:</strong> ${data.first_name}</p>
+            <p><strong>Имя:</strong> ${data.first_name || data.name}</p>
             <p><strong>Город:</strong> ${data.city || '—'}</p>
-            <p><strong>Тариф:</strong> ${data.tariffs?.join(', ') || '—'}</p>
+            <p><strong>Тариф:</strong> ${Array.isArray(data.tariffs) ? data.tariffs.join(', ') : '—'}</p>
             <p><strong>Подписка до:</strong> ${data.subscription_until || '—'}</p>
           `;
         } else {
@@ -86,6 +79,5 @@
       });
     });
   </script>
-
 </body>
 </html>
