@@ -8,78 +8,9 @@
   <link rel="stylesheet" href="{% static 'css/style.css' %}" />
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    .popup_overlay {
-      position: fixed;
-      z-index: 99999;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.75);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .popup_box {
-      background: #fff;
-      border-radius: 15px;
-      padding: 30px;
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
-      font-family: Raleway, sans-serif;
-    }
-    .popup_box input {
-      width: 90%;
-      padding: 10px;
-      margin: 15px 0;
-      font-size: 16px;
-    }
-    .popup_box button {
-      padding: 10px 20px;
-      background: #8B003C;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    #popup_status {
-      margin-top: 15px;
-      color: red;
-      font-size: 14px;
-    }
-    .genre_card {
-      background: rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 20px;
-      margin: 10px;
-      color: white;
-      font-size: 18px;
-      text-align: center;
-      display: inline-block;
-      min-width: 100px;
-    }
-    .container_genre {
-      text-align: center;
-      margin-top: 20px;
-    }
-  </style>
 </head>
 
 <body>
-
-<!-- POPUP -->
-<div class="popup_overlay">
-  <div class="popup_box">
-    <h3>Добро пожаловать!</h3>
-    <p>Введите свой username или номер телефона</p>
-    <input type="text" id="user_input" placeholder="@username или +998..." />
-    <button id="submit_btn">Продолжить</button>
-    <p id="popup_status"></p>
-  </div>
-</div>
-
-<!-- BACKGROUND + NAVIGATION -->
 <div class="vertical-waves">
   <div class="wave"></div>
   <div class="wave"></div>
@@ -113,7 +44,6 @@
   </a>
 </div>
 
-<!-- GREETING & SEARCH -->
 <div class="name">Hello, <span id="user-name">Гость</span></div>
 
 <form class="searcher">
@@ -121,106 +51,56 @@
   <input class="searcher_block" placeholder="Поиск...">
 </form>
 
-<!-- CONTENT -->
 <div class="container_genre">
   <div class="loading">Загрузка...</div>
 </div>
 
-<!-- GENRES -->
 <script>
-async function loadGenres() {
-  const container = document.querySelector('.container_genre');
-  container.innerHTML = '<div class="loading">Загрузка жанров...</div>';
+document.addEventListener("DOMContentLoaded", async function () {
+  const tg = window.Telegram.WebApp;
+  const user = tg.initDataUnsafe?.user;
 
-  try {
-    const res = await fetch('/api/content/genres/');
-
-    if (!res.ok) {
-      console.warn("Ошибка загрузки жанров: HTTP", res.status);
-      throw new Error("Response not OK");
-    }
-
-    const genres = await res.json();
-
-    if (Array.isArray(genres) && genres.length > 0) {
-      container.innerHTML = genres.map(genre => `
-        <div class="genre_card">${genre.icon || '📁'} ${genre.name}</div>
-      `).join('');
-    } else {
-      container.innerHTML = "<div class='error'>Жанры не найдены</div>";
-    }
-  } catch (err) {
-    console.error("Ошибка жанров:", err);
-    // fallback-заглушка
-    container.innerHTML = `
-      <div class="genre_card">🎧 Аудио</div>
-      <div class="genre_card">📁 Файлы</div>
-      <div class="genre_card">🎬 Видео</div>
-    `;
-  }
-}
-</script>
-
-<!-- LOGIN LOGIC -->
-<script>
-document.addEventListener("DOMContentLoaded", function () {
   const nameBlock = document.getElementById("user-name");
   const genreContainer = document.querySelector(".container_genre");
-  const statusEl = document.getElementById("popup_status");
 
-  document.getElementById("submit_btn").addEventListener("click", async function () {
-    let input = document.getElementById("user_input").value.trim();
+  // Если Telegram не дал данные — стоп
+  if (!user || !user.id) {
+    genreContainer.innerHTML = "<div class='error'>Ошибка авторизации через Telegram</div>";
+    return;
+  }
 
-    if (!input) {
-      statusEl.innerText = 'Пожалуйста, введите данные';
+  try {
+    const res = await fetch("/api/users/proxy-check-user/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ telegram_id: user.id })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      genreContainer.innerHTML = `<div class='error'>${data.message}</div>`;
       return;
     }
 
-    if (input.startsWith("@")) {
-      input = input.slice(1);
+    // Проверка на подписку
+    const hasAccess = data.tariff || data.subscription_status || data.subscription_until;
+    if (!hasAccess) {
+      genreContainer.innerHTML = "<div class='error'>Вы не являетесь резидентом</div>";
+      return;
     }
 
-    try {
-      const res = await fetch("/api/users/proxy-check-user/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ telegram_id: input })
-      });
+    nameBlock.textContent = data.first_name || data.name || user.first_name || "Пользователь";
+    loadGenres();
 
-      const text = await res.text();
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (e) {
-        statusEl.innerText = `SERVER ERROR: ${text}`;
-        return;
-      }
-
-      if (!data.success) {
-        statusEl.innerText = data.message || "Пользователь не найден";
-        return;
-      }
-
-      const hasAccess = Array.isArray(data.tariffs) && data.tariffs.length > 0;
-      if (!hasAccess) {
-        statusEl.innerText = "Вы не являетесь резидентом";
-        return;
-      }
-
-      document.querySelector(".popup_overlay").remove();
-      const userName = data.first_name || data.name || "Гость";
-      nameBlock.textContent = userName;
-
-      loadGenres();
-
-    } catch (err) {
-      console.error("Ошибка запроса:", err);
-      statusEl.innerText = "Ошибка подключения к серверу";
-    }
-  });
+  } catch (err) {
+    console.error("Ошибка запроса:", err);
+    genreContainer.innerHTML = "<div class='error'>Ошибка сервера</div>";
+  }
 });
+
 </script>
 
 </body>
