@@ -317,8 +317,8 @@ a {
 }
 
 
-.chat_block{
-  font-family: BEBAS;
+.chat_block{ 
+  font-family: BEBAS !important;
   font-size: 24px;
   width: 100%;
   height: 80px;
