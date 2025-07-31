@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     .audio_menu, .file_menu {
       display: flex;
@@ -30,14 +31,13 @@
   </div>
 </div>
 
-<div class="blur_overlay"></div>
+<div class="blur_overlay active"></div>
 
-
-  <div class="vertical-waves">
-    <div class="wave"></div>
-    <div class="wave"></div>
-    <div class="wave"></div>
-  </div>
+<div class="vertical-waves">
+  <div class="wave"></div>
+  <div class="wave"></div>
+  <div class="wave"></div>
+</div>
 
 <div class="header">
   <a href="{% url 'index' %}">
@@ -81,7 +81,11 @@
 <div class="content_body"></div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  const tg = window.Telegram.WebApp;
+  const user = tg.initDataUnsafe?.user;
+  if (!user || !user.id) return document.querySelector('.content_body').innerHTML = '<p>Ошибка авторизации</p>';
+
   const genreId = new URLSearchParams(window.location.search).get('genre_id');
   const genreTitleRaw = new URLSearchParams(window.location.search).get('genre_title');
   const genreTitle = genreTitleRaw?.startsWith('A ') ? genreTitleRaw.slice(2).trim() : genreTitleRaw || '';
@@ -90,89 +94,98 @@ document.addEventListener('DOMContentLoaded', () => {
   const contentBody = document.querySelector('.content_body');
   if (!genreId) return contentBody.innerHTML = '<p>Не указан жанр</p>';
 
-  const favourites = JSON.parse(localStorage.getItem('favourites') || '[]');
+  const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
+  const favData = await favRes.json();
+  const favourites = favData.favourites || [];
 
-  fetch('/api/genres/')
-    .then(r => r.json())
-    .then(data => {
-      const genre = data.find(g => g.id == genreId);
-      if (!genre) return contentBody.innerHTML = '<p>Жанр не найден</p>';
-      if (genre.items.length === 0) return contentBody.innerHTML = '<p>Контент пока не добавлен</p>';
+  const res = await fetch('/api/genres/');
+  const genres = await res.json();
+  const genre = genres.find(g => g.id == genreId);
+  if (!genre || !genre.items.length) return contentBody.innerHTML = '<p>Контент пока не добавлен</p>';
 
-      contentBody.innerHTML = '';
-      genre.items.forEach(item => {
-        const isFavourited = favourites.includes(item.id);
-        const favClass = isFavourited ? 'favourited' : 'not_favourited';
-        const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
-        let block = '';
-        const open = `window.open('${item.telegram_url}', '_blank')`;
+  const allCards = [];
 
-        if (item.content_type === 'video') {
-          block = `<div class="video">
-            <div class="video_thumbnail" onclick="${open}">
-              <img src="${item.thumbnail}" />
-              <div class="video_duration">${item.duration}</div>
-            </div>
-            ${favIcon}
-            <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
-          </div>`;
-        } else if (item.content_type === 'audio') {
-          block = `<div class="audio" onclick="${open}">
-            <div class="audio_menu">
-              <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}" /></div>
-              <div class="audio_duration">${item.duration}</div>
-            </div>
-            ${favIcon}
-            <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
-          </div>`;
-        } else if (item.content_type === 'file') {
-          block = `<div class="file" onclick="${open}">
-            <div class="file_menu">
-              <div class="static_icon"><img src="{% static 'images/file_icon.png' %}" /></div>
-              <div class="file_duration">${item.duration}</div>
-            </div>
-            ${favIcon}
-            <div class="file_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
-          </div>`;
-        }
+  genre.items.forEach(item => {
+    const isFavourited = favourites.includes(item.id);
+    const favClass = isFavourited ? 'favourited' : 'not_favourited';
+    const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
+    const open = `window.open('${item.telegram_url}', '_blank')`;
+    let block = '';
 
-        contentBody.insertAdjacentHTML('beforeend', block);
-        const favEl = contentBody.lastElementChild.querySelector('.fav_icon');
+    if (item.content_type === 'video') {
+      block = `<div class="video">
+        <div class="video_thumbnail" onclick="${open}">
+          <img src="${item.thumbnail}" />
+          <div class="video_duration">${item.duration}</div>
+        </div>
+        ${favIcon}
+        <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+      </div>`;
+    } else if (item.content_type === 'audio') {
+      block = `<div class="audio" onclick="${open}">
+        <div class="audio_menu">
+          <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}" /></div>
+          <div class="audio_duration">${item.duration}</div>
+        </div>
+        ${favIcon}
+        <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+      </div>`;
+    } else if (item.content_type === 'file') {
+      block = `<div class="file" onclick="${open}">
+        <div class="file_menu">
+          <div class="static_icon"><img src="{% static 'images/file_icon.png' %}" /></div>
+          <div class="file_duration">${item.duration}</div>
+        </div>
+        ${favIcon}
+        <div class="file_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+      </div>`;
+    }
 
-        favEl.addEventListener('click', e => {
-          e.stopPropagation();
-          const id = parseInt(favEl.dataset.id);
-          let favs = JSON.parse(localStorage.getItem('favourites') || '[]');
-          const popup = document.getElementById('popup');
+    contentBody.insertAdjacentHTML('beforeend', block);
+    const favEl = contentBody.lastElementChild.querySelector('.fav_icon');
+    allCards.push(item);
 
-          if (favEl.classList.contains('favourited')) {
-            popup.classList.add('show');
-            document.getElementById('popup_yes').onclick = () => {
-              favEl.classList.remove('favourited');
-              favEl.classList.add('not_favourited');
-              favs = favs.filter(f => f !== id);
-              localStorage.setItem('favourites', JSON.stringify(favs));
-              popup.classList.remove('show');
-            };
-            document.getElementById('popup_no').onclick = () => popup.classList.remove('show');
-          } else {
-            favEl.classList.add('favourited');
-            favEl.classList.remove('not_favourited');
-            favEl.classList.add('animate-pulse');
-            setTimeout(() => favEl.classList.remove('animate-pulse'), 600);
+    favEl.addEventListener('click', async e => {
+      e.stopPropagation();
+      const id = parseInt(favEl.dataset.id);
+      const popup = document.getElementById('popup');
 
-            const block = favEl.closest('.video, .audio, .file');
-            const explosion = document.createElement('div');
-            explosion.classList.add('fav_explosion');
-            block.appendChild(explosion);
-            setTimeout(() => explosion.remove(), 600);
-
-            favs.push(id);
-            localStorage.setItem('favourites', JSON.stringify(favs));
-          }
+      if (favEl.classList.contains('favourited')) {
+        popup.classList.add('show');
+        document.getElementById('popup_yes').onclick = async () => {
+          await fetch(`/api/favourites/remove/${id}/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telegram_id: user.id })
+          });
+          favEl.classList.remove('favourited');
+          favEl.classList.add('not_favourited');
+          popup.classList.remove('show');
+        };
+        document.getElementById('popup_no').onclick = () => popup.classList.remove('show');
+      } else {
+        await fetch(`/api/favourites/add/${id}/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegram_id: user.id })
         });
-      });
+
+        favEl.classList.remove('not_favourited');
+        favEl.classList.add('favourited');
+        favEl.classList.add('animate-pulse');
+        setTimeout(() => favEl.classList.remove('animate-pulse'), 600);
+
+        const block = favEl.closest('.video, .audio, .file');
+        const explosion = document.createElement('div');
+        explosion.classList.add('fav_explosion');
+        block.appendChild(explosion);
+        setTimeout(() => explosion.remove(), 600);
+      }
     });
+  });
+
+  // сохранить allCards локально для favourited.html
+  localStorage.setItem('allCards', JSON.stringify(allCards));
 });
 </script>
 
