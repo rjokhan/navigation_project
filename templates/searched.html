@@ -30,22 +30,85 @@
   <div class="choosed_genre"><span class="red">A </span>SEARCH:</div>
 
   <!-- Контент -->
-  <div class="content_body" style="margin-top: 20px; font-size: 24px; text-align: center;">
-    Тут будут результаты поиска
-  </div>
+  <div class="content_body" style="margin-top: 20px;"></div>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const query = new URLSearchParams(window.location.search).get("query");
-      console.log("🔍 Переход с запросом:", query);
+      const query = new URLSearchParams(window.location.search).get("query")?.toLowerCase() || "";
+      const input = document.querySelector(".searcher_block");
+      const container = document.querySelector(".content_body");
 
-      // Подставляем в input
-      document.querySelector(".searcher_block").value = query || "";
+      input.value = query;
 
-      // Перенаправляем при новом поиске
+      // поиск
+      const allCards = JSON.parse(localStorage.getItem("allCards") || "[]");
+
+      const filtered = allCards.filter(item => {
+        const title = (item.title || "").toLowerCase();
+        const subtitle = (item.subtitle || "").toLowerCase();
+        return title.includes(query) || subtitle.includes(query);
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div style="font-size: 20px; text-align:center;">Ничего не найдено</div>`;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const favClass = "favourited";
+        const favIconHTML = `<div class="fav_icon ${favClass}"></div>`;
+        let block = "";
+
+        if (item.content_type === "video") {
+          block = `
+            <div class="video">
+              <div class="video_thumbnail" onclick="window.open('${item.telegram_url}', '_blank')">
+                <img src="${item.thumbnail}" alt="video">
+                <div class="video_duration">${item.duration}</div>
+              </div>
+              ${favIconHTML}
+              <div class="video_info">
+                <div class="title">${item.title}</div>
+                <div class="subtitle">${item.subtitle || ""}</div>
+              </div>
+            </div>
+          `;
+        } else if (item.content_type === "audio") {
+          block = `
+            <div class="audio">
+              <div class="audio_menu" onclick="window.open('${item.telegram_url}', '_blank')">
+                <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}"></div>
+                <div class="audio_duration">${item.duration}</div>
+              </div>
+              ${favIconHTML}
+              <div class="audio_info">
+                <div class="title">${item.title}</div>
+                <div class="subtitle">${item.subtitle || ""}</div>
+              </div>
+            </div>
+          `;
+        } else if (item.content_type === "file") {
+          block = `
+            <div class="file">
+              <div class="file_menu" onclick="window.open('${item.telegram_url}', '_blank')">
+                <div class="static_icon"><img src="{% static 'images/file_icon.png' %}"></div>
+                <div class="file_duration">${item.duration}</div>
+              </div>
+              ${favIconHTML}
+              <div class="file_info">
+                <div class="title">${item.title}</div>
+                <div class="subtitle">${item.subtitle || ""}</div>
+              </div>
+            </div>
+          `;
+        }
+
+        container.insertAdjacentHTML("beforeend", block);
+      });
+
+      // Поиск по новой строке
       document.querySelector(".searcher").addEventListener("submit", function(e) {
         e.preventDefault();
-        const input = document.querySelector(".searcher_block");
         const newQuery = input.value.trim();
         if (newQuery) {
           const encoded = encodeURIComponent(newQuery);
