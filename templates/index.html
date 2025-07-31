@@ -60,7 +60,7 @@
   <div class="loading">Загрузка...</div>
 </div>
 
-<!-- JS -->
+<!-- SCRIPT -->
 <script>
 document.addEventListener("DOMContentLoaded", async function () {
   const tg = window.Telegram.WebApp;
@@ -93,10 +93,8 @@ document.addEventListener("DOMContentLoaded", async function () {
       return;
     }
 
-    // Имя пользователя
-    nameBlock.textContent = data.first_name || data.name || user.first_name || user.id;
+    nameBlock.textContent = data.first_name || data.name || user.first_name || "Гость";
 
-    // Загрузка жанров
     loadGenres();
 
   } catch (err) {
@@ -105,23 +103,29 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   async function loadGenres() {
+    const container = document.querySelector('.container_genre');
+    container.innerHTML = '<div class="loading">Загрузка жанров...</div>';
+
     try {
       const res = await fetch("/api/content/genres/");
-      const data = await res.json();
+      const json = await res.json();
 
-      if (!Array.isArray(data)) {
-        genreContainer.innerHTML = "<div class='error'>Неверный формат данных жанров</div>";
+      const genres = Array.isArray(json) ? json : json.genres;
+
+      if (!Array.isArray(genres)) {
+        container.innerHTML = "<div class='error'>Неверный формат данных жанров</div>";
+        console.warn("Неверный формат:", json);
         return;
       }
 
-      if (data.length === 0) {
-        genreContainer.innerHTML = "<div class='error'>Жанры не найдены</div>";
+      if (genres.length === 0) {
+        container.innerHTML = "<div class='error'>Жанры не найдены</div>";
         return;
       }
 
-      genreContainer.innerHTML = "";
+      container.innerHTML = "";
 
-      data.forEach(genre => {
+      genres.forEach(genre => {
         const genreBlock = document.createElement("div");
         genreBlock.className = "genre_block";
 
@@ -146,12 +150,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         genreBlock.appendChild(title);
         genreBlock.appendChild(contentWrap);
-        genreContainer.appendChild(genreBlock);
+        container.appendChild(genreBlock);
       });
 
     } catch (error) {
       console.error("Ошибка загрузки жанров:", error);
-      genreContainer.innerHTML = "<div class='error'>Ошибка загрузки жанров</div>";
+      container.innerHTML = "<div class='error'>Ошибка загрузки жанров</div>";
     }
   }
 });
