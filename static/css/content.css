@@ -190,7 +190,6 @@ body{
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 20px;
   margin-top: 10px;
-  font-family: 'Inter', sans-serif !important;
 }
 .video_thumbnail {
   position: relative;
@@ -262,7 +261,7 @@ body{
 }
 .audio {
   font-family: 'Raleway', sans-serif !important;
-  font-weight: 400 !important;
+  font-weight: 400;
   margin-top: 10px;
   position: relative;
   height: 100%;
@@ -296,7 +295,7 @@ body{
 }
 .file {
   font-family: 'Raleway', sans-serif !important;
-  font-weight: 400 !important;
+  font-weight: 400;
   margin-top: 10px;
   position: relative;
   height: 100%;
