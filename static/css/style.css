@@ -327,4 +327,8 @@ a {
   background-color: #be0036;
   color: white;
   line-height: 120px;
+  box-shadow:
+    inset 0 20px 30px -20px rgba(255, 255, 255, 0.3),  /* верх */
+    inset 0 -20px 30px -20px rgba(255, 255, 255, 0.3); /* низ */
+  border: 1px solid white;
 }
