@@ -81,31 +81,32 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const raw = new URLSearchParams(window.location.search).get('genre_title') || '';
-  const decoded = decodeURIComponent(raw);
-  const genreTitle = decoded.startsWith("A ") ? decoded.slice(2).trim() : decoded;
-  document.getElementById("genre-title").textContent = genreTitle;
-
   const genreId = new URLSearchParams(window.location.search).get('genre_id');
+  const rawTitle = new URLSearchParams(window.location.search).get('genre_title') || '';
+  const decodedTitle = decodeURIComponent(rawTitle);
+  const cleanTitle = decodedTitle.startsWith('A ') ? decodedTitle.slice(2).trim() : decodedTitle;
+  document.getElementById('genre-title').textContent = cleanTitle;
+
   const contentBody = document.querySelector('.content_body');
   if (!genreId) return contentBody.innerHTML = '<p>Не указан жанр</p>';
 
   const favourites = JSON.parse(localStorage.getItem('favourites') || '[]');
 
-  fetch('/api/genres/')
+  fetch(`/api/genres/${genreId}/`)
     .then(r => r.json())
-    .then(data => {
-      const genre = data.find(g => g.id == genreId);
-      if (!genre) return contentBody.innerHTML = '<p>Жанр не найден</p>';
-      if (!genre.items || genre.items.length === 0) return contentBody.innerHTML = '<p>Контент пока не добавлен</p>';
+    .then(genre => {
+      if (!genre || !genre.items || genre.items.length === 0) {
+        contentBody.innerHTML = '<p>Контент пока не добавлен</p>';
+        return;
+      }
 
       contentBody.innerHTML = '';
       genre.items.forEach(item => {
         const isFavourited = favourites.includes(item.id);
         const favClass = isFavourited ? 'favourited' : 'not_favourited';
         const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
-        let block = '';
         const open = `window.open('${item.telegram_url}', '_blank')`;
+        let block = '';
 
         if (item.content_type === 'video') {
           block = `<div class="video">
@@ -172,6 +173,9 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
       });
+    })
+    .catch(() => {
+      contentBody.innerHTML = '<p>Ошибка загрузки контента жанра</p>';
     });
 });
 </script>
