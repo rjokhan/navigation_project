@@ -126,14 +126,21 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       genres.forEach(genre => {
         const count = genre.items?.length || 0;
+        const genreId = genre.id;
+        const titleRaw = genre.name || genre.title || genre.slug || "Без названия";
+        const encodedTitle = encodeURIComponent(titleRaw);
 
         const genreBlock = document.createElement("div");
         genreBlock.className = "genre";
-
+        genreBlock.style.cursor = "pointer";
         genreBlock.innerHTML = `
           <div class="count">${count}</div>
-          <div class="genre_name">${genre.name || "Без названия"}</div>
+          <div class="genre_name">${titleRaw}</div>
         `;
+
+        genreBlock.onclick = () => {
+          window.location.href = `content.html?genre_id=${genreId}&genre_title=${encodedTitle}`;
+        };
 
         container.appendChild(genreBlock);
       });
