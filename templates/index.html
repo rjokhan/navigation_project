@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const count = genre.items?.length || 0;
         const genreId = genre.id;
         const titleRaw = genre.name || genre.title || genre.slug || "Без названия";
-        const encodedTitle = encodeURIComponent(titleRaw);  // ❗️ Без "A " тут
+        const encodedTitle = encodeURIComponent(titleRaw);  // без "A " — передаём чисто
 
         const genreBlock = document.createElement("div");
         genreBlock.className = "genre";
@@ -138,7 +138,8 @@ document.addEventListener("DOMContentLoaded", async function () {
           const overlay = document.querySelector(".blur_overlay");
           overlay.classList.add("active");
           setTimeout(() => {
-            window.location.href = `content.html?genre_id=${genreId}&genre_title=${encodedTitle}`;
+            // 🔥 переход по Django URL
+            window.location.href = `/content/?genre_id=${genreId}&genre_title=${encodedTitle}`;
           }, 300);
         });
 
