@@ -127,7 +127,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (input.startsWith("@")) {
-      input = input.slice(1); // Убираем @, если это username
+      input = input.slice(1); // Убираем @
     }
 
     try {
@@ -139,11 +139,10 @@ document.addEventListener("DOMContentLoaded", function () {
         body: JSON.stringify({ telegram_id: input })
       });
 
-      const text = await res.text(); // получаем как текст
-
+      const text = await res.text();
       let data;
       try {
-        data = JSON.parse(text); // безопасно парсим JSON
+        data = JSON.parse(text);
       } catch (e) {
         statusEl.innerText = `SERVER ERROR: ${text}`;
         return;
@@ -154,7 +153,8 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      const hasAccess = data.tariff || data.subscription_status || data.subscription_until;
+      // ✅ НОВАЯ ПРОВЕРКА на наличие тарифа
+      const hasAccess = Array.isArray(data.tariffs) && data.tariffs.length > 0;
       if (!hasAccess) {
         statusEl.innerText = "Вы не являетесь резидентом";
         return;
@@ -163,7 +163,6 @@ document.addEventListener("DOMContentLoaded", function () {
       document.querySelector(".popup_overlay").remove();
       nameBlock.textContent = data.first_name || data.name || "Пользователь";
 
-      // подгрузи контент
       if (typeof loadGenres === "function") {
         loadGenres();
       } else {
