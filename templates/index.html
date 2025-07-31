@@ -95,6 +95,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 if (!hasAccess) {
   document.getElementById("noAccessPopup").style.display = "flex";
   return;
+}else {
+  // если доступ есть, гарантируем, что попап скрыт
+  popup.style.display = "none";
 }
 
 
