@@ -82,31 +82,29 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const genreId = new URLSearchParams(window.location.search).get('genre_id');
-  const rawTitle = new URLSearchParams(window.location.search).get('genre_title') || '';
-  const decodedTitle = decodeURIComponent(rawTitle);
-  const cleanTitle = decodedTitle.startsWith('A ') ? decodedTitle.slice(2).trim() : decodedTitle;
-  document.getElementById('genre-title').textContent = cleanTitle;
+  const genreTitleRaw = new URLSearchParams(window.location.search).get('genre_title');
+  const genreTitle = genreTitleRaw?.startsWith('A ') ? genreTitleRaw.slice(2).trim() : genreTitleRaw || '';
+  document.getElementById('genre-title').textContent = decodeURIComponent(genreTitle || '');
 
   const contentBody = document.querySelector('.content_body');
   if (!genreId) return contentBody.innerHTML = '<p>Не указан жанр</p>';
 
   const favourites = JSON.parse(localStorage.getItem('favourites') || '[]');
 
-  fetch(`/api/genres/${genreId}/`)
+  fetch('/api/genres/')
     .then(r => r.json())
-    .then(genre => {
-      if (!genre || !genre.items || genre.items.length === 0) {
-        contentBody.innerHTML = '<p>Контент пока не добавлен</p>';
-        return;
-      }
+    .then(data => {
+      const genre = data.find(g => g.id == genreId);
+      if (!genre) return contentBody.innerHTML = '<p>Жанр не найден</p>';
+      if (genre.items.length === 0) return contentBody.innerHTML = '<p>Контент пока не добавлен</p>';
 
       contentBody.innerHTML = '';
       genre.items.forEach(item => {
         const isFavourited = favourites.includes(item.id);
         const favClass = isFavourited ? 'favourited' : 'not_favourited';
         const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
-        const open = `window.open('${item.telegram_url}', '_blank')`;
         let block = '';
+        const open = `window.open('${item.telegram_url}', '_blank')`;
 
         if (item.content_type === 'video') {
           block = `<div class="video">
@@ -173,9 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
       });
-    })
-    .catch(() => {
-      contentBody.innerHTML = '<p>Ошибка загрузки контента жанра</p>';
     });
 });
 </script>
