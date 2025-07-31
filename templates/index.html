@@ -92,10 +92,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     const hasAccess = data.tariffs?.length > 0 || data.subscription_status || data.subscription_until;
-    if (!hasAccess) {
-      genreContainer.innerHTML = "<div class='error'>Вы не являетесь резидентом</div>";
-      return;
-    }
+if (!hasAccess) {
+  document.getElementById("noAccessPopup").style.display = "flex";
+  return;
+}
+
 
     nameBlock.textContent = data.first_name || data.name || user.first_name || "Гость";
 
@@ -210,6 +211,15 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
+
+
+<!-- POPUP: Нет резидентства -->
+<div id="noAccessPopup" style="display: none; z-index: 99999; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+     background-color: rgba(0, 0, 0, 0.85); color: white; display: flex; align-items: center; justify-content: center;
+     font-size: 22px; font-weight: 600; font-family: 'Raleway', sans-serif;">
+  Сиз резидент емассиз
+</div>
+
 
 </body>
 </html>
