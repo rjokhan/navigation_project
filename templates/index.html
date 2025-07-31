@@ -128,13 +128,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         const count = genre.items?.length || 0;
 
         const genreBlock = document.createElement("div");
-        genreBlock.className = "genre_block";
+        genreBlock.className = "genre";
 
         genreBlock.innerHTML = `
-          <div class="genre_row">
-            <h2 class="genre_title">${genre.name || "Без названия"}</h2>
-            <div class="genre_count">${count} контента</div>
-          </div>
+          <div class="count">${count}</div>
+          <div class="genre_name">${genre.name || "Без названия"}</div>
         `;
 
         container.appendChild(genreBlock);
