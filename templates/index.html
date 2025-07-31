@@ -67,6 +67,46 @@
 
 <!-- SCRIPT -->
 <script>
+document.addEventListener("DOMContentLoaded", async function () {
+  const tg = window.Telegram.WebApp;
+  const user = tg.initDataUnsafe?.user;
+  const nameBlock = document.getElementById("user-name");
+  const genreContainer = document.querySelector(".container_genre");
+
+  if (!user || !user.id) {
+    genreContainer.innerHTML = "<div class='error'>Ошибка авторизации через Telegram</div>";
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/users/proxy-check-user/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ telegram_id: user.id })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      genreContainer.innerHTML = `<div class='error'>${data.message || "Ошибка пользователя"}</div>`;
+      return;
+    }
+
+    const hasAccess = data.tariffs?.length > 0 || data.subscription_status || data.subscription_until;
+    if (!hasAccess) {
+      genreContainer.innerHTML = "<div class='error'>Вы не являетесь резидентом</div>";
+      return;
+    }
+
+    nameBlock.textContent = data.first_name || data.name || user.first_name || "Гость";
+
+    loadGenres();
+
+  } catch (err) {
+    console.error("Ошибка при проверке пользователя:", err);
+    genreContainer.innerHTML = "<div class='error'>Ошибка сервера</div>";
+  }
+
   async function loadGenres() {
     const container = document.querySelector('.container_genre');
     container.innerHTML = '<div class="loading">Загрузка жанров...</div>';
@@ -83,10 +123,7 @@
       // 🧠 Сохраняем весь контент во всех жанрах для поиска
       let allCards = [];
       genres.forEach(g => {
-        g.items.forEach(item => allCards.push({
-          ...item,
-          genreId: g.id  // ⬅️ добавляем genreId для дальнейшей логики
-        }));
+        g.items.forEach(item => allCards.push(item));
       });
       localStorage.setItem("allCards", JSON.stringify(allCards));
 
@@ -122,7 +159,26 @@
       container.innerHTML = "<div class='error'>Ошибка загрузки жанров</div>";
     }
   }
+});
+</script>
 
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const overlay = document.querySelector(".blur_overlay");
+  requestAnimationFrame(() => {
+    overlay.classList.remove("active");
+  });
+
+  document.querySelectorAll(".header a").forEach(link => {
+    link.addEventListener("click", e => {
+      e.preventDefault();
+      const href = link.getAttribute("href");
+      overlay.classList.add("active");
+      setTimeout(() => window.location.href = href, 300);
+    });
+  });
+});
 </script>
 
 <script>
