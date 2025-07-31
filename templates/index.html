@@ -91,6 +91,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       return;
     }
 
+const hasAccess = data.tariffs?.length > 0 || data.subscription_status || data.subscription_until;
 const popup = document.getElementById("noAccessPopup");
 const overlay = document.querySelector(".blur_overlay");
 
@@ -222,7 +223,6 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 
-<!-- POPUP: Нет резидентства -->
 <!-- Попап -->
 <div id="noAccessPopup" style="
   display: none;
