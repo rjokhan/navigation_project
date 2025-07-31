@@ -107,14 +107,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     container.innerHTML = '<div class="loading">Загрузка жанров...</div>';
 
     try {
-      const res = await fetch("/api/content/genres/");
-      const json = await res.json();
-
-      const genres = Array.isArray(json) ? json : json.genres;
+      const res = await fetch("/api/genres/");
+      const genres = await res.json();
 
       if (!Array.isArray(genres)) {
         container.innerHTML = "<div class='error'>Неверный формат данных жанров</div>";
-        console.warn("Неверный формат:", json);
+        console.warn("Неверный формат:", genres);
         return;
       }
 
@@ -136,10 +134,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         const contentWrap = document.createElement("div");
         contentWrap.className = "genre_content";
 
-        (genre.content || []).forEach(item => {
+        (genre.items || []).forEach(item => {
           const block = document.createElement("a");
           block.className = "content_card";
-          block.href = item.url || "#";
+          block.href = item.telegram_url || "#";
           block.target = "_blank";
           block.innerHTML = `
             <img src="${item.thumbnail || '{% static "images/default-thumb.png" %}'}" alt="">
