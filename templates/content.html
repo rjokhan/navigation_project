@@ -9,13 +9,21 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
+    * {
+      font-family: 'Raleway', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
     .audio_menu, .file_menu {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+    }
+    input::placeholder {
+      font-family: 'Raleway', sans-serif;
+      color: #ccc;
     }
   </style>
 </head>
@@ -23,10 +31,10 @@
 
 <div id="popup" class="confirm_popup">
   <div class="popup_box">
-    <p>\u0421\u0435\u0432\u0438\u043c\u043b\u0438\u043b\u0430\u0440\u0434\u0430\u043d \u043e\u043b\u0438\u0431 \u0442\u0430\u0448\u043b\u0430\u0448\u043d\u0438 \u0445\u043e\u04b3\u043b\u0430\u0439\u0441\u0438\u0437\u043c\u0438?</p>
+    <p>Севимлилардан олиб ташлашни хоҳлайсизми?</p>
     <div class="popup_buttons">
-      <button id="popup_yes">\u04b2\u0410</button>
-      <button id="popup_no">\u0419\u040e\u049a</button>
+      <button id="popup_yes">ҲА</button>
+      <button id="popup_no">ЙЎҚ</button>
     </div>
   </div>
 </div>
@@ -40,37 +48,17 @@
 </div>
 
 <div class="header">
-  <a href="{% url 'index' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/home_page.png' %}">
-      <p>A CLUB</p>
-    </div>
-  </a>
-  <a href="{% url 'favourited' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/fav.png' %}">
-      <p>\u0421\u0435\u0432\u0438\u043c\u043b\u0438</p>
-    </div>
-  </a>
-  <a href="{% url 'profile' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/profile.png' %}">
-      <p>\u041f\u0440\u043e\u0444\u0438\u043b\u044c</p>
-    </div>
-  </a>
-  <a href="{% url 'chat' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/chat.png' %}">
-      <p>\u0427\u0430\u0442\u043b\u0430\u0440</p>
-    </div>
-  </a>
+  <a href="{% url 'index' %}"><div class="header_icon"><img src="{% static 'images/home_page.png' %}"><p>A CLUB</p></div></a>
+  <a href="{% url 'favourited' %}"><div class="header_icon"><img src="{% static 'images/fav.png' %}"><p>Севимли</p></div></a>
+  <a href="{% url 'profile' %}"><div class="header_icon"><img src="{% static 'images/profile.png' %}"><p>Профиль</p></div></a>
+  <a href="{% url 'chat' %}"><div class="header_icon"><img src="{% static 'images/chat.png' %}"><p>Чатлар</p></div></a>
 </div>
 
 <div class="search_block">
   <a href="{% url 'index' %}"><div class="back_button"></div></a>
   <form class="searcher">
     <img class="search_icon" src="{% static 'images/search icon.png' %}" alt="search" />
-    <input class="searcher_block" placeholder="\u041f\u043e\u0438\u0441\u043a..." autocomplete="off" type="text" />
+    <input class="searcher_block" placeholder="Поиск..." autocomplete="off" type="text" />
   </form>
 </div>
 
@@ -84,7 +72,10 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const tg = window.Telegram.WebApp;
   const user = tg.initDataUnsafe?.user;
-  if (!user || !user.id) return document.querySelector('.content_body').innerHTML = '<p>\u041e\u0448\u0438\u0431\u043a\u0430 \u0430\u0432\u0442\u043e\u0440\u0438\u0437\u0430\u0446\u0438\u0438</p>';
+  if (!user || !user.id) {
+    document.querySelector('.content_body').innerHTML = '<p>Ошибка авторизации</p>';
+    return;
+  }
 
   const genreId = new URLSearchParams(window.location.search).get('genre_id');
   const genreTitleRaw = new URLSearchParams(window.location.search).get('genre_title');
@@ -92,19 +83,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('genre-title').textContent = decodeURIComponent(genreTitle || '');
 
   const contentBody = document.querySelector('.content_body');
-  if (!genreId) return contentBody.innerHTML = '<p>\u041d\u0435 \u0443\u043a\u0430\u0437\u0430\u043d \u0436\u0430\u043d\u0440</p>';
+  if (!genreId) return contentBody.innerHTML = '<p>Не указан жанр</p>';
 
+  // Загружаем избранные ID
   const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
   const favData = await favRes.json();
   const favourites = favData.favourites || [];
 
+  // Загружаем контент
   const res = await fetch('/api/genres/');
   const genres = await res.json();
   const genre = genres.find(g => g.id == genreId);
-  if (!genre || !genre.items.length) return contentBody.innerHTML = '<p>\u041a\u043e\u043d\u0442\u0435\u043d\u0442 \u043f\u043e\u043a\u0430 \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d</p>';
+  if (!genre || !genre.items.length) return contentBody.innerHTML = '<p>Контент пока не добавлен</p>';
 
   const allCards = [];
+
+  contentBody.innerHTML = '';
+
   genre.items.forEach(item => {
+    allCards.push(item);
     const isFavourited = favourites.includes(item.id);
     const favClass = isFavourited ? 'favourited' : 'not_favourited';
     const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
@@ -143,8 +140,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     contentBody.insertAdjacentHTML('beforeend', block);
     const favEl = contentBody.lastElementChild.querySelector('.fav_icon');
 
-    allCards.push(item);
-
     favEl.addEventListener('click', async e => {
       e.stopPropagation();
       const id = parseInt(favEl.dataset.id);
@@ -155,7 +150,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('popup_yes').onclick = async () => {
           await fetch(`/api/favourites/remove/${id}/`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ telegram_id: user.id })
           });
           favEl.classList.remove('favourited');
@@ -166,7 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
         await fetch(`/api/favourites/add/${id}/`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({ telegram_id: user.id })
         });
 
@@ -184,7 +179,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // сохранить allCards локально для favourited.html
+  // Сохраняем карточки в localStorage (для favourited.html)
   localStorage.setItem('allCards', JSON.stringify(allCards));
 });
 </script>
