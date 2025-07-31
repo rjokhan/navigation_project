@@ -52,11 +52,16 @@
       background: rgba(255,255,255,0.1);
       border-radius: 12px;
       padding: 20px;
-      margin: 10px auto;
-      max-width: 300px;
+      margin: 10px;
       color: white;
       font-size: 18px;
       text-align: center;
+      display: inline-block;
+      min-width: 100px;
+    }
+    .container_genre {
+      text-align: center;
+      margin-top: 20px;
     }
   </style>
 </head>
@@ -121,15 +126,27 @@
   <div class="loading">Загрузка...</div>
 </div>
 
-<!-- FAKE GENRE LOADER -->
+<!-- LOAD GENRES FROM SERVER -->
 <script>
-function loadGenres() {
+async function loadGenres() {
   const container = document.querySelector('.container_genre');
-  container.innerHTML = `
-    <div class="genre_card">🎧 Аудио</div>
-    <div class="genre_card">📁 Файлы</div>
-    <div class="genre_card">🎬 Видео</div>
-  `;
+  container.innerHTML = '<div class="loading">Загрузка жанров...</div>';
+
+  try {
+    const res = await fetch('/api/content/genres/');
+    const genres = await res.json();
+
+    if (Array.isArray(genres) && genres.length > 0) {
+      container.innerHTML = genres.map(genre => `
+        <div class="genre_card">${genre.icon || '📁'} ${genre.name}</div>
+      `).join('');
+    } else {
+      container.innerHTML = "<div class='error'>Жанры не найдены</div>";
+    }
+  } catch (err) {
+    container.innerHTML = "<div class='error'>Ошибка загрузки жанров</div>";
+    console.error(err);
+  }
 }
 </script>
 
