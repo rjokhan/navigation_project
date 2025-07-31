@@ -21,7 +21,7 @@ def proxy_check_user(request):
         # Подготовка запроса
         api_url = "https://api.ayolclub.uz/en/api/v1/telegram-bot/check-user/"
         headers = {
-            "X-API-Token": "ВАШ_ТОКЕН",
+            "X-API-Token": "b0e63095ee9d51fd0188f1877d63c0b850bc4965a61527c9",
             "Content-Type": "application/json; charset=utf-8",
             "Accept-Charset": "utf-8"
         }
