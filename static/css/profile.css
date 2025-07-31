@@ -9,6 +9,22 @@
 *::-webkit-scrollbar {
   display: none;                    /* Chrome, Safari */
 }
+@font-face {
+  font-family: 'Raleway';
+  src: url('/static/fonts/Raleway-Regular.woff2') format('woff2');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'Raleway';
+  src: url('/static/fonts/Raleway-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+}
+@font-face {
+  font-family: 'Raleway';
+  src: url('/static/fonts/Raleway-Bold.woff2') format('woff2');
+  font-weight: 700;
+}
+
 body{
     background-color: #4f0017;
     color: white;
