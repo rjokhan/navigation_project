@@ -2,9 +2,9 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Поиск</title>
+  <title>Search Results</title>
   <link rel="stylesheet" href="{% static 'css/content.css' %}">
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet">
 </head>
@@ -17,122 +17,111 @@
   <div class="wave"></div>
 </div>
 
-<!-- 🔙 Назад и строка поиска -->
 <div class="search_block">
   <a href="{% url 'index' %}"><div class="back_button"></div></a>
-  <form class="searcher" onsubmit="handleSearch(event)">
+  <form class="searcher">
     <img class="search_icon" src="{% static 'images/search icon.png' %}">
-    <input class="searcher_block" id="searchInput" placeholder="Поиск..." autocomplete="off">
+    <input class="searcher_block" placeholder="Поиск...">
   </form>
 </div>
 
-<!-- 🔍 Заголовок -->
 <div class="choosed_genre"><span class="red">A </span>SEARCH:</div>
-
-<!-- 📦 Контент -->
 <div class="content_body"></div>
 
 <script>
-function handleSearch(e) {
-  e.preventDefault();
-  const query = document.getElementById('searchInput').value.trim();
-  if (query) {
-    window.location.href = `/searched.html?query=${encodeURIComponent(query)}`;
-  }
-}
-
 document.addEventListener("DOMContentLoaded", () => {
-  const query = new URLSearchParams(window.location.search).get("query")?.toLowerCase();
-  if (!query) return;
+  const container = document.querySelector('.content_body');
+  const params = new URLSearchParams(window.location.search);
+  const query = (params.get("query") || "").toLowerCase().trim();
+  document.querySelector(".searcher_block").value = query;
 
-  document.getElementById("searchInput").value = decodeURIComponent(query);
-
-  const container = document.querySelector(".content_body");
   const allCards = JSON.parse(localStorage.getItem("allCards") || "[]");
-  const favourites = JSON.parse(localStorage.getItem("favourites") || "[]").map(f => f.id);
 
-  const results = allCards.filter(item =>
-    item.title?.toLowerCase().includes(query) ||
-    item.subtitle?.toLowerCase().includes(query)
-  );
+  const results = allCards.filter(item => {
+    const title = (item.title || '').toLowerCase();
+    const subtitle = (item.subtitle || '').toLowerCase();
+    return title.includes(query) || subtitle.includes(query);
+  });
 
-  container.innerHTML = "";
-
-  if (results.length === 0) {
-    container.innerHTML = "<div class='no-results'>Ничего не найдено</div>";
+  if (!results.length) {
+    container.innerHTML = '<div class="no-results">Ничего не найдено</div>';
     return;
   }
 
-  results.forEach(item => {
-    const isFav = favourites.includes(item.id);
-    const favClass = isFav ? "favourited" : "not_favourited";
-    const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
+  for (const item of results) {
+    let block = '';
     const open = `window.open('${item.telegram_url}', '_blank')`;
 
-    let block = "";
+    const favIcon = `<div class="fav_icon favourited"></div>`;
 
     if (item.content_type === "video") {
-      block = `<div class="video">
-        <div class="video_thumbnail" onclick="${open}">
-          <img src="${item.thumbnail}" />
-          <div class="video_duration">${item.duration}</div>
+      block = `
+        <div class="video">
+          <div class="video_thumbnail" onclick="${open}">
+            <img src="${item.thumbnail}">
+            <div class="video_duration">${item.duration}</div>
+          </div>
+          ${favIcon}
+          <div class="video_info">
+            <div class="title">${item.title}</div>
+            <div class="subtitle">${item.subtitle || ''}</div>
+          </div>
         </div>
-        ${favIcon}
-        <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ""}</div></div>
-      </div>`;
+      `;
     } else if (item.content_type === "audio") {
-      block = `<div class="audio" onclick="${open}">
-        <div class="audio_menu">
-          <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}"></div>
-          <div class="audio_duration">${item.duration}</div>
+      block = `
+        <div class="audio" onclick="${open}">
+          <div class="audio_menu">
+            <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}"></div>
+            <div class="audio_duration">${item.duration}</div>
+          </div>
+          ${favIcon}
+          <div class="audio_info">
+            <div class="title">${item.title}</div>
+            <div class="subtitle">${item.subtitle || ''}</div>
+          </div>
         </div>
-        ${favIcon}
-        <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ""}</div></div>
-      </div>`;
+      `;
     } else if (item.content_type === "file") {
-      block = `<div class="file" onclick="${open}">
-        <div class="file_menu">
-          <div class="static_icon"><img src="{% static 'images/file_icon.png' %}"></div>
-          <div class="file_duration">${item.duration}</div>
+      block = `
+        <div class="file" onclick="${open}">
+          <div class="file_menu">
+            <div class="static_icon"><img src="{% static 'images/file_icon.png' %}"></div>
+            <div class="file_duration">${item.duration}</div>
+          </div>
+          ${favIcon}
+          <div class="file_info">
+            <div class="title">${item.title}</div>
+            <div class="subtitle">${item.subtitle || ''}</div>
+          </div>
         </div>
-        ${favIcon}
-        <div class="file_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ""}</div></div>
-      </div>`;
+      `;
     }
 
     container.insertAdjacentHTML("beforeend", block);
+  }
+});
+</script>
 
-    const favEl = container.lastElementChild.querySelector(".fav_icon");
-    favEl.addEventListener("click", e => {
-      e.stopPropagation();
-      let favs = JSON.parse(localStorage.getItem("favourites") || "[]");
+<script>
+document.querySelector(".searcher").addEventListener("submit", e => {
+  e.preventDefault();
+  const query = document.querySelector(".searcher_block").value.trim();
+  if (query) {
+    window.location.href = `searched.html?query=${encodeURIComponent(query)}`;
+  }
+});
+</script>
 
-      if (favEl.classList.contains("favourited")) {
-        favs = favs.filter(f => f.id !== item.id);
-        favEl.classList.remove("favourited");
-        favEl.classList.add("not_favourited");
-      } else {
-        favs.push(item);
-        favEl.classList.remove("not_favourited");
-        favEl.classList.add("favourited");
-      }
-
-      localStorage.setItem("favourites", JSON.stringify(favs));
-    });
-  });
-
-  // Убираем blur
-  requestAnimationFrame(() => {
-    document.querySelector(".blur_overlay").classList.remove("active");
-  });
-
-  // Навигация с анимацией
-  document.querySelectorAll(".header a").forEach(link => {
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const overlay = document.querySelector('.blur_overlay');
+  requestAnimationFrame(() => overlay.classList.remove("active"));
+  document.querySelectorAll('.header a').forEach(link => {
     link.addEventListener("click", e => {
       e.preventDefault();
-      const href = link.getAttribute("href");
-      document.querySelector(".blur_overlay").classList.add("active");
-      setTimeout(() => window.location.href = href, 300);
+      overlay.classList.add("active");
+      setTimeout(() => window.location.href = link.href, 300);
     });
   });
 });
