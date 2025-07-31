@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Favourites</title>
   <link rel="stylesheet" href="{% static 'css/content.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     .fav_icon {
       position: absolute;
@@ -81,7 +83,7 @@
   </div>
 </div>
 
-<div class="blur_overlay"></div>
+<div class="blur_overlay active"></div>
 <div class="vertical-waves">
   <div class="wave"></div>
   <div class="wave"></div>
@@ -89,30 +91,10 @@
 </div>
 
 <div class="header">
-  <a href="{% url 'index' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/home_page.png' %}">
-      <p>A CLUB</p>
-    </div>
-  </a>
-  <a href="{% url 'favourited' %}">
-    <div class="header_icon active">
-      <img src="{% static 'images/fav.png' %}">
-      <p>Севимли</p>
-    </div>
-  </a>
-  <a href="{% url 'profile' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/profile.png' %}">
-      <p>Профиль</p>
-    </div>
-  </a>
-  <a href="{% url 'chat' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/chat.png' %}">
-      <p>Чатлар</p>
-    </div>
-  </a>
+  <a href="{% url 'index' %}"><div class="header_icon"><img src="{% static 'images/home_page.png' %}"><p>A CLUB</p></div></a>
+  <a href="{% url 'favourited' %}"><div class="header_icon active"><img src="{% static 'images/fav.png' %}"><p>Севимли</p></div></a>
+  <a href="{% url 'profile' %}"><div class="header_icon"><img src="{% static 'images/profile.png' %}"><p>Профиль</p></div></a>
+  <a href="{% url 'chat' %}"><div class="header_icon"><img src="{% static 'images/chat.png' %}"><p>Чатлар</p></div></a>
 </div>
 
 <div class="search_block">
@@ -128,6 +110,14 @@
 <div class="content_body"></div>
 
 <script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const tg = window.Telegram.WebApp;
+  const user = tg.initDataUnsafe?.user;
+  if (!user || !user.id) {
+    document.querySelector('.content_body').innerHTML = '<div class="no-results">Ошибка авторизации</div>';
+    return;
+  }
+
   const container = document.querySelector('.content_body');
   const searchInput = document.querySelector('.searcher_block');
   const popup = document.getElementById("popup");
@@ -135,11 +125,14 @@
   const popupNo = document.getElementById("popup_no");
   let targetToRemove = null;
 
-  let favourites = [];
-  const favIds = JSON.parse(localStorage.getItem('favourites') || '[]');
-  const allCards = JSON.parse(localStorage.getItem('allCards') || '[]');
+  const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
+  const favIds = (await favRes.json()).favourites || [];
 
-  favourites = allCards.filter(item => favIds.includes(item.id));
+  const genresRes = await fetch('/api/genres/');
+  const genres = await genresRes.json();
+
+  const allItems = genres.flatMap(g => g.items);
+  let favourites = allItems.filter(item => favIds.includes(item.id));
 
   function renderFavourites(filteredItems) {
     container.innerHTML = '';
@@ -163,10 +156,7 @@
             <div class="video_duration">${item.duration}</div>
           </div>
           ${favIconHTML}
-          <div class="video_info">
-            <div class="title">${item.title}</div>
-            <div class="subtitle">${item.subtitle || ''}</div>
-          </div>
+          <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
         `;
       } else if (item.content_type === 'audio') {
         innerHTML = `
@@ -175,10 +165,7 @@
             <div class="audio_duration">${item.duration}</div>
           </div>
           ${favIconHTML}
-          <div class="audio_info">
-            <div class="title">${item.title}</div>
-            <div class="subtitle">${item.subtitle || ''}</div>
-          </div>
+          <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
         `;
       } else if (item.content_type === 'file') {
         innerHTML = `
@@ -187,10 +174,7 @@
             <div class="file_duration">${item.duration}</div>
           </div>
           ${favIconHTML}
-          <div class="file_info">
-            <div class="title">${item.title}</div>
-            <div class="subtitle">${item.subtitle || ''}</div>
-          </div>
+          <div class="file_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
         `;
       }
 
@@ -201,7 +185,6 @@
       favIcon.addEventListener('click', (e) => {
         e.stopPropagation();
         const id = parseInt(favIcon.dataset.id);
-
         targetToRemove = { favIcon, id, wrapper };
         popup.classList.add("show");
       });
@@ -210,46 +193,37 @@
 
   popupNo.onclick = () => popup.classList.remove("show");
 
-popupYes.onclick = () => {
-  if (targetToRemove) {
-    const { favIcon, id, wrapper } = targetToRemove;
+  popupYes.onclick = async () => {
+    if (targetToRemove) {
+      const { favIcon, id, wrapper } = targetToRemove;
+      await fetch(`/api/favourites/remove/${id}/`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ telegram_id: user.id })
+      });
 
-    let favs = JSON.parse(localStorage.getItem("favourites") || "[]");
-    favs = favs.filter(f => f !== id);
-    localStorage.setItem("favourites", JSON.stringify(favs));
-
-    // Сохраняем начальную высоту
-    const fullHeight = wrapper.offsetHeight + "px";
-    wrapper.style.height = fullHeight;
-    wrapper.style.overflow = "hidden";
-    wrapper.style.transition = "transform 0.3s ease, opacity 0.3s ease";
-
-    // Этап 1: анимация "взрыва"
-    requestAnimationFrame(() => {
+      // Animation
+      wrapper.style.transition = "transform 0.3s ease, opacity 0.3s ease";
       wrapper.style.transform = "scale(0.95)";
       wrapper.style.opacity = "0";
-    });
 
-    // Этап 2: схлопывание после "взрыва"
-    setTimeout(() => {
-      wrapper.style.transition = "height 0.4s ease, margin 0.4s ease, padding 0.4s ease";
-      wrapper.style.height = "0";
-      wrapper.style.margin = "0";
-      wrapper.style.padding = "0";
-    }, 300);
+      setTimeout(() => {
+        wrapper.style.transition = "height 0.4s ease, margin 0.4s ease, padding 0.4s ease";
+        wrapper.style.height = "0";
+        wrapper.style.margin = "0";
+        wrapper.style.padding = "0";
+      }, 300);
 
-    // Этап 3: удаление
-    setTimeout(() => {
-      wrapper.remove();
-      favourites = favourites.filter(item => item.id !== id);
-    }, 800);
+      setTimeout(() => {
+        wrapper.remove();
+        favourites = favourites.filter(item => item.id !== id);
+        renderFavourites(favourites);
+      }, 800);
 
-    popup.classList.remove("show");
-    targetToRemove = null;
-  }
-};
-
-  renderFavourites(favourites);
+      popup.classList.remove("show");
+      targetToRemove = null;
+    }
+  };
 
   searchInput.addEventListener('input', () => {
     const query = searchInput.value.toLowerCase().trim();
@@ -261,22 +235,20 @@ popupYes.onclick = () => {
     renderFavourites(filtered);
   });
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const overlay = document.querySelector('.blur_overlay');
-    requestAnimationFrame(() => {
-      overlay.classList.remove("active");
-    });
-    document.querySelectorAll('.header a').forEach(link => {
-      link.addEventListener('click', e => {
-        e.preventDefault();
-        const href = link.getAttribute('href');
-        overlay.classList.add('active');
-        setTimeout(() => {
-          window.location.href = href;
-        }, 300);
-      });
+  renderFavourites(favourites);
+
+  requestAnimationFrame(() => {
+    document.querySelector('.blur_overlay').classList.remove("active");
+  });
+  document.querySelectorAll('.header a').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const href = link.getAttribute('href');
+      document.querySelector('.blur_overlay').classList.add("active");
+      setTimeout(() => window.location.href = href, 300);
     });
   });
+});
 </script>
 
 </body>
