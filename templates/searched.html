@@ -3,129 +3,42 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <title>Результаты поиска</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Search Results</title>
-  <link rel="stylesheet" href="{% static 'css/content.css' %}">
-  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
 
-<div class="blur_overlay active"></div>
-<div class="vertical-waves">
-  <div class="wave"></div>
-  <div class="wave"></div>
-  <div class="wave"></div>
-</div>
+  <div class="blur_overlay"></div>
 
-<div class="search_block">
-  <a href="{% url 'index' %}"><div class="back_button"></div></a>
-  <form class="searcher">
-    <img class="search_icon" src="{% static 'images/search icon.png' %}">
-    <input class="searcher_block" placeholder="Поиск...">
-  </form>
-</div>
+  <div class="vertical-waves">
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
+  </div>
 
-<div class="choosed_genre"><span class="red">A </span>SEARCH:</div>
-<div class="content_body"></div>
+  <!-- Назад и строка поиска -->
+  <div class="search_block">
+    <a href="{% url 'index' %}"><div class="back_button"></div></a>
+    <form class="searcher">
+      <img class="search_icon" src="{% static 'images/search icon.png' %}">
+      <input class="searcher_block" placeholder="Поиск...">
+    </form>
+  </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const container = document.querySelector('.content_body');
-  const params = new URLSearchParams(window.location.search);
-  const query = (params.get("query") || "").toLowerCase().trim();
-  document.querySelector(".searcher_block").value = query;
+  <!-- Заголовок -->
+  <div class="choosed_genre"><span class="red">A </span>SEARCH:</div>
 
-  const allCards = JSON.parse(localStorage.getItem("allCards") || "[]");
+  <!-- Контент -->
+  <div class="content_body" style="margin-top: 20px; font-size: 24px; text-align: center;">
+    Тут будут результаты поиска
+  </div>
 
-  const results = allCards.filter(item => {
-    const title = (item.title || '').toLowerCase();
-    const subtitle = (item.subtitle || '').toLowerCase();
-    return title.includes(query) || subtitle.includes(query);
-  });
-
-  if (!results.length) {
-    container.innerHTML = '<div class="no-results">Ничего не найдено</div>';
-    return;
-  }
-
-  for (const item of results) {
-    let block = '';
-    const open = `window.open('${item.telegram_url}', '_blank')`;
-
-    const favIcon = `<div class="fav_icon favourited"></div>`;
-
-    if (item.content_type === "video") {
-      block = `
-        <div class="video">
-          <div class="video_thumbnail" onclick="${open}">
-            <img src="${item.thumbnail}">
-            <div class="video_duration">${item.duration}</div>
-          </div>
-          ${favIcon}
-          <div class="video_info">
-            <div class="title">${item.title}</div>
-            <div class="subtitle">${item.subtitle || ''}</div>
-          </div>
-        </div>
-      `;
-    } else if (item.content_type === "audio") {
-      block = `
-        <div class="audio" onclick="${open}">
-          <div class="audio_menu">
-            <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}"></div>
-            <div class="audio_duration">${item.duration}</div>
-          </div>
-          ${favIcon}
-          <div class="audio_info">
-            <div class="title">${item.title}</div>
-            <div class="subtitle">${item.subtitle || ''}</div>
-          </div>
-        </div>
-      `;
-    } else if (item.content_type === "file") {
-      block = `
-        <div class="file" onclick="${open}">
-          <div class="file_menu">
-            <div class="static_icon"><img src="{% static 'images/file_icon.png' %}"></div>
-            <div class="file_duration">${item.duration}</div>
-          </div>
-          ${favIcon}
-          <div class="file_info">
-            <div class="title">${item.title}</div>
-            <div class="subtitle">${item.subtitle || ''}</div>
-          </div>
-        </div>
-      `;
-    }
-
-    container.insertAdjacentHTML("beforeend", block);
-  }
-});
-</script>
-
-<script>
-document.querySelector(".searcher").addEventListener("submit", e => {
-  e.preventDefault();
-  const query = document.querySelector(".searcher_block").value.trim();
-  if (query) {
-    window.location.href = `searched.html?query=${encodeURIComponent(query)}`;
-  }
-});
-</script>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const overlay = document.querySelector('.blur_overlay');
-  requestAnimationFrame(() => overlay.classList.remove("active"));
-  document.querySelectorAll('.header a').forEach(link => {
-    link.addEventListener("click", e => {
-      e.preventDefault();
-      overlay.classList.add("active");
-      setTimeout(() => window.location.href = link.href, 300);
-    });
-  });
-});
-</script>
+  <script>
+    const query = new URLSearchParams(window.location.search).get("query");
+    console.log("🔍 Переход с запросом:", query);
+    document.querySelector(".searcher_block").value = query || "";
+  </script>
 
 </body>
 </html>
