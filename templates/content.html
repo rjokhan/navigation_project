@@ -70,23 +70,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const genreId = new URLSearchParams(window.location.search).get('genre_id');
   const genreTitleRaw = new URLSearchParams(window.location.search).get('genre_title');
-  const genreTitle = genreTitleRaw?.startsWith('A ') ? genreTitleRaw.slice(2).trim() : genreTitleRaw || '';
-  document.getElementById('genre-title').textContent = decodeURIComponent(genreTitle || '');
+  const genreTitle = decodeURIComponent(genreTitleRaw || '');
+  document.getElementById('genre-title').innerHTML = genreTitle;  // ❗️ вывод без A, т.к. он в <span class="red">
 
   const contentBody = document.querySelector('.content_body');
   if (!genreId) return contentBody.innerHTML = '<p>Не указан жанр</p>';
 
-  // Загружаем избранные ID с сервера
   const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
   const favData = await favRes.json();
   const favourites = favData.favourites || [];
 
-  const res = await fetch('/api/genres/');
-  const genres = await res.json();
-  const genre = genres.find(g => g.id == genreId);
-  if (!genre || !genre.items.length) return contentBody.innerHTML = '<p>Контент пока не добавлен</p>';
+  const genresRes = await fetch('/api/genres/');
+  const genres = await genresRes.json();
 
-  contentBody.innerHTML = '';
+  const genre = genres.find(g => g.id == genreId);
+  if (!genre || !genre.items?.length) {
+    contentBody.innerHTML = '<p>Контент пока не добавлен</p>';
+    return;
+  }
 
   genre.items.forEach(item => {
     const isFavourited = favourites.includes(item.id);
@@ -166,21 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 });
-</script>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const overlay = document.querySelector('.blur_overlay');
-  requestAnimationFrame(() => overlay.classList.remove('active'));
-  document.querySelectorAll('.header a').forEach(link => {
-    link.addEventListener('click', e => {
-      e.preventDefault();
-      const href = link.getAttribute('href');
-      overlay.classList.add('active');
-      setTimeout(() => window.location.href = href, 300);
-    });
-  });
-});
 </script>
 
 </body>
