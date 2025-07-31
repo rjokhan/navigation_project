@@ -319,14 +319,14 @@ a {
 
 .chat_block{ 
   font-family: BEBAS;
-  font-size: 32px;
+  font-size: 45px;
   text-align: center;
   width: 100%;
   height: 120px;
-  border-radius: 20px;
+  border-radius: 30px;
   background-color: #be0036;
   color: white;
-  line-height: 120px;
+  line-height: 130px;
   box-shadow:
     inset 0 20px 30px -20px rgba(255, 255, 255, 0.3),  /* верх */
     inset 0 -20px 30px -20px rgba(255, 255, 255, 0.3); /* низ */
