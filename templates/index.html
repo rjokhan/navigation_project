@@ -11,6 +11,7 @@
 </head>
 
 <body>
+
 <!-- BACKGROUND -->
 <div class="vertical-waves">
   <div class="wave"></div>
@@ -67,6 +68,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   const user = tg.initDataUnsafe?.user;
   const nameBlock = document.getElementById("user-name");
   const genreContainer = document.querySelector(".container_genre");
+  const defaultThumb = "{% static 'images/default-thumb.png' %}";
 
   if (!user || !user.id) {
     genreContainer.innerHTML = "<div class='error'>Ошибка авторизации через Telegram</div>";
@@ -139,8 +141,9 @@ document.addEventListener("DOMContentLoaded", async function () {
           block.className = "content_card";
           block.href = item.telegram_url || "#";
           block.target = "_blank";
+          const thumb = item.thumbnail || defaultThumb;
           block.innerHTML = `
-            <img src="${item.thumbnail || '{% static "images/default-thumb.png" %}'}" alt="">
+            <img src="${thumb}" alt="">
             <p>${item.title || "Без названия"}</p>
           `;
           contentWrap.appendChild(block);
