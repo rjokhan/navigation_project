@@ -9,8 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
-<body>
 
+<body>
 <!-- BACKGROUND -->
 <div class="vertical-waves">
   <div class="wave"></div>
@@ -18,12 +18,32 @@
   <div class="wave"></div>
 </div>
 
-<!-- HEADER -->
+<!-- NAVIGATION -->
 <div class="header">
-  <a href="{% url 'index' %}"><div class="header_icon active"><img src="{% static 'images/home_page.png' %}"><p>A CLUB</p></div></a>
-  <a href="{% url 'favourited' %}"><div class="header_icon"><img src="{% static 'images/fav.png' %}"><p>Севимли</p></div></a>
-  <a href="{% url 'profile' %}"><div class="header_icon"><img src="{% static 'images/profile.png' %}"><p>Профиль</p></div></a>
-  <a href="{% url 'chat' %}"><div class="header_icon"><img src="{% static 'images/chat.png' %}"><p>Чатлар</p></div></a>
+  <a href="{% url 'index' %}">
+    <div class="header_icon active">
+      <img src="{% static 'images/home_page.png' %}">
+      <p>A CLUB</p>
+    </div>
+  </a>
+  <a href="{% url 'favourited' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/fav.png' %}">
+      <p>Севимли</p>
+    </div>
+  </a>
+  <a href="{% url 'profile' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/profile.png' %}">
+      <p>Профиль</p>
+    </div>
+  </a>
+  <a href="{% url 'chat' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/chat.png' %}">
+      <p>Чатлар</p>
+    </div>
+  </a>
 </div>
 
 <!-- GREETING -->
@@ -31,23 +51,16 @@
 
 <!-- SEARCH -->
 <form class="searcher">
-  <img class="search_icon" src="{% static 'images/search icon.png' %}" />
-  <input class="searcher_block" placeholder="Поиск..." />
+  <img class="search_icon" src="{% static 'images/search icon.png' %}">
+  <input class="searcher_block" placeholder="Поиск...">
 </form>
 
 <!-- GENRES -->
 <div class="container_genre">
-  {% for genre in genres %}
-    <a href="/genre/{{ genre.id }}/">
-      <div class="genre_card">
-        <img src="{{ genre.image.url }}" class="genre_img" />
-        <div class="genre_badge">{{ genre.content_items.count }}</div>
-        <div class="genre_title">{{ genre.name }}</div>
-      </div>
-    </a>
-  {% endfor %}
+  <div class="loading">Загрузка...</div>
 </div>
 
+<!-- SCRIPT -->
 <script>
 document.addEventListener("DOMContentLoaded", async function () {
   const tg = window.Telegram.WebApp;
@@ -68,60 +81,85 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 
     const data = await res.json();
+
     if (!data.success) {
-      genreContainer.innerHTML = `<div class='error'>${data.message}</div>`;
+      genreContainer.innerHTML = `<div class='error'>${data.message || "Ошибка пользователя"}</div>`;
       return;
     }
 
-    const hasAccess = data.tariff || data.subscription_status || data.subscription_until;
+    const hasAccess = data.tariffs?.length > 0 || data.subscription_status || data.subscription_until;
     if (!hasAccess) {
       genreContainer.innerHTML = "<div class='error'>Вы не являетесь резидентом</div>";
       return;
     }
 
-    nameBlock.textContent = data.first_name || data.name || user.first_name || "Пользователь";
+    nameBlock.textContent = data.first_name || data.name || user.first_name || "Гость";
+
+    loadGenres();
+
   } catch (err) {
+    console.error("Ошибка при проверке пользователя:", err);
     genreContainer.innerHTML = "<div class='error'>Ошибка сервера</div>";
+  }
+
+  async function loadGenres() {
+    const container = document.querySelector('.container_genre');
+    container.innerHTML = '<div class="loading">Загрузка жанров...</div>';
+
+    try {
+      const res = await fetch("/api/content/genres/");
+      const json = await res.json();
+
+      const genres = Array.isArray(json) ? json : json.genres;
+
+      if (!Array.isArray(genres)) {
+        container.innerHTML = "<div class='error'>Неверный формат данных жанров</div>";
+        console.warn("Неверный формат:", json);
+        return;
+      }
+
+      if (genres.length === 0) {
+        container.innerHTML = "<div class='error'>Жанры не найдены</div>";
+        return;
+      }
+
+      container.innerHTML = "";
+
+      genres.forEach(genre => {
+        const genreBlock = document.createElement("div");
+        genreBlock.className = "genre_block";
+
+        const title = document.createElement("h2");
+        title.className = "genre_title";
+        title.textContent = genre.name || "Без названия";
+
+        const contentWrap = document.createElement("div");
+        contentWrap.className = "genre_content";
+
+        (genre.content || []).forEach(item => {
+          const block = document.createElement("a");
+          block.className = "content_card";
+          block.href = item.url || "#";
+          block.target = "_blank";
+          block.innerHTML = `
+            <img src="${item.thumbnail || '{% static "images/default-thumb.png" %}'}" alt="">
+            <p>${item.title || "Без названия"}</p>
+          `;
+          contentWrap.appendChild(block);
+        });
+
+        genreBlock.appendChild(title);
+        genreBlock.appendChild(contentWrap);
+        container.appendChild(genreBlock);
+      });
+
+    } catch (error) {
+      console.error("Ошибка загрузки жанров:", error);
+      container.innerHTML = "<div class='error'>Ошибка загрузки жанров</div>";
+    }
   }
 });
 </script>
-
-<style>
-.genre_card {
-  background: #00000030;
-  border-radius: 15px;
-  overflow: hidden;
-  position: relative;
-  text-align: center;
-  margin: 15px;
-}
-.genre_img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-.genre_title {
-  font-weight: bold;
-  color: white;
-  padding: 10px;
-}
-.genre_badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: crimson;
-  color: white;
-  font-weight: bold;
-  padding: 5px 10px;
-  border-radius: 50px;
-}
-.container_genre {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(45%, 1fr));
-  gap: 20px;
-  padding: 20px;
-}
-</style>
 
 </body>
 </html>
