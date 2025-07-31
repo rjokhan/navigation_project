@@ -8,9 +8,61 @@
   <link rel="stylesheet" href="{% static 'css/style.css' %}" />
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    .popup_overlay {
+      position: fixed;
+      z-index: 99999;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .popup_box {
+      background: #fff;
+      border-radius: 15px;
+      padding: 30px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      font-family: Raleway, sans-serif;
+    }
+    .popup_box input {
+      width: 90%;
+      padding: 10px;
+      margin: 15px 0;
+      font-size: 16px;
+    }
+    .popup_box button {
+      padding: 10px 20px;
+      background: #8B003C;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #popup_status {
+      margin-top: 15px;
+      color: red;
+      font-size: 14px;
+    }
+  </style>
 </head>
 
 <body>
+
+<div class="popup_overlay">
+  <div class="popup_box">
+    <h3>Добро пожаловать!</h3>
+    <p>Введите свой username или номер телефона</p>
+    <input type="text" id="user_input" placeholder="@username или +998..." />
+    <button id="submit_btn">Продолжить</button>
+    <p id="popup_status"></p>
+  </div>
+</div>
+
 <div class="vertical-waves">
   <div class="wave"></div>
   <div class="wave"></div>
@@ -56,51 +108,51 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", async function () {
-  const tg = window.Telegram.WebApp;
-  const user = tg.initDataUnsafe?.user;
-
+document.addEventListener("DOMContentLoaded", function () {
   const nameBlock = document.getElementById("user-name");
   const genreContainer = document.querySelector(".container_genre");
 
-  // Если Telegram не дал данные — стоп
-  if (!user || !user.id) {
-    genreContainer.innerHTML = "<div class='error'>Ошибка авторизации через Telegram</div>";
-    return;
-  }
+  document.getElementById("submit_btn").addEventListener("click", async function () {
+    const input = document.getElementById("user_input").value.trim();
+    const statusEl = document.getElementById("popup_status");
 
-  try {
-    const res = await fetch("/api/users/proxy-check-user/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ telegram_id: user.id })
-    });
-
-    const data = await res.json();
-
-    if (!data.success) {
-      genreContainer.innerHTML = `<div class='error'>${data.message}</div>`;
+    if (!input) {
+      statusEl.innerText = 'Пожалуйста, введите данные';
       return;
     }
 
-    // Проверка на подписку
-    const hasAccess = data.tariff || data.subscription_status || data.subscription_until;
-    if (!hasAccess) {
-      genreContainer.innerHTML = "<div class='error'>Вы не являетесь резидентом</div>";
-      return;
+    try {
+      const res = await fetch("/api/users/proxy-check-user/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ telegram_id: input })
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        statusEl.innerText = data.message || 'Пользователь не найден';
+        return;
+      }
+
+      const hasAccess = data.tariff || data.subscription_status || data.subscription_until;
+      if (!hasAccess) {
+        statusEl.innerText = 'Вы не являетесь резидентом';
+        return;
+      }
+
+      document.querySelector(".popup_overlay").remove();
+      nameBlock.textContent = data.first_name || data.name || "Пользователь";
+      loadGenres();
+
+    } catch (err) {
+      console.error("Ошибка запроса:", err);
+      statusEl.innerText = 'Ошибка подключения к серверу';
     }
-
-    nameBlock.textContent = data.first_name || data.name || user.first_name || "Пользователь";
-    loadGenres();
-
-  } catch (err) {
-    console.error("Ошибка запроса:", err);
-    genreContainer.innerHTML = "<div class='error'>Ошибка сервера</div>";
-  }
+  });
 });
-
 </script>
 
 </body>
