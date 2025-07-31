@@ -11,12 +11,14 @@
 </head>
 
 <body>
+<!-- BACKGROUND -->
 <div class="vertical-waves">
   <div class="wave"></div>
   <div class="wave"></div>
   <div class="wave"></div>
 </div>
 
+<!-- NAVIGATION -->
 <div class="header">
   <a href="{% url 'index' %}">
     <div class="header_icon active">
@@ -44,26 +46,28 @@
   </a>
 </div>
 
+<!-- GREETING -->
 <div class="name">Hello, <span id="user-name">Гость</span></div>
 
+<!-- SEARCH -->
 <form class="searcher">
   <img class="search_icon" src="{% static 'images/search icon.png' %}">
   <input class="searcher_block" placeholder="Поиск...">
 </form>
 
+<!-- GENRES -->
 <div class="container_genre">
   <div class="loading">Загрузка...</div>
 </div>
 
+<!-- JS -->
 <script>
 document.addEventListener("DOMContentLoaded", async function () {
   const tg = window.Telegram.WebApp;
   const user = tg.initDataUnsafe?.user;
-
   const nameBlock = document.getElementById("user-name");
   const genreContainer = document.querySelector(".container_genre");
 
-  // Если Telegram не дал данные — стоп
   if (!user || !user.id) {
     genreContainer.innerHTML = "<div class='error'>Ошибка авторизации через Telegram</div>";
     return;
@@ -72,35 +76,85 @@ document.addEventListener("DOMContentLoaded", async function () {
   try {
     const res = await fetch("/api/users/proxy-check-user/", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ telegram_id: user.id })
     });
 
     const data = await res.json();
 
     if (!data.success) {
-      genreContainer.innerHTML = `<div class='error'>${data.message}</div>`;
+      genreContainer.innerHTML = `<div class='error'>${data.message || "Ошибка пользователя"}</div>`;
       return;
     }
 
-    // Проверка на подписку
-    const hasAccess = data.tariff || data.subscription_status || data.subscription_until;
+    const hasAccess = data.tariffs?.length > 0 || data.subscription_status || data.subscription_until;
     if (!hasAccess) {
       genreContainer.innerHTML = "<div class='error'>Вы не являетесь резидентом</div>";
       return;
     }
 
-    nameBlock.textContent = data.first_name || data.name || user.first_name || "Пользователь";
+    // Имя пользователя
+    nameBlock.textContent = data.first_name || data.name || user.first_name || user.id;
+
+    // Загрузка жанров
     loadGenres();
 
   } catch (err) {
-    console.error("Ошибка запроса:", err);
+    console.error("Ошибка при проверке пользователя:", err);
     genreContainer.innerHTML = "<div class='error'>Ошибка сервера</div>";
   }
-});
 
+  async function loadGenres() {
+    try {
+      const res = await fetch("/api/content/genres/");
+      const data = await res.json();
+
+      if (!Array.isArray(data)) {
+        genreContainer.innerHTML = "<div class='error'>Неверный формат данных жанров</div>";
+        return;
+      }
+
+      if (data.length === 0) {
+        genreContainer.innerHTML = "<div class='error'>Жанры не найдены</div>";
+        return;
+      }
+
+      genreContainer.innerHTML = "";
+
+      data.forEach(genre => {
+        const genreBlock = document.createElement("div");
+        genreBlock.className = "genre_block";
+
+        const title = document.createElement("h2");
+        title.className = "genre_title";
+        title.textContent = genre.name || "Без названия";
+
+        const contentWrap = document.createElement("div");
+        contentWrap.className = "genre_content";
+
+        (genre.content || []).forEach(item => {
+          const block = document.createElement("a");
+          block.className = "content_card";
+          block.href = item.url || "#";
+          block.target = "_blank";
+          block.innerHTML = `
+            <img src="${item.thumbnail || '{% static "images/default-thumb.png" %}'}" alt="">
+            <p>${item.title || "Без названия"}</p>
+          `;
+          contentWrap.appendChild(block);
+        });
+
+        genreBlock.appendChild(title);
+        genreBlock.appendChild(contentWrap);
+        genreContainer.appendChild(genreBlock);
+      });
+
+    } catch (error) {
+      console.error("Ошибка загрузки жанров:", error);
+      genreContainer.innerHTML = "<div class='error'>Ошибка загрузки жанров</div>";
+    }
+  }
+});
 </script>
 
 </body>
