@@ -126,7 +126,7 @@
   <div class="loading">Загрузка...</div>
 </div>
 
-<!-- LOAD GENRES FROM SERVER -->
+<!-- GENRES -->
 <script>
 async function loadGenres() {
   const container = document.querySelector('.container_genre');
@@ -134,6 +134,12 @@ async function loadGenres() {
 
   try {
     const res = await fetch('/api/content/genres/');
+
+    if (!res.ok) {
+      console.warn("Ошибка загрузки жанров: HTTP", res.status);
+      throw new Error("Response not OK");
+    }
+
     const genres = await res.json();
 
     if (Array.isArray(genres) && genres.length > 0) {
@@ -144,13 +150,18 @@ async function loadGenres() {
       container.innerHTML = "<div class='error'>Жанры не найдены</div>";
     }
   } catch (err) {
-    container.innerHTML = "<div class='error'>Ошибка загрузки жанров</div>";
-    console.error(err);
+    console.error("Ошибка жанров:", err);
+    // fallback-заглушка
+    container.innerHTML = `
+      <div class="genre_card">🎧 Аудио</div>
+      <div class="genre_card">📁 Файлы</div>
+      <div class="genre_card">🎬 Видео</div>
+    `;
   }
 }
 </script>
 
-<!-- MAIN LOGIC -->
+<!-- LOGIN LOGIC -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const nameBlock = document.getElementById("user-name");
@@ -166,7 +177,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (input.startsWith("@")) {
-      input = input.slice(1); // Убираем @
+      input = input.slice(1);
     }
 
     try {
@@ -199,7 +210,9 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       document.querySelector(".popup_overlay").remove();
-      nameBlock.textContent = data.first_name || data.name || input || "Пользователь";
+      const userName = data.first_name || data.name || "Гость";
+      nameBlock.textContent = userName;
+
       loadGenres();
 
     } catch (err) {
