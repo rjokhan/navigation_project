@@ -95,11 +95,18 @@ const hasAccess = data.tariffs?.length > 0 || data.subscription_status || data.s
 const popup = document.getElementById("noAccessPopup");
 
 if (!hasAccess) {
-  popup.style.display = "flex";
+  setTimeout(() => {
+    popup.style.display = "flex";
+    requestAnimationFrame(() => {
+      popup.style.opacity = "1";
+    });
+  }, 2000);
   return;
 } else {
   popup.style.display = "none";
+  popup.style.opacity = "0";
 }
+
 
 
     nameBlock.textContent = data.first_name || data.name || user.first_name || "Гость";
