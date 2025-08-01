@@ -19,13 +19,15 @@ if (!telegramId) {
       return;
     }
 
-    const user = data.user || {}; // ← когда в будущем добавят данные
+    const user = data.user_info || {};
+    const tariff = Array.isArray(data.tariffs) && data.tariffs.length > 0 ? data.tariffs[0] : null;
 
     container.innerHTML = `
-      <p><strong>ФИО:</strong> ${user.full_name || '—'}</p>
-      <p><strong>Город:</strong> ${user.city || '—'}</p>
-      <p><strong>Резидент:</strong> ${user.is_resident ? '✅ Да' : '❌ Нет'}</p>
-      <p><strong>Срок резидентства:</strong> ${user.residency_until || '—'}</p>
+      <p><strong>Имя:</strong> ${user.first_name || user.full_name || user.username || '—'}</p>
+      <p><strong>Телефон:</strong> ${user.phone_number || '—'}</p>
+      <p><strong>Язык:</strong> ${user.language_code || '—'}</p>
+      <p><strong>Тариф:</strong> ${tariff ? tariff.name : '—'}</p>
+      <p><strong>Подписка до:</strong> ${tariff ? tariff.expires_at.split(' ')[0] : '—'}</p>
     `;
   })
   .catch(error => {
