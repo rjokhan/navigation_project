@@ -59,7 +59,6 @@
           infoEl.innerHTML = `
             <p><strong>Имя:</strong> ${userInfo.first_name || userInfo.full_name || userInfo.username || '—'}</p>
             <p><strong>Телефон:</strong> ${userInfo.phone_number || '—'}</p>
-            <p><strong>Язык:</strong> ${userInfo.language_code || '—'}</p>
             <p><strong>Тариф:</strong> ${tariff ? tariff.name : '—'}</p>
             <p><strong>Подписка до:</strong> ${tariff ? tariff.expires_at.split(' ')[0] : '—'}</p>
           `;
