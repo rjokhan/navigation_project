@@ -87,7 +87,7 @@ body{
 .profile_container {
   margin: 30px auto;
   padding: 20px;
-  background: #f9f9f9;
+  background: #c00044;
   border-radius: 16px;
   font-family: 'Raleway', sans-serif;
   color: white;
@@ -183,48 +183,3 @@ a {
 }
 
 
-#user_info {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  padding: 30px 25px;
-  margin: 30px 0;
-  box-shadow: 0 0 25px rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px);
-  font-size: 16px;
-  line-height: 1.6;
-  font-family: 'Raleway', sans-serif;
-  color: #fff;
-  animation: fadeSlideIn 0.6s ease-out;
-}
-
-#user_info p {
-  margin: 0 0 12px;
-  font-weight: 500;
-  display: flex;
-  justify-content: space-between;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
-  padding-bottom: 6px;
-}
-
-#user_info p:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-
-#user_info strong {
-  color: #ff6780;
-  font-weight: 600;
-  margin-right: 5px;
-}
-
-@keyframes fadeSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
