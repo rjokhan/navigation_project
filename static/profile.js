@@ -25,7 +25,6 @@ if (!telegramId) {
     container.innerHTML = `
       <p><strong>Имя:</strong> ${user.first_name || user.full_name || user.username || '—'}</p>
       <p><strong>Телефон:</strong> ${user.phone_number || '—'}</p>
-      <p><strong>Язык:</strong> ${user.language_code || '—'}</p>
       <p><strong>Тариф:</strong> ${tariff ? tariff.name : '—'}</p>
       <p><strong>Подписка до:</strong> ${tariff ? tariff.expires_at.split(' ')[0] : '—'}</p>
     `;
