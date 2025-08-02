@@ -230,5 +230,32 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 
+<script>
+function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle) {
+  localStorage.setItem('last_session', JSON.stringify({
+    genreId,
+    genreTitle,
+    itemTitle
+  }));
+
+  window.location.href = url;
+
+  setTimeout(() => {
+    try {
+      Telegram.WebApp.close();
+    } catch (e) {
+      console.warn("Не удалось закрыть мини-апп:", e);
+    }
+  }, 500);
+}
+
+</script>
+
+
+
+
+
+
+
 </body>
 </html>
