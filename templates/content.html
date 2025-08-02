@@ -84,6 +84,9 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
+  const session = localStorage.getItem('last_session');
+const lastSeenId = session ? JSON.parse(session).itemId : null;
+
   const tg = window.Telegram.WebApp;
   const user = tg.initDataUnsafe?.user;
   if (!user || !user.id) return document.querySelector('.content_body').innerHTML = '<p>Ошибка авторизации</p>';
@@ -112,12 +115,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const favClass = isFavourited ? 'favourited' : 'not_favourited';
     const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
     const open = `openTelegramAndCollapse('${item.telegram_url}', '${genre.id}', '${genre.title}', '${item.title}')`;
+const cardIdAttr = (item.id == lastSeenId) ? 'id="last_seen_card"' : '';
 
 
     let block = '';
 
     if (item.content_type === 'video') {
-      block = `<div class="video">
+      block = `<div class="video" ${cardIdAttr}>
         <div class="video_thumbnail" onclick="${open}">
           <img src="${item.thumbnail}" />
           <div class="video_duration">${item.duration}</div>
@@ -126,8 +130,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
       </div>`;
     } else if (item.content_type === 'audio') {
-      block = `<div class="audio" onclick="${open}">
-        <div class="audio_menu">
+      block = `<div class="audio" ${cardIdAttr} onclick="${open}">
+        <div class="audio_menu" >
           <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}" /></div>
           <div class="audio_duration">${item.duration}</div>
         </div>
@@ -135,7 +139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
       </div>`;
     } else if (item.content_type === 'file') {
-      block = `<div class="file" onclick="${open}">
+      block = `<div class="file" ${cardIdAttr} onclick="${open}">
         <div class="file_menu">
           <div class="static_icon"><img src="{% static 'images/file_icon.png' %}" /></div>
           <div class="file_duration">${item.duration}</div>
