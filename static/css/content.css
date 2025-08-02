@@ -232,7 +232,7 @@ body{
   cursor: pointer;
 }
 .video_duration {
-  background-color: #ff0049;
+  background-color: #000000;
   width: 100px;
   font-size: 18px;
   font-family: 'Raleway', sans-serif;
