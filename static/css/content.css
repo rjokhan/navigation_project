@@ -246,6 +246,7 @@ body{
 }
 .video_info {
   padding: 10px 20px 20px 20px;
+  width: 100%;
 }
 .title {
   font-size: 20px;
