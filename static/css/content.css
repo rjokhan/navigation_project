@@ -90,7 +90,7 @@ body{
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
-  background: #000000;
+  background: #4d0016;
 }
 
 .vertical-waves .wave {
@@ -190,7 +190,6 @@ body{
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 20px;
   margin-top: 10px;
-  overflow: hidden;
 }
 .video_thumbnail {
   position: relative;
@@ -247,13 +246,11 @@ body{
 }
 .video_info {
   padding: 10px 20px 20px 20px;
-
 }
 .title {
   font-size: 20px;
   font-family: 'Segoe UI';
   font-weight: 700;
-
 }
 .subtitle {
   font-size: 16px;
