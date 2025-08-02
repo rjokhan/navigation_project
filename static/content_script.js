@@ -135,31 +135,41 @@ function loadGenre() {
       localStorage.setItem('allCards', JSON.stringify(allCards));
 
       // ⬇️ Прокрутка через наблюдатель DOM (надёжно!)
+// Гарантированная прокрутка даже при долгой генерации DOM
 const session = localStorage.getItem('last_session');
 if (session) {
   try {
     const parsed = JSON.parse(session);
     const targetId = parsed.itemId;
-    const observer = new MutationObserver((mutations, obs) => {
+    let attempts = 0;
+
+    function scrollToCard() {
       const targetIcon = document.querySelector(`.fav_icon[data-id="${targetId}"]`);
       if (targetIcon) {
         const card = targetIcon.closest('.video, .audio, .file');
         if (card) {
           const offset = card.offsetTop;
           window.scrollTo({ top: offset - 80, behavior: 'smooth' });
+          console.log("✅ Прокручено к карточке ID:", targetId);
+          return;
         }
-        obs.disconnect(); // остановить наблюдение
       }
-    });
 
-    observer.observe(document.querySelector('.content_body'), {
-      childList: true,
-      subtree: true
-    });
+      // Если не нашли — пробуем ещё, но не бесконечно
+      if (attempts < 20) {
+        attempts++;
+        setTimeout(scrollToCard, 150);
+      } else {
+        console.warn("⚠️ Карточка с ID не найдена после 20 попыток");
+      }
+    }
+
+    scrollToCard();
   } catch (e) {
-    console.warn("❌ Ошибка прокрутки через observer:", e);
+    console.warn("❌ Ошибка прокрутки к сохранённому элементу:", e);
   }
 }
+
 
     })
     .catch(err => {
