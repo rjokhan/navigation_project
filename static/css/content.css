@@ -73,7 +73,7 @@
 
 
 body{
-    background-color: #4f0017;
+    background-color: #000000;
     color: white;
     padding: 50px 20px 20px 20px;
     font-family: 'Raleway', sans-serif;
@@ -185,7 +185,7 @@ body{
   font-family: 'Raleway', sans-serif !important;
   font-weight: 400 !important;
   position: relative;
-  height: 50%;
+  height: 100%;
   left: 0;
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 20px;
