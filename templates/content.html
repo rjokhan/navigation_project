@@ -114,7 +114,8 @@ const lastSeenId = session ? JSON.parse(session).itemId : null;
     const isFavourited = favourites.includes(item.id);
     const favClass = isFavourited ? 'favourited' : 'not_favourited';
     const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
-    const open = `openTelegramAndCollapse('${item.telegram_url}', '${genre.id}', '${genre.title}', '${item.title}')`;
+    const open = `openTelegramAndCollapse('${item.telegram_url}', '${genre.id}', '${genre.title}', '${item.title}', '${item.id}')`;
+
 const cardIdAttr = item.id == lastSeenId ? 'id="last_seen_card"' : '';
 
 
@@ -266,12 +267,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 <script>
-function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle) {
+function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
   localStorage.setItem('last_session', JSON.stringify({
     genreId,
     genreTitle,
-    itemTitle
+    itemTitle,
+    itemId
   }));
+
 
   window.location.href = url;
 
