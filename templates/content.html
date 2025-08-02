@@ -231,24 +231,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <script>
 function openTelegramAndCollapse(url) {
-  if (window.Telegram && Telegram.WebApp) {
-    try {
-      Telegram.WebApp.expand(); // сначала развернуть, на всякий случай
-      Telegram.WebApp.ready(); // убедиться, что готов
-      Telegram.WebApp.MainButton.hide(); // спрятать кнопку, если есть
-      Telegram.WebApp.HapticFeedback.impactOccurred('medium'); // лёгкий эффект
-      Telegram.WebApp.close(); // свернуть
-    } catch (e) {
-      console.error('Ошибка при попытке свернуть:', e);
-    }
-  }
-  setTimeout(() => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    a.click();
-  }, 300); // время на анимацию сворачивания
+  // Telegram сам свернёт миниэпп, если это ссылка на t.me/c/... (пост в канале)
+  window.location.href = url;
 }
 </script>
 
