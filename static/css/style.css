@@ -351,6 +351,9 @@ a {
   to   { transform: scale(1); opacity: 1; }
 }
 
+.hidden {
+  display: none !important;
+}
 
 
 .blur_overlay {

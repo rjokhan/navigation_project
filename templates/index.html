@@ -256,7 +256,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     no.onclick = () => {
-      popup.classList.remove('show');
+     popup.classList.remove('hidden');
+popup.classList.add('show');
+
       localStorage.removeItem('last_session');
     };
   } catch (e) {
