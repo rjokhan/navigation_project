@@ -227,5 +227,20 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+
+<script>
+  const openLink = `window.open('${item.telegram_url}', '_blank')`;
+
+  
+function openTelegramAndCollapse(url) {
+  Telegram.WebApp.close(); // свернуть мини-апп
+  setTimeout(() => {
+    window.location.href = url; // перейти к сообщению
+  }, 300); // задержка — даём время свернуться
+}
+</script>
+
+
+
 </body>
 </html>
