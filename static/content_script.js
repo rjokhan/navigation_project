@@ -42,7 +42,6 @@ function loadGenre() {
       genre.items.forEach(item => {
         const isFavourited = userFavourites.includes(item.id);
         const favClass = isFavourited ? 'favourited' : 'not_favourited';
-
         const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}" title="Добавить в избранное"></div>`;
         const openLink = `openAndRemember(${JSON.stringify(item)}, ${JSON.stringify(genre)})`;
 
@@ -92,7 +91,6 @@ function loadGenre() {
         }
 
         container.insertAdjacentHTML('beforeend', block);
-
         const last = container.lastElementChild;
         const favIcon = last.querySelector('.fav_icon');
 
@@ -134,28 +132,32 @@ function loadGenre() {
         allCards.push({ ...item, genreId: genre.id });
       });
 
-      // Прокрутка к сохранённой карточке
+      localStorage.setItem('allCards', JSON.stringify(allCards));
+
+      // ⬇️ Прокрутка к сохранённой карточке
       const session = localStorage.getItem('last_session');
       if (session) {
         try {
           const parsed = JSON.parse(session);
           const targetId = parsed.itemId;
-          setTimeout(() => {
-            const targetIcon = document.querySelector(`.fav_icon[data-id="${targetId}"]`);
-            if (targetIcon) {
-              const card = targetIcon.closest('.video, .audio, .file');
-              if (card) {
-                const offset = card.offsetTop;
-                window.scrollTo({ top: offset - 80, behavior: 'smooth' });
+
+          // Ждём полной отрисовки DOM
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              const targetIcon = document.querySelector(`.fav_icon[data-id="${targetId}"]`);
+              if (targetIcon) {
+                const card = targetIcon.closest('.video, .audio, .file');
+                if (card) {
+                  const offset = card.offsetTop;
+                  window.scrollTo({ top: offset - 80, behavior: 'smooth' });
+                }
               }
-            }
-          }, 100);
+            }, 100);
+          });
         } catch (e) {
           console.warn("Ошибка прокрутки к сохранённому элементу:", e);
         }
       }
-
-      localStorage.setItem('allCards', JSON.stringify(allCards));
     })
     .catch(err => {
       console.error("Ошибка загрузки жанра:", err);
@@ -168,6 +170,7 @@ function openAndCollapse(url) {
     window.location.href = url;
   }, 300);
 }
+
 
 function openAndRemember(item, genre) {
   localStorage.setItem('last_session', JSON.stringify({
