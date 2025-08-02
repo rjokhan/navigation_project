@@ -260,10 +260,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     no.onclick = () => {
-      popup.classList.remove('show');
-      popup.classList.add('hidden');
-      localStorage.removeItem('last_session');
-    };
+  popup.classList.remove('show');
+  localStorage.removeItem('last_session');
+};
+
   } catch (e) {
     console.warn("Ошибка разбора last_session", e);
     localStorage.removeItem('last_session');
@@ -271,6 +271,34 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // ждём пока DOM полностью загрузится
+  const checkAndScroll = () => {
+    const target = document.getElementById("last_seen_card");
+    if (target) {
+      const offset = target.offsetTop;
+      window.scrollTo({ top: offset - 80, behavior: "smooth" });
+      // удаляем id чтобы не повторно срабатывало
+      target.removeAttribute("id");
+      return true;
+    }
+    return false;
+  };
+
+  // пытаемся несколько раз (на случай если контент подгружается асинхронно)
+  let attempts = 0;
+  const interval = setInterval(() => {
+    const done = checkAndScroll();
+    if (done || attempts > 30) {
+      clearInterval(interval);
+    }
+    attempts++;
+  }, 200);
+});
+</script>
+
 
 
 

@@ -141,34 +141,45 @@ if (session) {
   try {
     const parsed = JSON.parse(session);
     const targetId = parsed.itemId;
-    let attempts = 0;
 
-    function scrollToCard() {
+    // Ждём появления нужной карточки и скроллим к ней
+    let attempts = 0;
+    const maxAttempts = 20;
+
+    const scrollToCard = () => {
       const targetIcon = document.querySelector(`.fav_icon[data-id="${targetId}"]`);
       if (targetIcon) {
         const card = targetIcon.closest('.video, .audio, .file');
         if (card) {
+          card.setAttribute('id', 'last_seen_card');
+
           const offset = card.offsetTop;
           window.scrollTo({ top: offset - 80, behavior: 'smooth' });
-          console.log("✅ Прокручено к карточке ID:", targetId);
+
+          setTimeout(() => {
+            card.removeAttribute('id');
+            localStorage.removeItem('last_session');
+            console.log("✅ Прокручено к карточке ID:", targetId);
+          }, 500);
+
           return;
         }
       }
 
-      // Если не нашли — пробуем ещё, но не бесконечно
-      if (attempts < 20) {
-        attempts++;
-        setTimeout(scrollToCard, 150);
+      if (attempts++ < maxAttempts) {
+        setTimeout(scrollToCard, 200);
       } else {
-        console.warn("⚠️ Карточка с ID не найдена после 20 попыток");
+        console.warn("❌ Не удалось найти карточку для прокрутки");
       }
-    }
+    };
 
-    scrollToCard();
+    setTimeout(scrollToCard, 200);
   } catch (e) {
-    console.warn("❌ Ошибка прокрутки к сохранённому элементу:", e);
+    console.warn("⚠️ Ошибка при прокрутке к сохранённому элементу:", e);
+    localStorage.removeItem('last_session');
   }
 }
+
 
 
     })
@@ -186,11 +197,14 @@ function openAndCollapse(url) {
 
 
 function openAndRemember(item, genre) {
+  const blockId = 'last_seen_card_' + item.id;
+
   localStorage.setItem('last_session', JSON.stringify({
     genreId: genre.id,
     genreTitle: genre.title,
     itemTitle: item.title,
     itemId: item.id,
+    blockId: blockId,
     url: item.telegram_url
   }));
 
@@ -199,3 +213,15 @@ function openAndRemember(item, genre) {
     window.location.href = item.telegram_url;
   }, 400);
 }
+
+
+// Прокрутка к #last_seen_card и удаление id
+setTimeout(() => {
+  const el = document.getElementById('last_seen_card');
+  if (el) {
+    const offset = el.offsetTop;
+    window.scrollTo({ top: offset - 80, behavior: 'smooth' });
+    el.removeAttribute('id');
+    localStorage.removeItem('last_session');
+  }
+}, 100);
