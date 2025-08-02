@@ -151,17 +151,15 @@ function openAndCollapse(url) {
 }
 
 function openAndRemember(item, genre) {
-  localStorage.setItem('last_session', JSON.stringify({
-    genreId: genre.id,
-    genreTitle: genre.title,
-    itemTitle: item.title,
-    itemId: item.id,
-    url: item.telegram_url
-  }));
+localStorage.setItem('last_session', JSON.stringify({
+  genreId: genre.id,
+  genreTitle: genre.title,
+  itemTitle: item.title,
+  itemId: item.id,
+  url: item.telegram_url
+}));
 
-  Telegram.WebApp.close(); // можно оставить — вдруг сработает
-  setTimeout(() => {
-    window.location.href = item.telegram_url;
-  }, 400);
-}
-
+Telegram.WebApp.close();
+setTimeout(() => {
+  window.location.href = item.telegram_url;
+}, 400);}
