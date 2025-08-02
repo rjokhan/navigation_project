@@ -111,7 +111,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const isFavourited = favourites.includes(item.id);
     const favClass = isFavourited ? 'favourited' : 'not_favourited';
     const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
-    const open = `openTelegramAndCollapse('${item.telegram_url}')`;
+    const open = `openTelegramAndCollapse('${item.telegram_url}', '${genre.id}', '${genre.title}', '${item.title}')`;
+
 
     let block = '';
 
@@ -230,10 +231,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 <script>
-function openTelegramAndCollapse(url) {
+function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle) {
+  localStorage.setItem('last_session', JSON.stringify({
+    genreId,
+    genreTitle,
+    itemTitle
+  }));
+
   window.location.href = url;
 
-  // Дать Telegram время перейти
   setTimeout(() => {
     try {
       Telegram.WebApp.close();
@@ -242,6 +248,7 @@ function openTelegramAndCollapse(url) {
     }
   }, 500);
 }
+
 </script>
 
 
