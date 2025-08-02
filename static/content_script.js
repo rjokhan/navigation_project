@@ -43,12 +43,10 @@ function loadGenre() {
         const isFavourited = userFavourites.includes(item.id);
         const favClass = isFavourited ? 'favourited' : 'not_favourited';
 
-        // Кнопка избранного внутри блока контента
         const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}" title="Добавить в избранное"></div>`;
-
-        let block = '';
         const openLink = `openAndRemember(${JSON.stringify(item)}, ${JSON.stringify(genre)})`;
 
+        let block = '';
         if (item.content_type === 'video') {
           block = `
             <div class="video">
@@ -114,78 +112,74 @@ function loadGenre() {
               },
               body: JSON.stringify({ telegram_id: telegramId })
             })
-            .then(res => res.json())
-            .then(data => {
-              if (data.status === 'added') {
-                favIcon.classList.remove('not_favourited');
-                favIcon.classList.add('favourited');
-              } else if (data.status === 'removed') {
-                favIcon.classList.remove('favourited');
-                favIcon.classList.add('not_favourited');
-              } else {
-                alert('Ошибка обновления избранного');
-              }
-            })
-            .catch(err => {
-              console.error("Ошибка при обновлении избранного:", err);
-              alert('Ошибка сети при обновлении избранного');
-            });
+              .then(res => res.json())
+              .then(data => {
+                if (data.status === 'added') {
+                  favIcon.classList.remove('not_favourited');
+                  favIcon.classList.add('favourited');
+                } else if (data.status === 'removed') {
+                  favIcon.classList.remove('favourited');
+                  favIcon.classList.add('not_favourited');
+                } else {
+                  alert('Ошибка обновления избранного');
+                }
+              })
+              .catch(err => {
+                console.error("Ошибка при обновлении избранного:", err);
+                alert('Ошибка сети при обновлении избранного');
+              });
           });
         }
 
         allCards.push({ ...item, genreId: genre.id });
       });
 
+      // Прокрутка к сохранённой карточке
+      const session = localStorage.getItem('last_session');
+      if (session) {
+        try {
+          const parsed = JSON.parse(session);
+          const targetId = parsed.itemId;
+          setTimeout(() => {
+            const targetIcon = document.querySelector(`.fav_icon[data-id="${targetId}"]`);
+            if (targetIcon) {
+              const card = targetIcon.closest('.video, .audio, .file');
+              if (card) {
+                const offset = card.offsetTop;
+                window.scrollTo({ top: offset - 80, behavior: 'smooth' });
+              }
+            }
+          }, 100);
+        } catch (e) {
+          console.warn("Ошибка прокрутки к сохранённому элементу:", e);
+        }
+      }
+
       localStorage.setItem('allCards', JSON.stringify(allCards));
     })
-    
     .catch(err => {
       console.error("Ошибка загрузки жанра:", err);
     });
 }
 
-// Прокрутка к карточке, если last_session совпадает
-const session = localStorage.getItem('last_session');
-if (session) {
-  try {
-    const parsed = JSON.parse(session);
-    const targetId = parsed.itemId;
-
-    // Ждём отрисовку карточек
-    setTimeout(() => {
-      const targetIcon = document.querySelector(`.fav_icon[data-id="${targetId}"]`);
-      if (targetIcon) {
-        const card = targetIcon.closest('.video, .audio, .file');
-        if (card) {
-          const offset = card.offsetTop;
-          window.scrollTo({ top: offset - 80, behavior: 'smooth' });
-        }
-      }
-    }, 100); // 100–200мс достаточно
-  } catch (e) {
-    console.warn("Ошибка прокрутки к сохранённому элементу:", e);
-  }
-}
-
-
-
 function openAndCollapse(url) {
-  Telegram.WebApp.close(); // сворачиваем миниэпп
+  Telegram.WebApp.close();
   setTimeout(() => {
-    window.location.href = url; // переходим к сообщению
-  }, 300); // задержка — даём Telegram свернуть
+    window.location.href = url;
+  }, 300);
 }
 
 function openAndRemember(item, genre) {
-localStorage.setItem('last_session', JSON.stringify({
-  genreId: genre.id,
-  genreTitle: genre.title,
-  itemTitle: item.title,
-  itemId: item.id,
-  url: item.telegram_url
-}));
+  localStorage.setItem('last_session', JSON.stringify({
+    genreId: genre.id,
+    genreTitle: genre.title,
+    itemTitle: item.title,
+    itemId: item.id,
+    url: item.telegram_url
+  }));
 
-Telegram.WebApp.close();
-setTimeout(() => {
-  window.location.href = item.telegram_url;
-}, 400);}
+  Telegram.WebApp.close();
+  setTimeout(() => {
+    window.location.href = item.telegram_url;
+  }, 400);
+}
