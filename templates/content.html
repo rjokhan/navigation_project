@@ -231,14 +231,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <script>
 function openTelegramAndCollapse(url) {
-  // Визуальный эффект затухания (по желанию)
-  document.body.style.transition = "opacity 0.2s ease-out";
-  document.body.style.opacity = "0.1";
-
-  // Telegram сам свернёт Mini App при переходе к сообщению
-  setTimeout(() => {
-    window.location.href = url;
-  }, 200);
+  // Telegram сам должен свернуть Mini App при переходе к сообщению
+  // Убираем затемнение и close()
+  window.location.href = url;
 }
 </script>
 
