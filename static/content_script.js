@@ -38,6 +38,7 @@ function loadGenre() {
       const container = document.querySelector('.content_body');
       container.innerHTML = '';
       const allCards = [];
+      
 
       genre.items.forEach(item => {
         const isFavourited = userFavourites.includes(item.id);
