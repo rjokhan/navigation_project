@@ -150,17 +150,23 @@ if (session) {
   try {
     const parsed = JSON.parse(session);
     const targetId = parsed.itemId;
-    const targetBlock = document.querySelector(`.fav_icon[data-id="${targetId}"]`);
-    if (targetBlock) {
-      setTimeout(() => {
-        const offset = targetBlock.closest('.video, .audio, .file')?.offsetTop || 0;
-        window.scrollTo({ top: offset - 80, behavior: 'smooth' });
-      }, 200);
-    }
+
+    // Ждём отрисовку карточек
+    setTimeout(() => {
+      const targetIcon = document.querySelector(`.fav_icon[data-id="${targetId}"]`);
+      if (targetIcon) {
+        const card = targetIcon.closest('.video, .audio, .file');
+        if (card) {
+          const offset = card.offsetTop;
+          window.scrollTo({ top: offset - 80, behavior: 'smooth' });
+        }
+      }
+    }, 100); // 100–200мс достаточно
   } catch (e) {
-    console.warn("Ошибка при прокрутке к сохранённому элементу", e);
+    console.warn("Ошибка прокрутки к сохранённому элементу:", e);
   }
 }
+
 
 
 function openAndCollapse(url) {
