@@ -235,14 +235,9 @@ function openTelegramAndStay(url) {
   a.href = url;
   a.target = '_blank';
   a.rel = 'noopener noreferrer';
-
-  // Добавляем в DOM, кликаем, потом удаляем
-  document.body.appendChild(a);
   a.click();
-  setTimeout(() => a.remove(), 300);
 }
 </script>
-
 
 
 
