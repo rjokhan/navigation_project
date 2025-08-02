@@ -243,22 +243,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const no = document.getElementById('resume_no');
 
     text.innerHTML = `Вы остановились на:<br><strong>${data.genreTitle} – ${data.itemTitle}</strong><br>Продолжить?`;
-    popup.classList.add('show'); // снимает hidden
+
+    // Снимаем hidden и ставим show
+    popup.classList.remove('hidden');
+    popup.classList.add('show');
 
     yes.onclick = () => {
       popup.classList.remove('show');
+      popup.classList.add('hidden');
+      localStorage.removeItem('last_session');
       const params = new URLSearchParams({
         genre_id: data.genreId,
         genre_title: data.genreTitle
       });
-      localStorage.removeItem('last_session');
       window.location.href = `/content.html?${params}`;
     };
 
     no.onclick = () => {
-     popup.classList.remove('hidden');
-popup.classList.add('show');
-
+      popup.classList.remove('show');
+      popup.classList.add('hidden');
       localStorage.removeItem('last_session');
     };
   } catch (e) {
@@ -266,6 +269,7 @@ popup.classList.add('show');
     localStorage.removeItem('last_session');
   }
 });
+
 </script>
 
 
