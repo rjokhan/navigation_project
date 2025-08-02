@@ -231,23 +231,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <script>
 function openTelegramAndCollapse(url) {
-  // Попробовать свернуть mini app (если Telegram поддерживает)
-  try {
-    Telegram.WebApp.close();
-  } catch (err) {
-    console.warn("Telegram.WebApp.close() не сработал:", err);
-  }
-
-  // Визуально скрыть мини-апп (на всякий случай)
+  // Визуальный эффект затухания (по желанию)
   document.body.style.transition = "opacity 0.2s ease-out";
-  document.body.style.opacity = "0";
+  document.body.style.opacity = "0.1";
 
-  // Через 300–400 мс перейти по ссылке
+  // Telegram сам свернёт Mini App при переходе к сообщению
   setTimeout(() => {
     window.location.href = url;
-  }, 400);
+  }, 200);
 }
 </script>
+
 
 
 
