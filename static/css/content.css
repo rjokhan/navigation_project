@@ -231,7 +231,7 @@ body{
   cursor: pointer;
 }
 .video_duration {
-  background-color: #ff0049;
+  background-color: #000000;
   width: 100px;
   font-size: 18px;
   font-family: 'Raleway', sans-serif;
@@ -248,7 +248,7 @@ body{
   padding: 10px 20px 20px 20px;
 }
 .title {
-  font-size: 30px;
+  font-size: 20px;
   font-family: 'Segoe UI';
   font-weight: 700;
 }
