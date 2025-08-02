@@ -138,10 +138,30 @@ function loadGenre() {
 
       localStorage.setItem('allCards', JSON.stringify(allCards));
     })
+    
     .catch(err => {
       console.error("Ошибка загрузки жанра:", err);
     });
 }
+
+// Прокрутка к карточке, если last_session совпадает
+const session = localStorage.getItem('last_session');
+if (session) {
+  try {
+    const parsed = JSON.parse(session);
+    const targetId = parsed.itemId;
+    const targetBlock = document.querySelector(`.fav_icon[data-id="${targetId}"]`);
+    if (targetBlock) {
+      setTimeout(() => {
+        const offset = targetBlock.closest('.video, .audio, .file')?.offsetTop || 0;
+        window.scrollTo({ top: offset - 80, behavior: 'smooth' });
+      }, 200);
+    }
+  } catch (e) {
+    console.warn("Ошибка при прокрутке к сохранённому элементу", e);
+  }
+}
+
 
 function openAndCollapse(url) {
   Telegram.WebApp.close(); // сворачиваем миниэпп
