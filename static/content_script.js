@@ -47,7 +47,7 @@ function loadGenre() {
         const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}" title="Добавить в избранное"></div>`;
 
         let block = '';
-        const openLink = `window.open('${item.telegram_url}', '_blank')`;
+        const openLink = `openTelegramAndCollapse('${item.telegram_url}')`;
 
         if (item.content_type === 'video') {
           block = `

@@ -229,9 +229,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 <script>
-  const openLink = `window.open('${item.telegram_url}', '_blank')`;
-
-  
 function openTelegramAndCollapse(url) {
   Telegram.WebApp.close(); // свернуть мини-апп
   setTimeout(() => {
