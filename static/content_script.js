@@ -47,7 +47,7 @@ function loadGenre() {
         const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}" title="Добавить в избранное"></div>`;
 
         let block = '';
-        const openLink = `openTelegramAndCollapse('${item.telegram_url}')`;
+        const openLink = `openAndCollapse('${item.telegram_url}')`;
 
         if (item.content_type === 'video') {
           block = `
@@ -141,4 +141,11 @@ function loadGenre() {
     .catch(err => {
       console.error("Ошибка загрузки жанра:", err);
     });
+}
+
+function openAndCollapse(url) {
+  Telegram.WebApp.close(); // сворачиваем миниэпп
+  setTimeout(() => {
+    window.location.href = url; // переходим к сообщению
+  }, 300); // задержка — даём Telegram свернуть
 }

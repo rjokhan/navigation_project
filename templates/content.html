@@ -111,7 +111,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const isFavourited = favourites.includes(item.id);
     const favClass = isFavourited ? 'favourited' : 'not_favourited';
     const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
-    const open = `window.open('${item.telegram_url}', '_blank')`;
+    const open = `openTelegramAndCollapse('${item.telegram_url}')`;
+
     let block = '';
 
     if (item.content_type === 'video') {
