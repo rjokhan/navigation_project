@@ -230,19 +230,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 <script>
-function openTelegramAndCollapse(url) {
-  window.location.href = url;
-
-  // Дать Telegram время перейти
-  setTimeout(() => {
-    try {
-      Telegram.WebApp.close();
-    } catch (e) {
-      console.warn("Не удалось закрыть мини-апп:", e);
-    }
-  }, 500);
+function openTelegramAndStay(url) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  a.click();
 }
 </script>
+
 
 
 
