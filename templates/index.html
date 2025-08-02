@@ -12,8 +12,18 @@
 </head>
 
 <body>
-
 <div class="blur_overlay active"></div>
+
+<div id="resume_popup" class="resume_popup hidden">
+  <div class="popup_box">
+    <p id="resume_text">Вы остановились на...</p>
+    <div class="popup_buttons">
+      <button id="resume_yes">Да</button>
+      <button id="resume_no">Нет</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- BACKGROUND -->
 <div class="vertical-waves">
@@ -216,6 +226,43 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const session = localStorage.getItem('last_session');
+  if (!session) return;
+
+  try {
+    const data = JSON.parse(session);
+    const popup = document.getElementById('resume_popup');
+    const text = document.getElementById('resume_text');
+    const yes = document.getElementById('resume_yes');
+    const no = document.getElementById('resume_no');
+
+    text.innerHTML = `Вы остановились на:<br><strong>${data.genreTitle} – ${data.itemTitle}</strong><br>Продолжить?`;
+    popup.classList.remove('hidden');
+
+    yes.onclick = () => {
+      popup.classList.add('hidden');
+      const params = new URLSearchParams({
+        genre_id: data.genreId,
+        genre_title: data.genreTitle
+      });
+      localStorage.removeItem('last_session');
+      window.location.href = `/content.html?${params}`;
+    };
+
+    no.onclick = () => {
+      popup.classList.add('hidden');
+      localStorage.removeItem('last_session');
+    };
+  } catch (e) {
+    console.warn("Ошибка разбора last_session", e);
+    localStorage.removeItem('last_session');
+  }
+});
+</script>
+
 
 </body>
 </html>
