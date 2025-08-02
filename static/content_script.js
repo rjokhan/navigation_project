@@ -134,30 +134,33 @@ function loadGenre() {
 
       localStorage.setItem('allCards', JSON.stringify(allCards));
 
-      // ⬇️ Прокрутка к сохранённой карточке
-      const session = localStorage.getItem('last_session');
-      if (session) {
-        try {
-          const parsed = JSON.parse(session);
-          const targetId = parsed.itemId;
-
-          // Ждём полной отрисовки DOM
-          requestAnimationFrame(() => {
-            setTimeout(() => {
-              const targetIcon = document.querySelector(`.fav_icon[data-id="${targetId}"]`);
-              if (targetIcon) {
-                const card = targetIcon.closest('.video, .audio, .file');
-                if (card) {
-                  const offset = card.offsetTop;
-                  window.scrollTo({ top: offset - 80, behavior: 'smooth' });
-                }
-              }
-            }, 100);
-          });
-        } catch (e) {
-          console.warn("Ошибка прокрутки к сохранённому элементу:", e);
+      // ⬇️ Прокрутка через наблюдатель DOM (надёжно!)
+const session = localStorage.getItem('last_session');
+if (session) {
+  try {
+    const parsed = JSON.parse(session);
+    const targetId = parsed.itemId;
+    const observer = new MutationObserver((mutations, obs) => {
+      const targetIcon = document.querySelector(`.fav_icon[data-id="${targetId}"]`);
+      if (targetIcon) {
+        const card = targetIcon.closest('.video, .audio, .file');
+        if (card) {
+          const offset = card.offsetTop;
+          window.scrollTo({ top: offset - 80, behavior: 'smooth' });
         }
+        obs.disconnect(); // остановить наблюдение
       }
+    });
+
+    observer.observe(document.querySelector('.content_body'), {
+      childList: true,
+      subtree: true
+    });
+  } catch (e) {
+    console.warn("❌ Ошибка прокрутки через observer:", e);
+  }
+}
+
     })
     .catch(err => {
       console.error("Ошибка загрузки жанра:", err);
