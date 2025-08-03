@@ -7,7 +7,7 @@ class UserProfile(models.Model):
     subscription_status = models.BooleanField(default=False)
     city = models.CharField(max_length=100)
     subscription_until = models.DateField(null=True, blank=True)
-    telegram_id = models.CharField(max_length=64, unique=True)
+    telegram_id = models.CharField(max_length=64, null=True, blank=True)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
 
     def avatar_url(self):
