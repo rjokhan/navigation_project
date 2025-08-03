@@ -17,7 +17,7 @@ if (!telegramId) {
 
 let userFavourites = [];
 
-fetch(`/api/favourites/?telegram_id=${telegramId}`)
+fetch(/api/favourites/?telegram_id=${telegramId})
   .then(res => res.json())
   .then(data => {
     userFavourites = data.favourites || [];
@@ -29,7 +29,7 @@ fetch(`/api/favourites/?telegram_id=${telegramId}`)
   });
 
 function loadGenre() {
-  fetch(`/api/genres/`)
+  fetch(/api/genres/)
     .then(response => response.json())
     .then(data => {
       const genre = data.find(g => g.id == genreId);
@@ -43,14 +43,14 @@ function loadGenre() {
       genre.items.forEach(item => {
         const isFavourited = userFavourites.includes(item.id);
         const favClass = isFavourited ? 'favourited' : 'not_favourited';
-        const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}" title="Добавить в избранное"></div>`;
-        const openLink = `openAndRemember(${JSON.stringify(item)}, ${JSON.stringify(genre)})`;
+        const favIconHTML = <div class="fav_icon ${favClass}" data-id="${item.id}" title="Добавить в избранное"></div>;
+        const openLink = openAndRemember(${JSON.stringify(item)}, ${JSON.stringify(genre)});
         const isLastSeen = item.id.toString() === lastSeenId?.toString();
-const anchorDiv = isLastSeen ? `<div id="scroll_target" style="height: 1px;"></div>` : '';
+const anchorDiv = isLastSeen ? <div id="scroll_target" style="height: 1px;"></div> : '';
 
 let block = '';
 if (item.content_type === 'video') {
-  block = `
+  block = 
     ${anchorDiv}
     <div class="video">
       <div class="video_thumbnail" onclick="${openLink}">
@@ -63,9 +63,9 @@ if (item.content_type === 'video') {
         <div class="subtitle">${item.subtitle || ''}</div>
       </div>
     </div>
-  `;
+  ;
 } else if (item.content_type === 'audio') {
-  block = `
+  block = 
     ${anchorDiv}
     <div class="audio">
       <div class="audio_menu" onclick="${openLink}">
@@ -78,9 +78,9 @@ if (item.content_type === 'video') {
         <div class="subtitle">${item.subtitle || ''}</div>
       </div>
     </div>
-  `;
+  ;
 } else if (item.content_type === 'file') {
-  block = `
+  block = 
     ${anchorDiv}
     <div class="file">
       <div class="file_menu" onclick="${openLink}">
@@ -93,7 +93,7 @@ if (item.content_type === 'video') {
         <div class="subtitle">${item.subtitle || ''}</div>
       </div>
     </div>
-  `;
+  ;
 }
 
         
@@ -108,8 +108,8 @@ if (item.content_type === 'video') {
 
             const isFavouritedNow = favIcon.classList.contains('favourited');
             const url = isFavouritedNow
-              ? `/api/favourites/remove/${item.id}/`
-              : `/api/favourites/add/${item.id}/`;
+              ? /api/favourites/remove/${item.id}/
+              : /api/favourites/add/${item.id}/;
 
             fetch(url, {
               method: 'POST',
@@ -155,7 +155,7 @@ if (session) {
     const maxAttempts = 20;
 
     const scrollToCard = () => {
-      const targetIcon = document.querySelector(`.fav_icon[data-id="${targetId}"]`);
+      const targetIcon = document.querySelector(.fav_icon[data-id="${targetId}"]);
       if (targetIcon) {
         const card = targetIcon.closest('.video, .audio, .file');
         if (card) {
