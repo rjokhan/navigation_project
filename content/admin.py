@@ -24,15 +24,6 @@ class ContentItemAdmin(admin.ModelAdmin):
         if obj is None or obj.content_type == 'video':
             fields.append('thumbnail')
         return fields
-    
-    def save_model(self, request, obj, form, change):
-        qs = ContentItem.objects.filter(genre=obj.genre, title=obj.title)
-        if obj.pk:
-            qs = qs.exclude(pk=obj.pk)
-        if qs.exists():
-            raise ValidationError("Title in use, please rename your content title")
-        super().save_model(request, obj, form, change)
-
 
     def get_readonly_fields(self, request, obj=None):
         if obj and obj.content_type != 'video':

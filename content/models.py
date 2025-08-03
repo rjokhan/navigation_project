@@ -1,5 +1,7 @@
 from django.db import models
 from .validators import validate_file_size  # ✅ проверка на размер thumbnail
+from django.core.exceptions import ValidationError
+
 
 # 📌 Модель жанра
 class Genre(models.Model):
@@ -23,7 +25,6 @@ class ContentItem(models.Model):
     content_type = models.CharField(max_length=10, choices=GENRE_TYPE_CHOICES)
     telegram_url = models.URLField(help_text="Ссылка на сообщение в Telegram")
     duration = models.CharField(max_length=20, help_text="Например: 00:00:45")
-
     thumbnail = models.ImageField(
         upload_to='thumbnails/',
         blank=True,
@@ -34,6 +35,15 @@ class ContentItem(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.content_type})"
+
+    def clean(self):
+        # Проверка дубликата title внутри жанра (кейс insensitive!)
+        qs = ContentItem.objects.filter(genre=self.genre, title__iexact=self.title)
+        if self.pk:
+            qs = qs.exclude(pk=self.pk)
+        if qs.exists():
+            raise ValidationError({'title': "В данном направлении уже есть блок с таким названием"})
+
 
 
 # 📌 Модель избранного (для Telegram пользователей)
