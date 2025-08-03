@@ -55,8 +55,10 @@
         if (data.success && data.user_info) {
           const userInfo = data.user_info;
           const tariff = Array.isArray(data.tariffs) && data.tariffs.length > 0 ? data.tariffs[0] : null;
+          const avatarUrl = telegramUser.photo_url;
 
           infoEl.innerHTML = `
+            ${avatarUrl ? `<div style="margin-bottom:15px;text-align:center;"><img src="${avatarUrl}" alt="avatar" style="width:100px;height:100px;border-radius:50%;object-fit:cover;"></div>` : ''}
             <p><strong>Имя:</strong> ${userInfo.first_name || userInfo.full_name || userInfo.username || '—'}</p>
             <p><strong>Телефон:</strong> ${userInfo.phone_number || '—'}</p>
             <p><strong>Тариф:</strong> ${tariff ? tariff.name : '—'}</p>
