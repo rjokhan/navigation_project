@@ -83,13 +83,16 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
+  // --- Получаем lastTitle из last_session
   const session = localStorage.getItem('last_session');
   const lastTitle = session ? JSON.parse(session).itemTitle : null;
 
+  // --- Получаем пользователя
   const tg = window.Telegram.WebApp;
   const user = tg.initDataUnsafe?.user;
   if (!user || !user.id) return document.querySelector('.content_body').innerHTML = '<p>Ошибка авторизации</p>';
 
+  // --- Получаем параметры жанра из URL
   const genreId = new URLSearchParams(window.location.search).get('genre_id');
   const genreTitleRaw = new URLSearchParams(window.location.search).get('genre_title');
   const genreTitle = genreTitleRaw?.startsWith('A ') ? genreTitleRaw.slice(2).trim() : genreTitleRaw || '';
@@ -98,10 +101,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const contentBody = document.querySelector('.content_body');
   if (!genreId) return contentBody.innerHTML = '<p>Не указан жанр</p>';
 
+  // --- Получаем избранное
   const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
   const favData = await favRes.json();
   const favourites = favData.favourites || [];
 
+  // --- Получаем список жанров
   const res = await fetch('/api/genres/');
   const genres = await res.json();
   const genre = genres.find(g => g.id == genreId);
@@ -109,6 +114,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const allCards = [];
 
+  // --- Рендерим карточки
   genre.items.forEach(item => {
     const isFavourited = favourites.includes(item.id);
     const favClass = isFavourited ? 'favourited' : 'not_favourited';
