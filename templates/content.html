@@ -68,10 +68,10 @@
 </div>
 
 <div class="search_block">
-  <a href="{% url 'index' %}"><div class="back_button"></div></a>
-  <form class="searcher">
-    <img class="search_icon" src="{% static 'images/search icon.png' %}">
-    <input class="searcher_block" placeholder="Поиск..." autocomplete="off">
+    <a href="{% url 'index' %}"><div class="back_button"></div></a>
+    <form class="searcher">
+      <img class="search_icon" src="{% static 'images/search icon.png' %}">
+      <input class="searcher_block" placeholder="Поиск..." autocomplete="off">
   </form>
 </div>
 
@@ -107,16 +107,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const genre = genres.find(g => g.id == genreId);
   if (!genre || !genre.items.length) return contentBody.innerHTML = '<p>Контент пока не добавлен</p>';
 
-  const allCards = [];
-
   genre.items.forEach(item => {
-    const isFavourited = favourites.includes(item.id);
-    const favClass = isFavourited ? 'favourited' : 'not_favourited';
+    const favClass = favourites.includes(item.id) ? 'favourited' : 'not_favourited';
     const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
     const open = `openTelegramAndCollapse('${item.telegram_url}', '${genre.id}', '${genre.title}', '${item.title}', '${item.id}')`;
 
+    const cardIdAttr = lastTitle && item.title.trim() === lastTitle.trim() ? 'id="scroll_target_card"' : '';
+
     const block = `
-      <div class="${item.content_type}">
+      <div class="${item.content_type}" ${cardIdAttr}>
         <div class="${item.content_type}_thumbnail" onclick="${open}">
           <img src="${item.thumbnail || '/static/images/file_icon.png'}" />
           <div class="${item.content_type}_duration">${item.duration}</div>
@@ -126,72 +125,23 @@ document.addEventListener('DOMContentLoaded', async () => {
           <div class="title">${item.title}</div>
           <div class="subtitle">${item.subtitle || ''}</div>
         </div>
-      </div>
-    `;
+      </div>`;
 
     contentBody.insertAdjacentHTML('beforeend', block);
-    const favEl = contentBody.lastElementChild.querySelector('.fav_icon');
-    allCards.push(item);
-
-    favEl.addEventListener('click', async e => {
-      e.stopPropagation();
-      const id = parseInt(favEl.dataset.id);
-      const popup = document.getElementById('popup');
-      popup.classList.add('show');
-      document.getElementById('popup_yes').onclick = async () => {
-        const method = favEl.classList.contains('favourited') ? 'remove' : 'add';
-        await fetch(`/api/favourites/${method}/${id}/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegram_id: user.id })
-        });
-        favEl.classList.toggle('favourited');
-        favEl.classList.toggle('not_favourited');
-        popup.classList.remove('show');
-      };
-      document.getElementById('popup_no').onclick = () => popup.classList.remove('show');
-    });
   });
-
-  localStorage.setItem('allCards', JSON.stringify(allCards));
 
   if (lastTitle) {
     setTimeout(() => {
-      const cards = document.querySelectorAll('.video, .audio, .file');
-      for (let card of cards) {
-        const titleEl = card.querySelector('.title');
-        if (titleEl && titleEl.textContent.trim() === lastTitle.trim()) {
-          card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          localStorage.removeItem('last_session');
-          break;
-        }
-      }
-    }, 300);
+      document.getElementById('scroll_target_card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      localStorage.removeItem('last_session');
+    }, 200);
   }
 });
 </script>
 
 <script>
-document.querySelectorAll('.header a').forEach(link => {
-  link.addEventListener('click', e => {
-    e.preventDefault();
-    document.querySelector('.blur_overlay').classList.add('active');
-    setTimeout(() => window.location.href = link.getAttribute('href'), 300);
-  });
-});
-</script>
-
-<script>
-document.querySelector(".searcher").addEventListener("submit", e => {
-  e.preventDefault();
-  const query = document.querySelector(".searcher_block").value.trim();
-  if (query) window.location.href = `/searched/?query=${encodeURIComponent(query)}`;
-});
-</script>
-
-<script>
 function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
-  localStorage.setItem('last_session', JSON.stringify({genreId, genreTitle, itemTitle, itemId}));
+  localStorage.setItem('last_session', JSON.stringify({ genreId, genreTitle, itemTitle, itemId }));
   window.location.href = url;
   setTimeout(() => Telegram.WebApp.close(), 500);
 }
