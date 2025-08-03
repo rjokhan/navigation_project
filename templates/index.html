@@ -249,15 +249,16 @@ document.addEventListener('DOMContentLoaded', () => {
     popup.classList.add('show');
 
     yes.onclick = () => {
-      popup.classList.remove('show');
-      popup.classList.add('hidden');
-      localStorage.removeItem('last_session');
-      const params = new URLSearchParams({
-        genre_id: data.genreId,
-        genre_title: data.genreTitle
-      });
-      window.location.href = `/content/?${params}`;
-    };
+  popup.classList.remove('show');
+  popup.classList.add('hidden');
+  // localStorage.removeItem('last_session');    // <-- УДАЛИ ЭТУ СТРОКУ!
+  const params = new URLSearchParams({
+    genre_id: data.genreId,
+    genre_title: data.genreTitle
+  });
+  window.location.href = `/content/?${params}`;
+};
+
 
     no.onclick = () => {
   popup.classList.remove('show');
