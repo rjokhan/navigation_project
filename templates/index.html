@@ -136,9 +136,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 🛠️ Скрытие клавиатуры по Enter
   searchInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
-      e.preventDefault();
-      searchInput.blur();
-    }
+  e.preventDefault();
+
+  // Хак для iOS: временное скрытие клавиатуры
+  const tempInput = document.createElement('input');
+  tempInput.style.position = 'absolute';
+  tempInput.style.opacity = '0';
+  tempInput.style.height = '0';
+  tempInput.style.pointerEvents = 'none';
+  document.body.appendChild(tempInput);
+  tempInput.focus();
+  setTimeout(() => {
+    tempInput.remove();
+  }, 10);
+}
+
   });
 
   const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
