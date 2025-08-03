@@ -1,7 +1,12 @@
 const params = new URLSearchParams(window.location.search);
 const genreId = params.get("genre_id");
 const genreTitleRaw = params.get("genre_title");
-const genreTitle = genreTitleRaw ? genreTitleRaw.trim().replace(/^A\s+/i, '') : '';
+
+// Убираем лишнее "A" и пробелы, оставляем только название жанра
+const genreTitle = genreTitleRaw
+  ? genreTitleRaw.trim().replace(/^A\s+/i, '')
+  : '';
+
 document.getElementById("genre-title").textContent = genreTitle || '';
 
 const telegramId = localStorage.getItem('telegram_id');
@@ -11,6 +16,7 @@ if (!telegramId) {
 }
 
 let userFavourites = [];
+
 fetch(`/api/favourites/?telegram_id=${telegramId}`)
   .then(res => res.json())
   .then(data => {
@@ -23,9 +29,6 @@ fetch(`/api/favourites/?telegram_id=${telegramId}`)
   });
 
 function loadGenre() {
-  const session = localStorage.getItem('last_session');
-  const lastSeenId = session ? JSON.parse(session).itemId?.toString() : null;
-
   fetch(`/api/genres/`)
     .then(response => response.json())
     .then(data => {
@@ -35,19 +38,17 @@ function loadGenre() {
       const container = document.querySelector('.content_body');
       container.innerHTML = '';
       const allCards = [];
+      
 
       genre.items.forEach(item => {
         const isFavourited = userFavourites.includes(item.id);
         const favClass = isFavourited ? 'favourited' : 'not_favourited';
         const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}" title="Добавить в избранное"></div>`;
         const openLink = `openAndRemember(${JSON.stringify(item)}, ${JSON.stringify(genre)})`;
-        const isLastSeen = item.id.toString() === lastSeenId;
-        const anchorDiv = isLastSeen ? `<div id="scroll_target" style="height: 1px;"></div>` : '';
 
         let block = '';
         if (item.content_type === 'video') {
           block = `
-            ${anchorDiv}
             <div class="video">
               <div class="video_thumbnail" onclick="${openLink}">
                 <img src="${item.thumbnail}" alt="video_thumbnail">
@@ -62,7 +63,6 @@ function loadGenre() {
           `;
         } else if (item.content_type === 'audio') {
           block = `
-            ${anchorDiv}
             <div class="audio">
               <div class="audio_menu" onclick="${openLink}">
                 <div class="static_icon"><img src="/static/images/audio_icon.png"></div>
@@ -77,7 +77,6 @@ function loadGenre() {
           `;
         } else if (item.content_type === 'file') {
           block = `
-            ${anchorDiv}
             <div class="file">
               <div class="file_menu" onclick="${openLink}">
                 <div class="static_icon"><img src="/static/images/file_icon.png"></div>
@@ -93,11 +92,13 @@ function loadGenre() {
         }
 
         container.insertAdjacentHTML('beforeend', block);
+        const last = container.lastElementChild;
+        const favIcon = last.querySelector('.fav_icon');
 
-        const favIcon = container.lastElementChild.querySelector('.fav_icon');
         if (favIcon) {
           favIcon.addEventListener('click', (e) => {
             e.stopPropagation();
+
             const isFavouritedNow = favIcon.classList.contains('favourited');
             const url = isFavouritedNow
               ? `/api/favourites/remove/${item.id}/`
@@ -105,7 +106,9 @@ function loadGenre() {
 
             fetch(url, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: {
+                'Content-Type': 'application/json'
+              },
               body: JSON.stringify({ telegram_id: telegramId })
             })
               .then(res => res.json())
@@ -132,17 +135,54 @@ function loadGenre() {
 
       localStorage.setItem('allCards', JSON.stringify(allCards));
 
-      setTimeout(() => {
-        const el = document.getElementById('scroll_target');
-        if (el) {
-          const offset = el.getBoundingClientRect().top + window.pageYOffset;
+      // ⬇️ Прокрутка через наблюдатель DOM (надёжно!)
+// Гарантированная прокрутка даже при долгой генерации DOM
+const session = localStorage.getItem('last_session');
+if (session) {
+  try {
+    const parsed = JSON.parse(session);
+    const targetId = parsed.itemId;
+
+    // Ждём появления нужной карточки и скроллим к ней
+    let attempts = 0;
+    const maxAttempts = 20;
+
+    const scrollToCard = () => {
+      const targetIcon = document.querySelector(`.fav_icon[data-id="${targetId}"]`);
+      if (targetIcon) {
+        const card = targetIcon.closest('.video, .audio, .file');
+        if (card) {
+          card.setAttribute('id', 'last_seen_card');
+
+          const offset = card.offsetTop;
           window.scrollTo({ top: offset - 80, behavior: 'smooth' });
-          localStorage.removeItem('last_session');
-          console.log('✅ Прокрутка к scroll_target выполнена');
-        } else {
-          console.warn('⚠️ scroll_target не найден');
+
+          setTimeout(() => {
+            card.removeAttribute('id');
+            localStorage.removeItem('last_session');
+            console.log("✅ Прокручено к карточке ID:", targetId);
+          }, 500);
+
+          return;
         }
-      }, 200);
+      }
+
+      if (attempts++ < maxAttempts) {
+        setTimeout(scrollToCard, 200);
+      } else {
+        console.warn("❌ Не удалось найти карточку для прокрутки");
+      }
+    };
+
+    setTimeout(scrollToCard, 200);
+  } catch (e) {
+    console.warn("⚠️ Ошибка при прокрутке к сохранённому элементу:", e);
+    localStorage.removeItem('last_session');
+  }
+}
+
+
+
     })
     .catch(err => {
       console.error("Ошибка загрузки жанра:", err);
@@ -155,6 +195,7 @@ function openAndCollapse(url) {
     window.location.href = url;
   }, 300);
 }
+
 
 function openAndRemember(item, genre) {
   const blockId = 'last_seen_card_' + item.id;
@@ -173,3 +214,15 @@ function openAndRemember(item, genre) {
     window.location.href = item.telegram_url;
   }, 400);
 }
+
+
+// Прокрутка к #last_seen_card и удаление id
+setTimeout(() => {
+  const el = document.getElementById('last_seen_card');
+  if (el) {
+    const offset = el.offsetTop;
+    window.scrollTo({ top: offset - 80, behavior: 'smooth' });
+    el.removeAttribute('id');
+    localStorage.removeItem('last_session');
+  }
+}, 100);
