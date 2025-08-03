@@ -84,7 +84,8 @@
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
   const session = localStorage.getItem('last_session');
-  const lastSeenId = session ? JSON.parse(session).itemId : null;
+  // Теперь ищем dom_id!
+  const lastAnchor = session ? JSON.parse(session).dom_id : null;
 
   const tg = window.Telegram.WebApp;
   const user = tg.initDataUnsafe?.user;
@@ -113,10 +114,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const isFavourited = favourites.includes(item.id);
     const favClass = isFavourited ? 'favourited' : 'not_favourited';
     const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
-    const open = `openTelegramAndCollapse('${item.telegram_url}', '${genre.id}', '${genre.title}', '${item.title}', '${item.id}')`;
+    const open = `openTelegramAndCollapse('${item.telegram_url}', '${genre.id}', '${genre.title}', '${item.title}', '${item.id}', '${item.dom_id}')`;
 
-    // Важно: теперь у каждой карточки уникальный id по item.id!
-    const cardIdAttr = `id="item_${item.id}"`;
+    // id карточки теперь всегда из бэка (anchor)!
+    const cardIdAttr = `id="${item.dom_id}"`;
 
     let block = '';
 
@@ -195,10 +196,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // сохранить allCards локально для favourited.html
   localStorage.setItem('allCards', JSON.stringify(allCards));
 
-  // --- Скроллим к карточке по id, если есть lastSeenId
-  if (lastSeenId) {
+  // --- Скроллим к карточке по dom_id (anchor), если есть lastAnchor
+  if (lastAnchor) {
     setTimeout(() => {
-      const el = document.getElementById('item_' + lastSeenId);
+      const el = document.getElementById(lastAnchor);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         localStorage.removeItem('last_session');
@@ -245,13 +246,14 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 <script>
-function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
-  // Сохраняем id карточки для возврата!
+function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId, dom_id) {
+  // Сохраняем anchor карточки для возврата!
   localStorage.setItem('last_session', JSON.stringify({
     genreId,
     genreTitle,
     itemTitle,
-    itemId
+    itemId,
+    dom_id
   }));
 
   window.location.href = url;

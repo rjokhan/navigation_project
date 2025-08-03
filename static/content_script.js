@@ -12,9 +12,9 @@ if (!telegramId) {
   throw new Error('Telegram ID не найден');
 }
 
-// 📌 Получение ID последней карточки
+// 📌 Получение dom_id последней карточки
 const session = JSON.parse(localStorage.getItem('last_session') || '{}');
-const lastSeenId = session.itemId ? session.itemId.toString() : null;
+const lastAnchor = session.dom_id || null; // теперь мы будем сохранять dom_id (например, "item_21")
 
 // 📌 Получаем избранное и запускаем загрузку жанра
 let userFavourites = [];
@@ -46,8 +46,8 @@ function loadGenre() {
         const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}" title="Добавить в избранное"></div>`;
         const openLink = `openAndRemember(${JSON.stringify(item)}, ${JSON.stringify(genre)})`;
 
-        // Теперь id всегда уникальный и предсказуемый:
-        const cardIdAttr = `id="item_${item.id}"`;
+        // Используем id из бэка!
+        const cardIdAttr = `id="${item.dom_id}"`;
 
         let block = '';
         if (item.content_type === 'video') {
@@ -133,10 +133,10 @@ function loadGenre() {
 
       localStorage.setItem('allCards', JSON.stringify(allCards));
 
-      // --- Скролл к карточке по id, если есть lastSeenId
-      if (lastSeenId) {
+      // --- Скролл к карточке по dom_id, если есть lastAnchor
+      if (lastAnchor) {
         setTimeout(() => {
-          const el = document.getElementById('item_' + lastSeenId);
+          const el = document.getElementById(lastAnchor);
           if (el) {
             el.scrollIntoView({ behavior: 'smooth', block: 'start' });
             localStorage.removeItem('last_session');
@@ -155,7 +155,8 @@ function openAndRemember(item, genre) {
     genreId: genre.id,
     genreTitle: genre.title,
     itemTitle: item.title,
-    itemId: item.id
+    itemId: item.id,
+    dom_id: item.dom_id  // <-- теперь сохраняем и anchor
   }));
   setTimeout(() => {
     window.location.href = item.telegram_url;
