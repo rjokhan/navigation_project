@@ -128,6 +128,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const popupYes = document.getElementById("popup_yes");
   const popupNo = document.getElementById("popup_no");
   let targetToRemove = null;
+  let allFavourites = [];
 
   const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
   const favIds = (await favRes.json()).favourites || [];
@@ -136,10 +137,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   const genres = await genresRes.json();
 
   const allItems = genres.flatMap(g => g.items);
-  let favourites = allItems.filter(item => favIds.includes(item.id));
+  allFavourites = allItems.filter(item => favIds.includes(item.id));
+  let favourites = [...allFavourites];
 
   function renderFavourites(filteredItems) {
     container.innerHTML = '';
+    favourites = filteredItems; // <-- теперь поиск только среди отфильтрованных!
 
     if (filteredItems.length === 0) {
       container.innerHTML = '<div class="no-results">Ничего не найдено</div>';
@@ -198,7 +201,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       // Клик по всему блоку — открытие ссылки и закрытие WebApp
       wrapper.addEventListener('click', (e) => {
-        // Чтобы не срабатывало, если клик был по иконке fav
         if (e.target.classList.contains('fav_icon')) return;
         const url = wrapper.getAttribute('data-url');
         if (url) {
@@ -236,6 +238,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       setTimeout(() => {
         wrapper.remove();
+        // Обновляем и allFavourites и favourites!
+        allFavourites = allFavourites.filter(item => item.id !== id);
         favourites = favourites.filter(item => item.id !== id);
         renderFavourites(favourites);
       }, 800);
@@ -247,7 +251,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   searchInput.addEventListener('input', () => {
     const query = searchInput.value.toLowerCase().trim();
-    const filtered = favourites.filter(item => {
+    // Фильтрация только по allFavourites!
+    const filtered = allFavourites.filter(item => {
       const title = (item.title || '').toLowerCase();
       const subtitle = (item.subtitle || '').toLowerCase();
       return title.includes(query) || subtitle.includes(query);
@@ -255,7 +260,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderFavourites(filtered);
   });
 
-  renderFavourites(favourites);
+  renderFavourites(allFavourites);
 
   requestAnimationFrame(() => {
     document.querySelector('.blur_overlay').classList.remove("active");
