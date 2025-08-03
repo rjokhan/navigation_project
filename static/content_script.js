@@ -45,51 +45,58 @@ function loadGenre() {
         const favClass = isFavourited ? 'favourited' : 'not_favourited';
         const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}" title="Добавить в избранное"></div>`;
         const openLink = `openAndRemember(${JSON.stringify(item)}, ${JSON.stringify(genre)})`;
+        const isLastSeen = item.id.toString() === lastSeenId?.toString();
+const anchorDiv = isLastSeen ? `<div id="scroll_target" style="height: 1px;"></div>` : '';
 
-        let block = '';
-        if (item.content_type === 'video') {
-          block = `
-            <div class="video">
-              <div class="video_thumbnail" onclick="${openLink}">
-                <img src="${item.thumbnail}" alt="video_thumbnail">
-                <div class="video_duration">${item.duration}</div>
-              </div>
-              ${favIconHTML}
-              <div class="video_info">
-                <div class="title">${item.title}</div>
-                <div class="subtitle">${item.subtitle || ''}</div>
-              </div>
-            </div>
-          `;
-        } else if (item.content_type === 'audio') {
-          block = `
-            <div class="audio">
-              <div class="audio_menu" onclick="${openLink}">
-                <div class="static_icon"><img src="/static/images/audio_icon.png"></div>
-                <div class="audio_duration">${item.duration}</div>
-              </div>
-              ${favIconHTML}
-              <div class="audio_info">
-                <div class="title">${item.title}</div>
-                <div class="subtitle">${item.subtitle || ''}</div>
-              </div>
-            </div>
-          `;
-        } else if (item.content_type === 'file') {
-          block = `
-            <div class="file">
-              <div class="file_menu" onclick="${openLink}">
-                <div class="static_icon"><img src="/static/images/file_icon.png"></div>
-                <div class="file_duration">${item.duration}</div>
-              </div>
-              ${favIconHTML}
-              <div class="file_info">
-                <div class="title">${item.title}</div>
-                <div class="subtitle">${item.subtitle || ''}</div>
-              </div>
-            </div>
-          `;
-        }
+let block = '';
+if (item.content_type === 'video') {
+  block = `
+    ${anchorDiv}
+    <div class="video">
+      <div class="video_thumbnail" onclick="${openLink}">
+        <img src="${item.thumbnail}" alt="video_thumbnail">
+        <div class="video_duration">${item.duration}</div>
+      </div>
+      ${favIconHTML}
+      <div class="video_info">
+        <div class="title">${item.title}</div>
+        <div class="subtitle">${item.subtitle || ''}</div>
+      </div>
+    </div>
+  `;
+} else if (item.content_type === 'audio') {
+  block = `
+    ${anchorDiv}
+    <div class="audio">
+      <div class="audio_menu" onclick="${openLink}">
+        <div class="static_icon"><img src="/static/images/audio_icon.png"></div>
+        <div class="audio_duration">${item.duration}</div>
+      </div>
+      ${favIconHTML}
+      <div class="audio_info">
+        <div class="title">${item.title}</div>
+        <div class="subtitle">${item.subtitle || ''}</div>
+      </div>
+    </div>
+  `;
+} else if (item.content_type === 'file') {
+  block = `
+    ${anchorDiv}
+    <div class="file">
+      <div class="file_menu" onclick="${openLink}">
+        <div class="static_icon"><img src="/static/images/file_icon.png"></div>
+        <div class="file_duration">${item.duration}</div>
+      </div>
+      ${favIconHTML}
+      <div class="file_info">
+        <div class="title">${item.title}</div>
+        <div class="subtitle">${item.subtitle || ''}</div>
+      </div>
+    </div>
+  `;
+}
+
+        
 
         container.insertAdjacentHTML('beforeend', block);
         const last = container.lastElementChild;
@@ -218,11 +225,13 @@ function openAndRemember(item, genre) {
 
 // Прокрутка к #last_seen_card и удаление id
 setTimeout(() => {
-  const el = document.getElementById('last_seen_card');
+  const el = document.getElementById('scroll_target');
   if (el) {
-    const offset = el.offsetTop;
+    const offset = el.getBoundingClientRect().top + window.pageYOffset;
     window.scrollTo({ top: offset - 80, behavior: 'smooth' });
-    el.removeAttribute('id');
     localStorage.removeItem('last_session');
+    console.log('✅ Прокрутка к scroll_target выполнена');
+  } else {
+    console.warn('⚠️ scroll_target не найден');
   }
-}, 100);
+}, 200);
