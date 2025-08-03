@@ -2,145 +2,274 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Избранное</title>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Favourites</title>
+  <link rel="stylesheet" href="{% static 'css/content.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="{% static 'css/content.css' %}" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    .fav_icon {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 35px;
+      height: 35px;
+      cursor: pointer;
+      border-radius: 50%;
+      background-size: contain;
+      background-repeat: no-repeat;
+      z-index: 10;
+      background-color: white;
+    }
+    .favourited {
+      background-image: url('{% static "images/fav_icon_active.png" %}');
+      background-color: #ff0049;
+    }
+    .video, .audio, .file {
+      position: relative;
+      cursor: pointer;
+    }
+    .no-results {
+      text-align: center;
+      padding: 50px;
+      font-size: 18px;
+      color: #aaa;
+    }
+    .confirm_popup {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+    }
+    .confirm_popup.show {
+      display: flex;
+    }
+    .popup_box {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px 30px;
+      text-align: center;
+    }
+    .popup_buttons {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 15px;
+    }
+    .popup_buttons button {
+      padding: 8px 20px;
+      border: none;
+      background: #ff0049;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
 
-  <div class="blur_overlay"></div>
-
-  <div class="vertical-waves">
-    <div class="wave"></div>
-    <div class="wave"></div>
-    <div class="wave"></div>
+<div id="popup" class="confirm_popup">
+  <div class="popup_box">
+    <p>Севимлилардан олиб ташлашни хоҳлайсизми?</p>
+    <div class="popup_buttons">
+      <button id="popup_yes">ҲА</button>
+      <button id="popup_no">ЙЎҚ</button>
+    </div>
   </div>
+</div>
 
-  <!-- Назад и строка поиска -->
-  <div class="search_block">
-    <a href="{% url 'index' %}"><div class="back_button"></div></a>
-    <form class="searcher">
-      <img class="search_icon" src="{% static 'images/search icon.png' %}">
-      <input class="searcher_block" placeholder="Поиск..." autocomplete="off">
-    </form>
-  </div>
+<div class="blur_overlay active"></div>
+<div class="vertical-waves">
+  <div class="wave"></div>
+  <div class="wave"></div>
+  <div class="wave"></div>
+</div>
 
-  <!-- Заголовок -->
-  <div class="choosed_genre"><span class="red">A </span>FAVOURITES</div>
+<div class="header">
+  <a href="{% url 'index' %}"><div class="header_icon"><img src="{% static 'images/home_page.png' %}"><p>A CLUB</p></div></a>
+  <a href="{% url 'favourited' %}"><div class="header_icon active"><img src="{% static 'images/fav.png' %}"><p>Севимли</p></div></a>
+  <a href="{% url 'profile' %}"><div class="header_icon"><img src="{% static 'images/profile.png' %}"><p>Профиль</p></div></a>
+  <a href="{% url 'chat' %}"><div class="header_icon"><img src="{% static 'images/chat.png' %}"><p>Чатлар</p></div></a>
+</div>
 
-  <!-- Контент -->
-  <div class="content_body" style="margin-top: 20px;"></div>
+<div class="search_block">
+  <a href="{% url 'index' %}"><div class="back_button"></div></a>
+  <form class="searcher">
+    <img class="search_icon" src="{% static 'images/search icon.png' %}">
+    <input class="searcher_block" placeholder="Поиск избранного...">
+  </form>
+</div>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const input = document.querySelector(".searcher_block");
-      const container = document.querySelector(".content_body");
+<div class="choosed_genre"><span class="red">A </span>FAVOURITES:</div>
 
-      // Получаем id избранных из localStorage (или через API)
-      const userId = localStorage.getItem("telegram_id");
-      if (!userId) {
-        container.innerHTML = `<div style="font-size: 20px; text-align:center;">Ошибка авторизации</div>`;
-        return;
+<div class="content_body"></div>
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const tg = window.Telegram.WebApp;
+  const user = tg.initDataUnsafe?.user;
+  if (!user || !user.id) {
+    document.querySelector('.content_body').innerHTML = '<div class="no-results">Ошибка авторизации</div>';
+    return;
+  }
+
+  const container = document.querySelector('.content_body');
+  const searchInput = document.querySelector('.searcher_block');
+  const popup = document.getElementById("popup");
+  const popupYes = document.getElementById("popup_yes");
+  const popupNo = document.getElementById("popup_no");
+  let targetToRemove = null;
+
+  const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
+  const favIds = (await favRes.json()).favourites || [];
+
+  const genresRes = await fetch('/api/genres/');
+  const genres = await genresRes.json();
+
+  const allItems = genres.flatMap(g => g.items);
+  let favourites = allItems.filter(item => favIds.includes(item.id));
+
+  function renderFavourites(filteredItems) {
+    container.innerHTML = '';
+
+    if (filteredItems.length === 0) {
+      container.innerHTML = '<div class="no-results">Ничего не найдено</div>';
+      return;
+    }
+
+    filteredItems.forEach(item => {
+      const wrapper = document.createElement('div');
+      wrapper.className = item.content_type;
+      wrapper.style.cursor = "pointer";
+      wrapper.setAttribute('data-url', item.telegram_url);
+
+      const favIconHTML = `<div class="fav_icon favourited" data-id="${item.id}"></div>`;
+      let innerHTML = '';
+
+      if (item.content_type === 'video') {
+        innerHTML = `
+          <div class="video_thumbnail">
+            <img src="${item.thumbnail}" alt="video_thumbnail">
+            <div class="video_duration">${item.duration}</div>
+          </div>
+          ${favIconHTML}
+          <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+        `;
+      } else if (item.content_type === 'audio') {
+        innerHTML = `
+          <div class="audio_menu">
+            <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}"></div>
+            <div class="audio_duration">${item.duration}</div>
+          </div>
+          ${favIconHTML}
+          <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+        `;
+      } else if (item.content_type === 'file') {
+        innerHTML = `
+          <div class="file_menu">
+            <div class="static_icon"><img src="{% static 'images/file_icon.png' %}"></div>
+            <div class="file_duration">${item.duration}</div>
+          </div>
+          ${favIconHTML}
+          <div class="file_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+        `;
       }
 
-      // Загружаем избранное через API (можно заменить на localStorage если нужно)
-      fetch(`/api/favourites/?telegram_id=${userId}`)
-        .then(res => res.json())
-        .then(data => {
-          const favIds = data.favourites || [];
-          // Берём все карточки (из localStorage)
-          const allCards = JSON.parse(localStorage.getItem("allCards") || "[]");
-          // Фильтруем только избранные
-          const favourites = allCards.filter(item => favIds.includes(item.id));
+      wrapper.innerHTML = innerHTML;
+      container.appendChild(wrapper);
 
-          if (favourites.length === 0) {
-            container.innerHTML = `<div style="font-size: 20px; text-align:center;">Нет избранного контента</div>`;
-            return;
-          }
+      // Клик по иконке fav — удалить из избранного (popup)
+      const favIcon = wrapper.querySelector('.fav_icon');
+      favIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = parseInt(favIcon.dataset.id);
+        targetToRemove = { favIcon, id, wrapper };
+        popup.classList.add("show");
+      });
 
-          favourites.forEach(item => {
-            let dataUrlAttr = `data-url="${item.telegram_url}"`;
-            let block = "";
-
-            if (item.content_type === "video") {
-              block = `
-                <div class="video fav_item" ${dataUrlAttr}>
-                  <div class="video_thumbnail">
-                    <img src="${item.thumbnail}" alt="video">
-                    <div class="video_duration">${item.duration}</div>
-                  </div>
-                  <div class="fav_icon favourited"></div>
-                  <div class="video_info">
-                    <div class="title">${item.title}</div>
-                    <div class="subtitle">${item.subtitle || ""}</div>
-                  </div>
-                </div>
-              `;
-            } else if (item.content_type === "audio") {
-              block = `
-                <div class="audio fav_item" ${dataUrlAttr}>
-                  <div class="audio_menu">
-                    <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}"></div>
-                    <div class="audio_duration">${item.duration}</div>
-                  </div>
-                  <div class="fav_icon favourited"></div>
-                  <div class="audio_info">
-                    <div class="title">${item.title}</div>
-                    <div class="subtitle">${item.subtitle || ""}</div>
-                  </div>
-                </div>
-              `;
-            } else if (item.content_type === "file") {
-              block = `
-                <div class="file fav_item" ${dataUrlAttr}>
-                  <div class="file_menu">
-                    <div class="static_icon"><img src="{% static 'images/file_icon.png' %}"></div>
-                    <div class="file_duration">${item.duration}</div>
-                  </div>
-                  <div class="fav_icon favourited"></div>
-                  <div class="file_info">
-                    <div class="title">${item.title}</div>
-                    <div class="subtitle">${item.subtitle || ""}</div>
-                  </div>
-                </div>
-              `;
-            }
-
-            container.insertAdjacentHTML("beforeend", block);
-          });
-
-          // Обработка кликов на все избранные карточки
-          document.querySelectorAll('.fav_item').forEach(card => {
-            card.addEventListener('click', function() {
-              const url = card.getAttribute('data-url');
-              if (url) {
-                window.location.href = url;
-                setTimeout(() => {
-                  try { Telegram.WebApp.close(); } catch(e) {}
-                }, 400);
-              }
-            });
-          });
-
-        })
-        .catch(() => {
-          container.innerHTML = `<div style="font-size: 20px; text-align:center;">Ошибка загрузки избранного</div>`;
-        });
-
-      // Поиск по избранному
-      document.querySelector(".searcher").addEventListener("submit", function(e) {
-        e.preventDefault();
-        const newQuery = input.value.trim();
-        if (newQuery) {
-          const encoded = encodeURIComponent(newQuery);
-          window.location.href = `/searched/?query=${encoded}`;
+      // Клик по всему блоку — открытие ссылки и закрытие WebApp
+      wrapper.addEventListener('click', (e) => {
+        // Чтобы не срабатывало, если клик был по иконке fav
+        if (e.target.classList.contains('fav_icon')) return;
+        const url = wrapper.getAttribute('data-url');
+        if (url) {
+          window.location.href = url;
+          setTimeout(() => {
+            try { Telegram.WebApp.close(); } catch(e) {}
+          }, 400);
         }
       });
     });
-  </script>
+  }
+
+  popupNo.onclick = () => popup.classList.remove("show");
+
+  popupYes.onclick = async () => {
+    if (targetToRemove) {
+      const { favIcon, id, wrapper } = targetToRemove;
+      await fetch(`/api/favourites/remove/${id}/`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ telegram_id: user.id })
+      });
+
+      // Animation
+      wrapper.style.transition = "transform 0.3s ease, opacity 0.3s ease";
+      wrapper.style.transform = "scale(0.95)";
+      wrapper.style.opacity = "0";
+
+      setTimeout(() => {
+        wrapper.style.transition = "height 0.4s ease, margin 0.4s ease, padding 0.4s ease";
+        wrapper.style.height = "0";
+        wrapper.style.margin = "0";
+        wrapper.style.padding = "0";
+      }, 300);
+
+      setTimeout(() => {
+        wrapper.remove();
+        favourites = favourites.filter(item => item.id !== id);
+        renderFavourites(favourites);
+      }, 800);
+
+      popup.classList.remove("show");
+      targetToRemove = null;
+    }
+  };
+
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase().trim();
+    const filtered = favourites.filter(item => {
+      const title = (item.title || '').toLowerCase();
+      const subtitle = (item.subtitle || '').toLowerCase();
+      return title.includes(query) || subtitle.includes(query);
+    });
+    renderFavourites(filtered);
+  });
+
+  renderFavourites(favourites);
+
+  requestAnimationFrame(() => {
+    document.querySelector('.blur_overlay').classList.remove("active");
+  });
+  document.querySelectorAll('.header a').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const href = link.getAttribute('href');
+      document.querySelector('.blur_overlay').classList.add("active");
+      setTimeout(() => window.location.href = href, 300);
+    });
+  });
+});
+</script>
 
 </body>
 </html>
