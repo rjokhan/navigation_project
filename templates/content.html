@@ -198,6 +198,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ——— Прокрутка к карточке по last_seen_card
   const observer = new MutationObserver(() => {
+
+
+
+
+    console.log('Нашёл карточку для скролла!', el);
+    console.log('item.id:', item.id, 'lastSeenId:', lastSeenId);
+
+
+
+
+
     const el = document.getElementById('last_seen_card');
     if (el) {
       window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
