@@ -202,8 +202,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 
-    console.log('Нашёл карточку для скролла!', el);
-    console.log('item.id:', item.id, 'lastSeenId:', lastSeenId);
+    if (el) {
+  alert('Нашёл карточку для скролла!\n' + el.outerHTML);
+} else {
+  alert('Не нашёл карточку для скролла!');
+}
 
 
 
