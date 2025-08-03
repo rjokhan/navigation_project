@@ -116,9 +116,7 @@ const lastSeenId = session ? JSON.parse(session).itemId : null;
     const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
     const open = `openTelegramAndCollapse('${item.telegram_url}', '${genre.id}', '${genre.title}', '${item.title}', '${item.id}')`;
 
-const isLastSeen = item.id.toString() === lastSeenId?.toString();
-const anchorDiv = isLastSeen ? `<div id="scroll_target" style="height: 1px;"></div>` : '';
-
+const cardIdAttr = item.id == lastSeenId ? 'id="last_seen_card"' : '';
 
 
 
