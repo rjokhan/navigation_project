@@ -84,7 +84,6 @@
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
   const session = localStorage.getItem('last_session');
-  // --- теперь ищем по title, а не по id!
   const lastTitle = session ? JSON.parse(session).itemTitle : null;
 
   const tg = window.Telegram.WebApp;
@@ -109,7 +108,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!genre || !genre.items.length) return contentBody.innerHTML = '<p>Контент пока не добавлен</p>';
 
   const allCards = [];
-  let scrollAnchor = null;
 
   genre.items.forEach(item => {
     const isFavourited = favourites.includes(item.id);
@@ -117,17 +115,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
     const open = `openTelegramAndCollapse('${item.telegram_url}', '${genre.id}', '${genre.title}', '${item.title}', '${item.id}')`;
 
-    // --- Если title совпал, ставим якорь для скролла
-    let cardIdAttr = '';
-    if (lastTitle && (item.title === lastTitle || item.title.trim() === lastTitle.trim())) {
-      cardIdAttr = 'id="scroll_target_card"';
-      scrollAnchor = 'scroll_target_card';
-    }
-
     let block = '';
-
     if (item.content_type === 'video') {
-      block = `<div class="video" ${cardIdAttr}>
+      block = `<div class="video">
         <div class="video_thumbnail" onclick="${open}">
           <img src="${item.thumbnail}" />
           <div class="video_duration">${item.duration}</div>
@@ -136,7 +126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
       </div>`;
     } else if (item.content_type === 'audio') {
-      block = `<div class="audio" ${cardIdAttr} onclick="${open}">
+      block = `<div class="audio" onclick="${open}">
         <div class="audio_menu">
           <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}" /></div>
           <div class="audio_duration">${item.duration}</div>
@@ -145,7 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
       </div>`;
     } else if (item.content_type === 'file') {
-      block = `<div class="file" ${cardIdAttr} onclick="${open}">
+      block = `<div class="file" onclick="${open}">
         <div class="file_menu">
           <div class="static_icon"><img src="{% static 'images/file_icon.png' %}" /></div>
           <div class="file_duration">${item.duration}</div>
@@ -200,15 +190,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   localStorage.setItem('allCards', JSON.stringify(allCards));
 
-  // --- Скроллим к карточке по title!
-  if (scrollAnchor) {
+  // --- Скроллим к карточке по title строго по тексту!
+  if (lastTitle) {
     setTimeout(() => {
-      const el = document.getElementById(scrollAnchor);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        localStorage.removeItem('last_session');
+      const cards = document.querySelectorAll('.video, .audio, .file');
+      for (let card of cards) {
+        const titleEl = card.querySelector('.title');
+        if (titleEl && titleEl.textContent.trim() === lastTitle.trim()) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          localStorage.removeItem('last_session');
+          break;
+        }
       }
-    }, 150);
+    }, 300);
   }
 });
 </script>
