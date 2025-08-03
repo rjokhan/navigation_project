@@ -43,8 +43,14 @@ function loadGenre() {
       let idWasAssigned = false; // для дебага
 
       genre.items.forEach(item => {
+        // Для дебага
+        let debugInfo = `<div style="color:#d00;font-size:13px;">
+          item.id: <b>${item.id}</b> | lastSeenId: <b>${lastSeenId}</b> | ${
+            item.id && lastSeenId && item.id.toString() === lastSeenId ? '<span style="color:green">MATCH</span>' : '<span style="color:red">NO MATCH</span>'
+          }
+        </div>`;
+
         let cardIdAttr = '';
-        // Приводим оба к строке, сравниваем жёстко
         if (item.id && lastSeenId && item.id.toString() === lastSeenId) {
           cardIdAttr = 'id="last_seen_card"';
           idWasAssigned = true;
@@ -67,6 +73,7 @@ function loadGenre() {
               <div class="video_info">
                 <div class="title">${item.title}</div>
                 <div class="subtitle">${item.subtitle || ''}</div>
+                ${debugInfo}
               </div>
             </div>
           `;
@@ -81,6 +88,7 @@ function loadGenre() {
               <div class="audio_info">
                 <div class="title">${item.title}</div>
                 <div class="subtitle">${item.subtitle || ''}</div>
+                ${debugInfo}
               </div>
             </div>
           `;
@@ -95,6 +103,7 @@ function loadGenre() {
               <div class="file_info">
                 <div class="title">${item.title}</div>
                 <div class="subtitle">${item.subtitle || ''}</div>
+                ${debugInfo}
               </div>
             </div>
           `;
@@ -173,7 +182,6 @@ function loadGenre() {
 
 // 📌 Сохраняем сессию и переходим
 function openAndRemember(item, genre) {
-  // Сначала записываем last_session и ждём!
   localStorage.setItem('last_session', JSON.stringify({
     genreId: genre.id,
     genreTitle: genre.title,
@@ -182,6 +190,6 @@ function openAndRemember(item, genre) {
   }));
   setTimeout(() => {
     window.location.href = item.telegram_url;
-    // Telegram.WebApp.close(); // Если критично закрыть мини-апп, верни эту строку
-  }, 600); // Достаточно времени для записи localStorage!
+    // Telegram.WebApp.close(); // если нужно, верни обратно
+  }, 600); // чуть больше задержка, чтобы точно успел сохраниться localStorage
 }
