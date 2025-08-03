@@ -12,17 +12,10 @@ if (!telegramId) {
   throw new Error('Telegram ID не найден');
 }
 
-// 📌 Последняя сессия
-let lastSeenId = null;
-try {
-  const session = JSON.parse(localStorage.getItem('last_session') || '{}');
-  lastSeenId = session.itemId?.toString() || null;
-} catch (err) {
-  console.warn("❌ Ошибка разбора last_session:", err);
-  localStorage.removeItem('last_session');
-}
+// 📌 Получение ID последней карточки
+let lastSeenId = localStorage.getItem('last_seen_id')?.toString() || null;
 
-// 📌 Получаем избранное и начинаем загрузку жанра
+// 📌 Получаем избранное и запускаем загрузку жанра
 let userFavourites = [];
 fetch(`/api/favourites/?telegram_id=${telegramId}`)
   .then(res => res.json())
@@ -71,7 +64,7 @@ function loadGenre() {
           `;
         } else if (item.content_type === 'audio') {
           block = `
-            <div class="audio"  ${cardIdAttr}>
+            <div class="audio" ${cardIdAttr}>
               <div class="audio_menu" onclick="${openLink}">
                 <div class="static_icon"><img src="/static/images/audio_icon.png"></div>
                 <div class="audio_duration">${item.duration}</div>
@@ -85,7 +78,7 @@ function loadGenre() {
           `;
         } else if (item.content_type === 'file') {
           block = `
-            <div class="file"  ${cardIdAttr}>
+            <div class="file" ${cardIdAttr}>
               <div class="file_menu" onclick="${openLink}">
                 <div class="static_icon"><img src="/static/images/file_icon.png"></div>
                 <div class="file_duration">${item.duration}</div>
@@ -127,8 +120,7 @@ function loadGenre() {
                   alert('Ошибка обновления избранного');
                 }
               })
-              .catch(err => {
-                console.error("Ошибка при обновлении избранного:", err);
+              .catch(() => {
                 alert('Ошибка сети при обновлении избранного');
               });
           });
@@ -139,59 +131,39 @@ function loadGenre() {
 
       localStorage.setItem('allCards', JSON.stringify(allCards));
 
-      // ✅ Прокрутка к нужному элементу
+      // ✅ Прокрутка к нужной карточке
       if (!lastSeenId) return;
 
-      try {
-        const observer = new MutationObserver((mutations, obs) => {
-          const target = document.querySelector(`.fav_icon[data-id="${lastSeenId}"]`);
-          if (target) {
-            const card = target.closest('.video, .audio, .file');
-            if (card) {
-              const offset = card.getBoundingClientRect().top + window.scrollY;
-              window.scrollTo({ top: offset - 80, behavior: 'smooth' });
-              console.log("✅ Прокручено к карточке ID:", lastSeenId);
-              localStorage.removeItem('last_session');
-              obs.disconnect();
-            }
-          }
-        });
+      const observer = new MutationObserver(() => {
+        const target = document.querySelector('#scroll_target');
+        if (target) {
+          const offset = target.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({ top: offset - 80, behavior: 'smooth' });
+          localStorage.removeItem('last_seen_id');
+          observer.disconnect();
+        }
+      });
 
-        observer.observe(container, { childList: true, subtree: true });
+      observer.observe(container, { childList: true, subtree: true });
 
-        // 🕐 Доп. попытка через setTimeout
-        setTimeout(() => {
-          const el = document.querySelector(`.fav_icon[data-id="${lastSeenId}"]`);
-          if (el) {
-            const card = el.closest('.video, .audio, .file');
-            if (card) {
-              const offset = card.getBoundingClientRect().top + window.scrollY;
-              window.scrollTo({ top: offset - 80, behavior: 'smooth' });
-              localStorage.removeItem('last_session');
-              console.log("⏱ Резервная прокрутка выполнена");
-            }
-          }
-        }, 1500);
-      } catch (e) {
-        console.warn("❌ Ошибка scroll:", e);
-        localStorage.removeItem('last_session');
-      }
+      // 🔁 Резервная попытка (если observer не сработал)
+      setTimeout(() => {
+        const target = document.querySelector('#scroll_target');
+        if (target) {
+          const offset = target.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({ top: offset - 80, behavior: 'smooth' });
+          localStorage.removeItem('last_seen_id');
+        }
+      }, 2000);
     })
-    .catch(err => {
-      console.error("Ошибка загрузки жанра:", err);
+    .catch(() => {
+      alert("Ошибка загрузки жанра");
     });
 }
 
-// ✅ Сохраняем и переходим
+// 📌 Сохраняем ID и переходим
 function openAndRemember(item, genre) {
-  localStorage.setItem('last_session', JSON.stringify({
-    genreId: genre.id,
-    genreTitle: genre.title,
-    itemTitle: item.title,
-    itemId: item.id,
-    url: item.telegram_url
-  }));
-
+  localStorage.setItem('last_seen_id', item.id.toString());
   Telegram.WebApp.close();
   setTimeout(() => {
     window.location.href = item.telegram_url;
