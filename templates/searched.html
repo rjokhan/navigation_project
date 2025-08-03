@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
   <link rel="stylesheet" href="{% static 'css/content.css' %}" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
@@ -60,10 +61,12 @@
         const favIconHTML = `<div class="fav_icon ${favClass}"></div>`;
         let block = "";
 
+        let dataUrlAttr = `data-url="${item.telegram_url}"`;
+
         if (item.content_type === "video") {
           block = `
-            <div class="video">
-              <div class="video_thumbnail" onclick="window.open('${item.telegram_url}', '_blank')">
+            <div class="video searched_item" ${dataUrlAttr}>
+              <div class="video_thumbnail">
                 <img src="${item.thumbnail}" alt="video">
                 <div class="video_duration">${item.duration}</div>
               </div>
@@ -76,8 +79,8 @@
           `;
         } else if (item.content_type === "audio") {
           block = `
-            <div class="audio">
-              <div class="audio_menu" onclick="window.open('${item.telegram_url}', '_blank')">
+            <div class="audio searched_item" ${dataUrlAttr}>
+              <div class="audio_menu">
                 <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}"></div>
                 <div class="audio_duration">${item.duration}</div>
               </div>
@@ -90,8 +93,8 @@
           `;
         } else if (item.content_type === "file") {
           block = `
-            <div class="file">
-              <div class="file_menu" onclick="window.open('${item.telegram_url}', '_blank')">
+            <div class="file searched_item" ${dataUrlAttr}>
+              <div class="file_menu">
                 <div class="static_icon"><img src="{% static 'images/file_icon.png' %}"></div>
                 <div class="file_duration">${item.duration}</div>
               </div>
@@ -105,6 +108,19 @@
         }
 
         container.insertAdjacentHTML("beforeend", block);
+      });
+
+      // Обработка кликов на найденные карточки (универсально!)
+      document.querySelectorAll('.searched_item').forEach(card => {
+        card.addEventListener('click', function() {
+          const url = card.getAttribute('data-url');
+          if (url) {
+            window.location.href = url;
+            setTimeout(() => {
+              try { Telegram.WebApp.close(); } catch(e) {}
+            }, 400);
+          }
+        });
       });
 
       // Поиск по новой строке
