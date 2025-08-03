@@ -10,7 +10,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     .audio_menu, .file_menu {
@@ -116,13 +115,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
     const open = `openTelegramAndCollapse('${item.telegram_url}', '${genre.id}', '${genre.title}', '${item.title}', '${item.id}')`;
 
-    // Только один id для скролла и подсветки — last_seen_card
-    const cardIdAttr = item.id == lastSeenId ? 'id="last_seen_card"' : '';
+    // Важно: теперь у каждой карточки уникальный id по item.id!
+    const cardIdAttr = `id="item_${item.id}"`;
 
     let block = '';
 
     if (item.content_type === 'video') {
-      block = `<div class="video"  ${cardIdAttr}>
+      block = `<div class="video" ${cardIdAttr}>
         <div class="video_thumbnail" onclick="${open}">
           <img src="${item.thumbnail}" />
           <div class="video_duration">${item.duration}</div>
@@ -196,19 +195,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   // сохранить allCards локально для favourited.html
   localStorage.setItem('allCards', JSON.stringify(allCards));
 
-  // ——— Прокрутка к карточке по last_seen_card
-  const observer = new MutationObserver(() => {
-
-    const el = document.getElementById('last_seen_card');
-    if (el) {
-      window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
-      el.removeAttribute('id'); // id больше не нужен, чтобы избежать дублей
-      localStorage.removeItem('last_session');
-      observer.disconnect();
-    }
-  });
-  observer.observe(document.querySelector('.content_body'), { childList: true, subtree: true });
-
+  // --- Скроллим к карточке по id, если есть lastSeenId
+  if (lastSeenId) {
+    setTimeout(() => {
+      const el = document.getElementById('item_' + lastSeenId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        localStorage.removeItem('last_session');
+      }
+    }, 100); // даём DOM прорендериться
+  }
 });
 </script>
 
@@ -250,6 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <script>
 function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
+  // Сохраняем id карточки для возврата!
   localStorage.setItem('last_session', JSON.stringify({
     genreId,
     genreTitle,
@@ -267,13 +264,7 @@ function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
     }
   }, 500);
 }
-
-
-
-alert('[DEBUG] Назначаю id карточке! item.id = ' + item.id + ', lastSeenId = ' + lastSeenId);
 </script>
 
-
-<div id="last_seen_card">TEST SCROLL</div>
 </body>
 </html>

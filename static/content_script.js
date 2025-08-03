@@ -40,26 +40,14 @@ function loadGenre() {
       container.innerHTML = '';
       const allCards = [];
 
-      let idWasAssigned = false; // для дебага
-
       genre.items.forEach(item => {
-        // Для дебага
-        let debugInfo = `<div style="color:#d00;font-size:13px;">
-          item.id: <b>${item.id}</b> | lastSeenId: <b>${lastSeenId}</b> | ${
-            item.id && lastSeenId && item.id.toString() === lastSeenId ? '<span style="color:green">MATCH</span>' : '<span style="color:red">NO MATCH</span>'
-          }
-        </div>`;
-
-        let cardIdAttr = '';
-        if (item.id && lastSeenId && item.id.toString() === lastSeenId) {
-          cardIdAttr = 'id="last_seen_card"';
-          idWasAssigned = true;
-        }
-
         const isFavourited = userFavourites.includes(item.id);
         const favClass = isFavourited ? 'favourited' : 'not_favourited';
         const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}" title="Добавить в избранное"></div>`;
         const openLink = `openAndRemember(${JSON.stringify(item)}, ${JSON.stringify(genre)})`;
+
+        // Теперь id всегда уникальный и предсказуемый:
+        const cardIdAttr = `id="item_${item.id}"`;
 
         let block = '';
         if (item.content_type === 'video') {
@@ -73,7 +61,6 @@ function loadGenre() {
               <div class="video_info">
                 <div class="title">${item.title}</div>
                 <div class="subtitle">${item.subtitle || ''}</div>
-                ${debugInfo}
               </div>
             </div>
           `;
@@ -88,7 +75,6 @@ function loadGenre() {
               <div class="audio_info">
                 <div class="title">${item.title}</div>
                 <div class="subtitle">${item.subtitle || ''}</div>
-                ${debugInfo}
               </div>
             </div>
           `;
@@ -103,20 +89,12 @@ function loadGenre() {
               <div class="file_info">
                 <div class="title">${item.title}</div>
                 <div class="subtitle">${item.subtitle || ''}</div>
-                ${debugInfo}
               </div>
             </div>
           `;
         }
 
         container.insertAdjacentHTML('beforeend', block);
-
-        // Если присвоили id — выделяем жирно (для уверенности, потом уберёшь)
-        if (cardIdAttr) {
-          const lastSeenBlock = container.lastElementChild;
-          lastSeenBlock.style.outline = "4px solid lime";
-          lastSeenBlock.style.background = "yellow";
-        }
 
         const favIcon = container.lastElementChild.querySelector('.fav_icon');
         if (favIcon) {
@@ -155,25 +133,16 @@ function loadGenre() {
 
       localStorage.setItem('allCards', JSON.stringify(allCards));
 
-      // Проверка: если не было id вообще — покажи алерт (для дебага)
-      if (lastSeenId && !idWasAssigned) {
-        alert('!!! id карточке не был присвоен !!! lastSeenId: ' + lastSeenId + '\nПроверь совпадение item.id и lastSeenId');
+      // --- Скролл к карточке по id, если есть lastSeenId
+      if (lastSeenId) {
+        setTimeout(() => {
+          const el = document.getElementById('item_' + lastSeenId);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            localStorage.removeItem('last_session');
+          }
+        }, 100);
       }
-
-      // ✅ Прокрутка к нужной карточке
-      if (!lastSeenId) return;
-
-      const tryScroll = () => {
-        const target = document.getElementById('last_seen_card');
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          localStorage.removeItem('last_session');
-        } else {
-          setTimeout(tryScroll, 200);
-        }
-      };
-
-      tryScroll();
     })
     .catch(() => {
       alert("Ошибка загрузки жанра");
