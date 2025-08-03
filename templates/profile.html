@@ -27,6 +27,17 @@
 
   <div class="profile_container">
     <h2>Профиль пользователя</h2>
+
+    <!-- Аватар -->
+    <div class="avatar_wrapper">
+      <div class="avatar_circle">
+        <img id="avatar_img" src="{% static 'images/default_avatar.png' %}" alt="avatar">
+        <label id="avatar_action" class="avatar_action">+</label>
+      </div>
+      <input type="file" id="avatar_input" accept="image/*" style="display: none;">
+    </div>
+
+    <!-- Данные -->
     <div id="user_info">
       <p>Загружаем данные...</p>
     </div>
@@ -38,11 +49,73 @@
       const telegramUser = tg.initDataUnsafe?.user;
       const infoEl = document.getElementById("user_info");
 
+      const avatarImg = document.getElementById("avatar_img");
+      const avatarAction = document.getElementById("avatar_action");
+      const avatarInput = document.getElementById("avatar_input");
+      let avatarExists = false;
+
       if (!telegramUser || !telegramUser.id) {
         infoEl.innerHTML = '<p>Ошибка: пользователь не авторизован.</p>';
         return;
       }
 
+      // Загрузка аватарки с сервера
+      async function loadAvatar() {
+        try {
+          const res = await fetch(`/api/users/avatar/?telegram_id=${telegramUser.id}`);
+          const data = await res.json();
+          if (data.avatar_url) {
+            avatarImg.src = data.avatar_url;
+            avatarAction.textContent = '–';
+            avatarExists = true;
+          }
+        } catch (err) {
+          console.warn("Аватарка не найдена.");
+        }
+      }
+
+      // Кнопка + или – (загрузить / удалить)
+      avatarAction.addEventListener('click', () => {
+        if (!avatarExists) {
+          avatarInput.click();
+        } else {
+          fetch(`/api/users/avatar/delete/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telegram_id: telegramUser.id })
+          }).then(() => {
+            avatarImg.src = "{% static 'images/default_avatar.png' %}";
+            avatarAction.textContent = '+';
+            avatarExists = false;
+          });
+        }
+      });
+
+      // Загрузка новой авы
+      avatarInput.addEventListener('change', async () => {
+        const file = avatarInput.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('avatar', file);
+        formData.append('telegram_id', telegramUser.id);
+
+        const res = await fetch('/api/users/avatar/upload/', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+        if (data.success && data.avatar_url) {
+          avatarImg.src = data.avatar_url;
+          avatarAction.textContent = '–';
+          avatarExists = true;
+        } else {
+          alert('Ошибка при загрузке аватарки');
+        }
+      });
+
+      // Загрузка данных профиля
       try {
         const res = await fetch("/api/users/proxy-check-user/", {
           method: "POST",
@@ -55,10 +128,8 @@
         if (data.success && data.user_info) {
           const userInfo = data.user_info;
           const tariff = Array.isArray(data.tariffs) && data.tariffs.length > 0 ? data.tariffs[0] : null;
-          const avatarUrl = telegramUser.photo_url;
 
           infoEl.innerHTML = `
-            ${avatarUrl ? `<div style="margin-bottom:15px;text-align:center;"><img src="${avatarUrl}" alt="avatar" style="width:100px;height:100px;border-radius:50%;object-fit:cover;"></div>` : ''}
             <p><strong>Имя:</strong> ${userInfo.first_name || userInfo.full_name || userInfo.username || '—'}</p>
             <p><strong>Телефон:</strong> ${userInfo.phone_number || '—'}</p>
             <p><strong>Тариф:</strong> ${tariff ? tariff.name : '—'}</p>
@@ -71,6 +142,9 @@
         console.error(err);
         infoEl.innerHTML = '<p>Ошибка при загрузке данных.</p>';
       }
+
+      // Загрузить аву при старте
+      await loadAvatar();
     });
 
     document.addEventListener("DOMContentLoaded", () => {
