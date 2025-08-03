@@ -65,7 +65,7 @@ function loadGenre() {
               </div>
               ${favIconHTML}
               <div class="video_info">
-                <div class="title">${item.title} [id: ${item.id}]</div>
+                <div class="title">${item.title}</div>
                 <div class="subtitle">${item.subtitle || ''}</div>
               </div>
             </div>
@@ -79,7 +79,7 @@ function loadGenre() {
               </div>
               ${favIconHTML}
               <div class="audio_info">
-                <div class="title">${item.title} [id: ${item.id}]</div>
+                <div class="title">${item.title}</div>
                 <div class="subtitle">${item.subtitle || ''}</div>
               </div>
             </div>
@@ -93,7 +93,7 @@ function loadGenre() {
               </div>
               ${favIconHTML}
               <div class="file_info">
-                <div class="title">${item.title} [id: ${item.id}]</div>
+                <div class="title">${item.title}</div>
                 <div class="subtitle">${item.subtitle || ''}</div>
               </div>
             </div>
@@ -102,7 +102,7 @@ function loadGenre() {
 
         container.insertAdjacentHTML('beforeend', block);
 
-        // ЖЁСТКО: если присвоили id — выделяем жирно
+        // Если присвоили id — выделяем жирно (для уверенности, потом уберёшь)
         if (cardIdAttr) {
           const lastSeenBlock = container.lastElementChild;
           lastSeenBlock.style.outline = "4px solid lime";
@@ -146,7 +146,7 @@ function loadGenre() {
 
       localStorage.setItem('allCards', JSON.stringify(allCards));
 
-      // Проверка: если не было id вообще — покажи алерт
+      // Проверка: если не было id вообще — покажи алерт (для дебага)
       if (lastSeenId && !idWasAssigned) {
         alert('!!! id карточке не был присвоен !!! lastSeenId: ' + lastSeenId + '\nПроверь совпадение item.id и lastSeenId');
       }
@@ -173,14 +173,15 @@ function loadGenre() {
 
 // 📌 Сохраняем сессию и переходим
 function openAndRemember(item, genre) {
+  // Сначала записываем last_session и ждём!
   localStorage.setItem('last_session', JSON.stringify({
     genreId: genre.id,
     genreTitle: genre.title,
     itemTitle: item.title,
     itemId: item.id
   }));
-  Telegram.WebApp.close();
   setTimeout(() => {
     window.location.href = item.telegram_url;
-  }, 400);
+    // Telegram.WebApp.close(); // Если критично закрыть мини-апп, верни эту строку
+  }, 600); // Достаточно времени для записи localStorage!
 }
