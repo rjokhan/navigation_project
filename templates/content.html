@@ -274,9 +274,17 @@ function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     setTimeout(function () {
-      var el = document.getElementById('item_21');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 300); // подождать чуть-чуть после рендера
+      const targetTitle = "Тест - переход на последний просмотренный контент";  // ← точный title
+  
+      const cards = document.querySelectorAll('.video, .audio, .file');
+      for (let card of cards) {
+        const titleEl = card.querySelector('.title');
+        if (titleEl && titleEl.textContent.trim() === targetTitle) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          break;  // сразу выходим после нахождения
+        }
+      }
+    }, 400);  // немного времени на загрузку контента
   });
   </script>
   
