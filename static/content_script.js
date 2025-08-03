@@ -14,7 +14,7 @@ if (!telegramId) {
 
 // 📌 Получение dom_id последней карточки
 const session = JSON.parse(localStorage.getItem('last_session') || '{}');
-const lastAnchor = session.dom_id || null; // теперь мы будем сохранять dom_id (например, "item_21")
+const lastAnchor = session.dom_id || (session.itemId ? `item_${session.itemId}` : null);
 
 // 📌 Получаем избранное и запускаем загрузку жанра
 let userFavourites = [];
@@ -46,8 +46,9 @@ function loadGenre() {
         const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}" title="Добавить в избранное"></div>`;
         const openLink = `openAndRemember(${JSON.stringify(item)}, ${JSON.stringify(genre)})`;
 
-        // Используем id из бэка!
-        const cardIdAttr = `id="${item.dom_id}"`;
+        // Универсальный id: если нет item.dom_id, генерируем сами
+        const dom_id = item.dom_id || `item_${item.id}`;
+        const cardIdAttr = `id="${dom_id}"`;
 
         let block = '';
         if (item.content_type === 'video') {
@@ -128,12 +129,12 @@ function loadGenre() {
           });
         }
 
-        allCards.push({ ...item, genreId: genre.id });
+        allCards.push({ ...item, genreId: genre.id, dom_id });
       });
 
       localStorage.setItem('allCards', JSON.stringify(allCards));
 
-      // --- Скролл к карточке по dom_id, если есть lastAnchor
+      // --- Скролл к карточке по dom_id (или сгенерированному id)
       if (lastAnchor) {
         setTimeout(() => {
           const el = document.getElementById(lastAnchor);
@@ -141,7 +142,7 @@ function loadGenre() {
             el.scrollIntoView({ behavior: 'smooth', block: 'start' });
             localStorage.removeItem('last_session');
           }
-        }, 100);
+        }, 120);
       }
     })
     .catch(() => {
@@ -151,15 +152,17 @@ function loadGenre() {
 
 // 📌 Сохраняем сессию и переходим
 function openAndRemember(item, genre) {
+  // Всегда передаём dom_id (или генерируем)
+  const dom_id = item.dom_id || `item_${item.id}`;
   localStorage.setItem('last_session', JSON.stringify({
     genreId: genre.id,
     genreTitle: genre.title,
     itemTitle: item.title,
     itemId: item.id,
-    dom_id: item.dom_id  // <-- теперь сохраняем и anchor
+    dom_id
   }));
   setTimeout(() => {
     window.location.href = item.telegram_url;
     // Telegram.WebApp.close(); // если нужно, верни обратно
-  }, 600); // чуть больше задержка, чтобы точно успел сохраниться localStorage
+  }, 600);
 }
