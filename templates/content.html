@@ -85,7 +85,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
   const session = localStorage.getItem('last_session');
-const lastSeenId = session ? JSON.parse(session).itemId : null;
+  const lastSeenId = session ? JSON.parse(session).itemId : null;
 
   const tg = window.Telegram.WebApp;
   const user = tg.initDataUnsafe?.user;
@@ -116,9 +116,8 @@ const lastSeenId = session ? JSON.parse(session).itemId : null;
     const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
     const open = `openTelegramAndCollapse('${item.telegram_url}', '${genre.id}', '${genre.title}', '${item.title}', '${item.id}')`;
 
-const cardIdAttr = item.id == lastSeenId ? 'id="last_seen_card"' : '';
-
-
+    // Только один id для скролла и подсветки — last_seen_card
+    const cardIdAttr = item.id == lastSeenId ? 'id="last_seen_card"' : '';
 
     let block = '';
 
@@ -197,25 +196,19 @@ const cardIdAttr = item.id == lastSeenId ? 'id="last_seen_card"' : '';
   // сохранить allCards локально для favourited.html
   localStorage.setItem('allCards', JSON.stringify(allCards));
 
-  const parsed = JSON.parse(localStorage.getItem('last_session') || '{}');
-const targetId = parsed.itemId;
+  // ——— Прокрутка к карточке по last_seen_card
+  const observer = new MutationObserver(() => {
+    const el = document.getElementById('last_seen_card');
+    if (el) {
+      window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
+      el.removeAttribute('id'); // id больше не нужен, чтобы избежать дублей
+      localStorage.removeItem('last_session');
+      observer.disconnect();
+    }
+  });
+  observer.observe(document.querySelector('.content_body'), { childList: true, subtree: true });
 
-const observer = new MutationObserver(() => {
-  const el = document.getElementById('last_seen_card');
-  if (el) {
-    window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
-    el.removeAttribute('id');
-    localStorage.removeItem('last_session');
-    observer.disconnect();
-  }
 });
-observer.observe(document.querySelector('.content_body'), { childList: true, subtree: true });
-
-
-
-  
-});
-
 </script>
 
 <script>
@@ -254,7 +247,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
-
 <script>
 function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
   localStorage.setItem('last_session', JSON.stringify({
@@ -263,7 +255,6 @@ function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
     itemTitle,
     itemId
   }));
-
 
   window.location.href = url;
 
@@ -275,38 +266,7 @@ function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
     }
   }, 500);
 }
-
-
-
 </script>
-
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    if (document.getElementById("scroll_target")) {
-      alert("Блок обнаружен");
-      // Или кастомный попап ниже, если alert не хочется:
-      /*
-      const popup = document.createElement('div');
-      popup.textContent = "Блок обнаружен";
-      popup.style.position = 'fixed';
-      popup.style.top = '30%';
-      popup.style.left = '50%';
-      popup.style.transform = 'translate(-50%, -50%)';
-      popup.style.background = '#fff';
-      popup.style.border = '2px solid #be0036';
-      popup.style.padding = '32px 48px';
-      popup.style.borderRadius = '16px';
-      popup.style.boxShadow = '0 8px 40px rgba(0,0,0,.25)';
-      popup.style.zIndex = '99999';
-      document.body.appendChild(popup);
-  
-      setTimeout(() => popup.remove(), 2000);
-      */
-    }
-  });
-  </script>
-  
-
 
 </body>
 </html>

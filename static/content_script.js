@@ -14,7 +14,7 @@ if (!telegramId) {
 
 // 📌 Получение ID последней карточки
 const session = JSON.parse(localStorage.getItem('last_session') || '{}');
-const lastSeenId = session.itemId?.toString() || null;
+const lastSeenId = session.itemId ? session.itemId.toString() : null;
 
 // 📌 Получаем избранное и запускаем загрузку жанра
 let userFavourites = [];
@@ -40,17 +40,26 @@ function loadGenre() {
       container.innerHTML = '';
       const allCards = [];
 
+      // Считаем сколько раз был назначен id — только для контроля (можно убрать)
+      let lastSeenAssigned = false;
+
       genre.items.forEach(item => {
         const isFavourited = userFavourites.includes(item.id);
         const favClass = isFavourited ? 'favourited' : 'not_favourited';
         const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}" title="Добавить в избранное"></div>`;
         const openLink = `openAndRemember(${JSON.stringify(item)}, ${JSON.stringify(genre)})`;
-        const blockIdAttr = item.id.toString() === lastSeenId ? 'id="last_seen_card"' : '';
+
+        // Присваиваем id только первой подходящей карточке
+        let cardIdAttr = '';
+        if (!lastSeenAssigned && item.id.toString() === lastSeenId) {
+          cardIdAttr = 'id="last_seen_card"';
+          lastSeenAssigned = true;
+        }
 
         let block = '';
         if (item.content_type === 'video') {
           block = `
-            <div class="video" ${blockIdAttr}>
+            <div class="video" ${cardIdAttr}>
               <div class="video_thumbnail" onclick="${openLink}">
                 <img src="${item.thumbnail}" alt="video_thumbnail">
                 <div class="video_duration">${item.duration}</div>
@@ -64,7 +73,7 @@ function loadGenre() {
           `;
         } else if (item.content_type === 'audio') {
           block = `
-            <div class="audio" ${blockIdAttr}>
+            <div class="audio" ${cardIdAttr}>
               <div class="audio_menu" onclick="${openLink}">
                 <div class="static_icon"><img src="/static/images/audio_icon.png"></div>
                 <div class="audio_duration">${item.duration}</div>
@@ -78,7 +87,7 @@ function loadGenre() {
           `;
         } else if (item.content_type === 'file') {
           block = `
-            <div class="file" ${blockIdAttr}>
+            <div class="file" ${cardIdAttr}>
               <div class="file_menu" onclick="${openLink}">
                 <div class="static_icon"><img src="/static/images/file_icon.png"></div>
                 <div class="file_duration">${item.duration}</div>
@@ -140,7 +149,7 @@ function loadGenre() {
           target.scrollIntoView({ behavior: 'smooth', block: 'start' });
           localStorage.removeItem('last_session');
         } else {
-          setTimeout(tryScroll, 200); // повтор до появления
+          setTimeout(tryScroll, 200);
         }
       };
 
