@@ -197,6 +197,23 @@ const cardIdAttr = item.id == lastSeenId ? 'id="last_seen_card"' : '';
   // сохранить allCards локально для favourited.html
   localStorage.setItem('allCards', JSON.stringify(allCards));
 
+  const parsed = JSON.parse(localStorage.getItem('last_session') || '{}');
+const targetId = parsed.itemId;
+
+const el = document.getElementById('last_seen_card');
+if (el) {
+requestAnimationFrame(() => {
+  setTimeout(() => {
+    window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
+    console.log('✅ Прокручено к ID:', targetId);
+    el.removeAttribute('id');
+    localStorage.removeItem('last_session');
+  }, 100);
+});
+
+}
+
+
   
 });
 
@@ -263,35 +280,6 @@ function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
 
 
 </script>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const session = localStorage.getItem('last_session');
-  if (!session) return;
-
-  const parsed = JSON.parse(session);
-  const targetId = parsed.itemId;
-
-  // Ждём появления нужной карточки
-  const scrollToLastSeen = () => {
-    const el = document.getElementById('last_seen_card');
-    if (el) {
-      window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
-      console.log('✅ Прокрутка выполнена к ID:', targetId);
-      el.removeAttribute('id');
-      localStorage.removeItem('last_session');
-    } else {
-      requestAnimationFrame(scrollToLastSeen);
-    }
-  };
-
-  scrollToLastSeen();
-});
-</script>
-
-
-
-
 
 
 
