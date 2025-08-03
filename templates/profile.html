@@ -31,7 +31,8 @@
     <!-- Аватар -->
     <div class="avatar_wrapper">
       <div class="avatar_circle">
-        <img id="avatar_img" src="{% static 'images/default_avatar.png' %}" alt="avatar">
+        <img id="avatar_img" src="{% static 'images/default_avatar.png' %}" alt="avatar" style="display: none;">
+        <div id="avatar_fallback" class="avatar_overlay_icon">👤</div>
         <label id="avatar_action" class="avatar_action">+</label>
       </div>
       <input type="file" id="avatar_input" accept="image/*" style="display: none;">
@@ -52,6 +53,7 @@
       const avatarImg = document.getElementById("avatar_img");
       const avatarAction = document.getElementById("avatar_action");
       const avatarInput = document.getElementById("avatar_input");
+      const avatarFallback = document.getElementById("avatar_fallback");
       let avatarExists = false;
 
       if (!telegramUser || !telegramUser.id) {
@@ -59,13 +61,14 @@
         return;
       }
 
-      // Загрузка аватарки с сервера
       async function loadAvatar() {
         try {
           const res = await fetch(`/api/users/avatar/?telegram_id=${telegramUser.id}`);
           const data = await res.json();
           if (data.avatar_url) {
             avatarImg.src = data.avatar_url;
+            avatarImg.style.display = 'block';
+            avatarFallback.style.display = 'none';
             avatarAction.textContent = '–';
             avatarExists = true;
           }
@@ -74,7 +77,6 @@
         }
       }
 
-      // Кнопка + или – (загрузить / удалить)
       avatarAction.addEventListener('click', () => {
         if (!avatarExists) {
           avatarInput.click();
@@ -85,13 +87,14 @@
             body: JSON.stringify({ telegram_id: telegramUser.id })
           }).then(() => {
             avatarImg.src = "{% static 'images/default_avatar.png' %}";
+            avatarImg.style.display = 'none';
+            avatarFallback.style.display = 'flex';
             avatarAction.textContent = '+';
             avatarExists = false;
           });
         }
       });
 
-      // Загрузка новой авы
       avatarInput.addEventListener('change', async () => {
         const file = avatarInput.files[0];
         if (!file) return;
@@ -108,6 +111,8 @@
         const data = await res.json();
         if (data.success && data.avatar_url) {
           avatarImg.src = data.avatar_url;
+          avatarImg.style.display = 'block';
+          avatarFallback.style.display = 'none';
           avatarAction.textContent = '–';
           avatarExists = true;
         } else {
@@ -115,7 +120,6 @@
         }
       });
 
-      // Загрузка данных профиля
       try {
         const res = await fetch("/api/users/proxy-check-user/", {
           method: "POST",
@@ -143,7 +147,6 @@
         infoEl.innerHTML = '<p>Ошибка при загрузке данных.</p>';
       }
 
-      // Загрузить аву при старте
       await loadAvatar();
     });
 
