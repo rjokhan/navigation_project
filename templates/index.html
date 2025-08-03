@@ -270,20 +270,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-
-function openAndRemember(item, genre) {
-  localStorage.setItem('last_session', JSON.stringify({
-    genreId: genre.id,
-    genreTitle: genre.title,
-    itemId: item.id
-  }));
-
-  Telegram.WebApp.close();
-  setTimeout(() => {
-    window.location.href = `/content/?genre_id=${genre.id}&genre_title=${encodeURIComponent(genre.title)}`;
-  }, 400);
-}
-
 </script>
 
 

@@ -13,7 +13,7 @@ if (!telegramId) {
 }
 
 // 📌 Получение ID последней карточки
-let lastSeenId = localStorage.getItem('last_seen_id')?.toString() || null;
+const lastSeenId = localStorage.getItem('last_seen_id');
 
 // 📌 Получаем избранное и запускаем загрузку жанра
 let userFavourites = [];
@@ -44,8 +44,7 @@ function loadGenre() {
         const favClass = isFavourited ? 'favourited' : 'not_favourited';
         const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}" title="Добавить в избранное"></div>`;
         const openLink = `openAndRemember(${JSON.stringify(item)}, ${JSON.stringify(genre)})`;
-        const isLastSeen = item.id.toString() === lastSeenId;
-        const cardIdAttr = isLastSeen ? 'id="scroll_target"' : '';
+        const cardIdAttr = item.id.toString() === lastSeenId ? 'id="scroll_target"' : '';
 
         let block = '';
         if (item.content_type === 'video') {
@@ -134,27 +133,13 @@ function loadGenre() {
       // ✅ Прокрутка к нужной карточке
       if (!lastSeenId) return;
 
-      const observer = new MutationObserver(() => {
-        const target = document.querySelector('#scroll_target');
-        if (target) {
-          const offset = target.getBoundingClientRect().top + window.scrollY;
-          window.scrollTo({ top: offset - 80, behavior: 'smooth' });
-          localStorage.removeItem('last_seen_id');
-          observer.disconnect();
-        }
-      });
-
-      observer.observe(container, { childList: true, subtree: true });
-
-      // 🔁 Резервная попытка (если observer не сработал)
       setTimeout(() => {
-        const target = document.querySelector('#scroll_target');
+        const target = document.getElementById('scroll_target');
         if (target) {
-          const offset = target.getBoundingClientRect().top + window.scrollY;
-          window.scrollTo({ top: offset - 80, behavior: 'smooth' });
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
           localStorage.removeItem('last_seen_id');
         }
-      }, 2000);
+      }, 1000);
     })
     .catch(() => {
       alert("Ошибка загрузки жанра");
