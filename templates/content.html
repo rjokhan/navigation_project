@@ -280,7 +280,32 @@ function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
 
 </script>
 
-
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    if (document.getElementById("scroll_target")) {
+      alert("Блок обнаружен");
+      // Или кастомный попап ниже, если alert не хочется:
+      /*
+      const popup = document.createElement('div');
+      popup.textContent = "Блок обнаружен";
+      popup.style.position = 'fixed';
+      popup.style.top = '30%';
+      popup.style.left = '50%';
+      popup.style.transform = 'translate(-50%, -50%)';
+      popup.style.background = '#fff';
+      popup.style.border = '2px solid #be0036';
+      popup.style.padding = '32px 48px';
+      popup.style.borderRadius = '16px';
+      popup.style.boxShadow = '0 8px 40px rgba(0,0,0,.25)';
+      popup.style.zIndex = '99999';
+      document.body.appendChild(popup);
+  
+      setTimeout(() => popup.remove(), 2000);
+      */
+    }
+  });
+  </script>
+  
 
 
 </body>
