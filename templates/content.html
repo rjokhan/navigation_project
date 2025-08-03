@@ -200,33 +200,6 @@ const cardIdAttr = item.id == lastSeenId ? 'id="last_seen_card"' : '';
   
 });
 
-// Прокрутка к карточке, если в localStorage есть last_session
-const session = localStorage.getItem('last_session');
-if (session) {
-  try {
-    const parsed = JSON.parse(session);
-    const targetId = parsed.itemId;
-    
-    // Пробуем найти элемент по ID после рендера
-    const scrollToLastSeen = () => {
-      const el = document.getElementById('last_seen_card');
-      if (el) {
-        window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
-        console.log('✅ Прокрутка выполнена');
-        // После прокрутки удаляем элемент и запись
-        el.removeAttribute('id');
-        localStorage.removeItem('last_session');
-      } else {
-        setTimeout(scrollToLastSeen, 100); // Пробуем снова
-      }
-    };
-
-    scrollToLastSeen();
-  } catch (e) {
-    console.warn("❌ Ошибка разбора last_session:", e);
-  }
-}
-
 </script>
 
 <script>
@@ -290,6 +263,32 @@ function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
 
 
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const session = localStorage.getItem('last_session');
+  if (!session) return;
+
+  const parsed = JSON.parse(session);
+  const targetId = parsed.itemId;
+
+  // Ждём появления нужной карточки
+  const scrollToLastSeen = () => {
+    const el = document.getElementById('last_seen_card');
+    if (el) {
+      window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
+      console.log('✅ Прокрутка выполнена к ID:', targetId);
+      el.removeAttribute('id');
+      localStorage.removeItem('last_session');
+    } else {
+      requestAnimationFrame(scrollToLastSeen);
+    }
+  };
+
+  scrollToLastSeen();
+});
+</script>
+
 
 
 
