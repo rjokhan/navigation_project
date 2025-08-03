@@ -8,9 +8,7 @@
   <link rel="stylesheet" href="{% static 'css/content.css' %}">
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
   <style>
     .fav_icon {
       position: absolute;
@@ -130,6 +128,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   let targetToRemove = null;
   let allFavourites = [];
 
+  // 🛠️ Отключаем отправку формы по Enter
+  document.querySelector('.searcher').addEventListener('submit', e => {
+    e.preventDefault();
+  });
+
   const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
   const favIds = (await favRes.json()).favourites || [];
 
@@ -142,7 +145,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function renderFavourites(filteredItems) {
     container.innerHTML = '';
-    favourites = filteredItems; // <-- теперь поиск только среди отфильтрованных!
+    favourites = filteredItems;
 
     if (filteredItems.length === 0) {
       container.innerHTML = '<div class="no-results">Ничего не найдено</div>';
@@ -190,7 +193,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       wrapper.innerHTML = innerHTML;
       container.appendChild(wrapper);
 
-      // Клик по иконке fav — удалить из избранного (popup)
       const favIcon = wrapper.querySelector('.fav_icon');
       favIcon.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -199,7 +201,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         popup.classList.add("show");
       });
 
-      // Клик по всему блоку — открытие ссылки и закрытие WebApp
       wrapper.addEventListener('click', (e) => {
         if (e.target.classList.contains('fav_icon')) return;
         const url = wrapper.getAttribute('data-url');
@@ -224,7 +225,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         body: JSON.stringify({ telegram_id: user.id })
       });
 
-      // Animation
       wrapper.style.transition = "transform 0.3s ease, opacity 0.3s ease";
       wrapper.style.transform = "scale(0.95)";
       wrapper.style.opacity = "0";
@@ -238,7 +238,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       setTimeout(() => {
         wrapper.remove();
-        // Обновляем и allFavourites и favourites!
         allFavourites = allFavourites.filter(item => item.id !== id);
         favourites = favourites.filter(item => item.id !== id);
         renderFavourites(favourites);
@@ -251,7 +250,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   searchInput.addEventListener('input', () => {
     const query = searchInput.value.toLowerCase().trim();
-    // Фильтрация только по allFavourites!
     const filtered = allFavourites.filter(item => {
       const title = (item.title || '').toLowerCase();
       const subtitle = (item.subtitle || '').toLowerCase();
@@ -265,6 +263,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   requestAnimationFrame(() => {
     document.querySelector('.blur_overlay').classList.remove("active");
   });
+
   document.querySelectorAll('.header a').forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();
