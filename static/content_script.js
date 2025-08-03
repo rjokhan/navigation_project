@@ -12,9 +12,10 @@ if (!telegramId) {
   throw new Error('Telegram ID не найден');
 }
 
-// 📌 Получение itemId последней карточки
+// 📌 Получаем из last_session title и genreTitle
 const session = JSON.parse(localStorage.getItem('last_session') || '{}');
-const lastAnchor = session.itemId ? `item_${session.itemId}` : null;
+const lastTitle = session.itemTitle || null;
+const lastGenre = session.genreTitle || null;
 
 // 📌 Получаем избранное и запускаем загрузку жанра
 let userFavourites = [];
@@ -40,15 +41,23 @@ function loadGenre() {
       container.innerHTML = '';
       const allCards = [];
 
+      let scrollAnchor = null;
+
       genre.items.forEach(item => {
         const isFavourited = userFavourites.includes(item.id);
         const favClass = isFavourited ? 'favourited' : 'not_favourited';
         const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}" title="Добавить в избранное"></div>`;
         const openLink = `openAndRemember(${JSON.stringify(item)}, ${JSON.stringify(genre)})`;
 
-        // Генерируем id блока только на основе item.id!
-        const dom_id = `item_${item.id}`;
-        const cardIdAttr = `id="${dom_id}"`;
+        // Сравниваем item.title с lastTitle (сохраним совпадение)
+        let cardIdAttr = '';
+        if (
+          lastTitle &&
+          (item.title === lastTitle || item.title.trim() === lastTitle.trim())
+        ) {
+          cardIdAttr = 'id="scroll_target_card"';
+          scrollAnchor = 'scroll_target_card';
+        }
 
         let block = '';
         if (item.content_type === 'video') {
@@ -129,20 +138,20 @@ function loadGenre() {
           });
         }
 
-        allCards.push({ ...item, genreId: genre.id, dom_id });
+        allCards.push({ ...item, genreId: genre.id });
       });
 
       localStorage.setItem('allCards', JSON.stringify(allCards));
 
-      // --- Скролл к карточке по id (item_21, item_123)
-      if (lastAnchor) {
+      // --- Скроллим к карточке по title, если нашли совпадение!
+      if (scrollAnchor) {
         setTimeout(() => {
-          const el = document.getElementById(lastAnchor);
+          const el = document.getElementById(scrollAnchor);
           if (el) {
             el.scrollIntoView({ behavior: 'smooth', block: 'start' });
             localStorage.removeItem('last_session');
           }
-        }, 120);
+        }, 150); // небольшой таймаут на рендер
       }
     })
     .catch(() => {
@@ -152,12 +161,11 @@ function loadGenre() {
 
 // 📌 Сохраняем сессию и переходим
 function openAndRemember(item, genre) {
-  // Сохраняем только id карточки для возврата!
   localStorage.setItem('last_session', JSON.stringify({
     genreId: genre.id,
     genreTitle: genre.title,
     itemTitle: item.title,
-    itemId: item.id // <-- ключевой момент!
+    itemId: item.id
   }));
   setTimeout(() => {
     window.location.href = item.telegram_url;
