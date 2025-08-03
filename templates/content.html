@@ -199,19 +199,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ——— Прокрутка к карточке по last_seen_card
   const observer = new MutationObserver(() => {
 
-
-
-
-    if (el) {
-  alert('Нашёл карточку для скролла!\n' + el.outerHTML);
-} else {
-  alert('Не нашёл карточку для скролла!');
-}
-
-
-
-
-
     const el = document.getElementById('last_seen_card');
     if (el) {
       window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
@@ -280,6 +267,10 @@ function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
     }
   }, 500);
 }
+
+
+
+alert('[DEBUG] Назначаю id карточке! item.id = ' + item.id + ', lastSeenId = ' + lastSeenId);
 </script>
 
 
