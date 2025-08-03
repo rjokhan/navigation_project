@@ -200,18 +200,17 @@ const cardIdAttr = item.id == lastSeenId ? 'id="last_seen_card"' : '';
   const parsed = JSON.parse(localStorage.getItem('last_session') || '{}');
 const targetId = parsed.itemId;
 
-const el = document.getElementById('last_seen_card');
-if (el) {
-requestAnimationFrame(() => {
-  setTimeout(() => {
+const observer = new MutationObserver(() => {
+  const el = document.getElementById('last_seen_card');
+  if (el) {
     window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
-    console.log('✅ Прокручено к ID:', targetId);
     el.removeAttribute('id');
     localStorage.removeItem('last_session');
-  }, 100);
+    observer.disconnect();
+  }
 });
+observer.observe(document.querySelector('.content_body'), { childList: true, subtree: true });
 
-}
 
 
   

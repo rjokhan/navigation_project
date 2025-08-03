@@ -52,13 +52,12 @@ function loadGenre() {
         const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}" title="Добавить в избранное"></div>`;
         const openLink = `openAndRemember(${JSON.stringify(item)}, ${JSON.stringify(genre)})`;
         const isLastSeen = item.id.toString() === lastSeenId;
-        const anchorDiv = isLastSeen ? `<div id="scroll_target" style="height: 1px;"></div>` : '';
+        const cardIdAttr = isLastSeen ? 'id="scroll_target"' : '';
 
         let block = '';
         if (item.content_type === 'video') {
           block = `
-            ${anchorDiv}
-            <div class="video">
+            <div class="video" ${cardIdAttr}>
               <div class="video_thumbnail" onclick="${openLink}">
                 <img src="${item.thumbnail}" alt="video_thumbnail">
                 <div class="video_duration">${item.duration}</div>
@@ -72,8 +71,7 @@ function loadGenre() {
           `;
         } else if (item.content_type === 'audio') {
           block = `
-            ${anchorDiv}
-            <div class="audio">
+            <div class="audio"  ${cardIdAttr}>
               <div class="audio_menu" onclick="${openLink}">
                 <div class="static_icon"><img src="/static/images/audio_icon.png"></div>
                 <div class="audio_duration">${item.duration}</div>
@@ -87,8 +85,7 @@ function loadGenre() {
           `;
         } else if (item.content_type === 'file') {
           block = `
-            ${anchorDiv}
-            <div class="file">
+            <div class="file"  ${cardIdAttr}>
               <div class="file_menu" onclick="${openLink}">
                 <div class="static_icon"><img src="/static/images/file_icon.png"></div>
                 <div class="file_duration">${item.duration}</div>
