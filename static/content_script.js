@@ -13,7 +13,8 @@ if (!telegramId) {
 }
 
 // 📌 Получение ID последней карточки
-const lastSeenId = localStorage.getItem('last_seen_id');
+const session = JSON.parse(localStorage.getItem('last_session') || '{}');
+const lastSeenId = session.itemId?.toString() || null;
 
 // 📌 Получаем избранное и запускаем загрузку жанра
 let userFavourites = [];
@@ -44,12 +45,12 @@ function loadGenre() {
         const favClass = isFavourited ? 'favourited' : 'not_favourited';
         const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}" title="Добавить в избранное"></div>`;
         const openLink = `openAndRemember(${JSON.stringify(item)}, ${JSON.stringify(genre)})`;
-        const cardIdAttr = item.id.toString() === lastSeenId ? 'id="scroll_target"' : '';
+        const blockIdAttr = item.id.toString() === lastSeenId ? 'id="last_seen_card"' : '';
 
         let block = '';
         if (item.content_type === 'video') {
           block = `
-            <div class="video" ${cardIdAttr}>
+            <div class="video" ${blockIdAttr}>
               <div class="video_thumbnail" onclick="${openLink}">
                 <img src="${item.thumbnail}" alt="video_thumbnail">
                 <div class="video_duration">${item.duration}</div>
@@ -63,7 +64,7 @@ function loadGenre() {
           `;
         } else if (item.content_type === 'audio') {
           block = `
-            <div class="audio" ${cardIdAttr}>
+            <div class="audio" ${blockIdAttr}>
               <div class="audio_menu" onclick="${openLink}">
                 <div class="static_icon"><img src="/static/images/audio_icon.png"></div>
                 <div class="audio_duration">${item.duration}</div>
@@ -77,7 +78,7 @@ function loadGenre() {
           `;
         } else if (item.content_type === 'file') {
           block = `
-            <div class="file" ${cardIdAttr}>
+            <div class="file" ${blockIdAttr}>
               <div class="file_menu" onclick="${openLink}">
                 <div class="static_icon"><img src="/static/images/file_icon.png"></div>
                 <div class="file_duration">${item.duration}</div>
@@ -92,8 +93,8 @@ function loadGenre() {
         }
 
         container.insertAdjacentHTML('beforeend', block);
-        const favIcon = container.lastElementChild.querySelector('.fav_icon');
 
+        const favIcon = container.lastElementChild.querySelector('.fav_icon');
         if (favIcon) {
           favIcon.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -133,22 +134,31 @@ function loadGenre() {
       // ✅ Прокрутка к нужной карточке
       if (!lastSeenId) return;
 
-      setTimeout(() => {
-        const target = document.getElementById('scroll_target');
+      const tryScroll = () => {
+        const target = document.getElementById('last_seen_card');
         if (target) {
           target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          localStorage.removeItem('last_seen_id');
+          localStorage.removeItem('last_session');
+        } else {
+          setTimeout(tryScroll, 200); // повтор до появления
         }
-      }, 1000);
+      };
+
+      tryScroll();
     })
     .catch(() => {
       alert("Ошибка загрузки жанра");
     });
 }
 
-// 📌 Сохраняем ID и переходим
+// 📌 Сохраняем сессию и переходим
 function openAndRemember(item, genre) {
-  localStorage.setItem('last_seen_id', item.id.toString());
+  localStorage.setItem('last_session', JSON.stringify({
+    genreId: genre.id,
+    genreTitle: genre.title,
+    itemTitle: item.title,
+    itemId: item.id
+  }));
   Telegram.WebApp.close();
   setTimeout(() => {
     window.location.href = item.telegram_url;
