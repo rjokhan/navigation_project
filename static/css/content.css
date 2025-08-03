@@ -486,8 +486,8 @@ a {
 
 #scroll_target {
   height: 4px !important;
-  background-color: #ff0055;
-  margin-bottom: 10px;
-  border-radius: 4px;
-  box-shadow: 0 0 10px #ff0055;
+  background-color: #ff0055 !important;
+  margin-bottom: 10px !important;
+  border-radius: 4px !important;
+  box-shadow: 0 0 10px #ff0055 !important;
 }
