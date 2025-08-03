@@ -40,21 +40,20 @@ function loadGenre() {
       container.innerHTML = '';
       const allCards = [];
 
-      // Считаем сколько раз был назначен id — только для контроля (можно убрать)
-      let lastSeenAssigned = false;
+      let idWasAssigned = false; // для дебага
 
       genre.items.forEach(item => {
+        let cardIdAttr = '';
+        // Приводим оба к строке, сравниваем жёстко
+        if (item.id && lastSeenId && item.id.toString() === lastSeenId) {
+          cardIdAttr = 'id="last_seen_card"';
+          idWasAssigned = true;
+        }
+
         const isFavourited = userFavourites.includes(item.id);
         const favClass = isFavourited ? 'favourited' : 'not_favourited';
         const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}" title="Добавить в избранное"></div>`;
         const openLink = `openAndRemember(${JSON.stringify(item)}, ${JSON.stringify(genre)})`;
-
-        // Присваиваем id только первой подходящей карточке
-        let cardIdAttr = '';
-        if (!lastSeenAssigned && item.id.toString() === lastSeenId) {
-          cardIdAttr = 'id="last_seen_card"';
-          lastSeenAssigned = true;
-        }
 
         let block = '';
         if (item.content_type === 'video') {
@@ -66,7 +65,7 @@ function loadGenre() {
               </div>
               ${favIconHTML}
               <div class="video_info">
-                <div class="title">${item.title}</div>
+                <div class="title">${item.title} [id: ${item.id}]</div>
                 <div class="subtitle">${item.subtitle || ''}</div>
               </div>
             </div>
@@ -80,7 +79,7 @@ function loadGenre() {
               </div>
               ${favIconHTML}
               <div class="audio_info">
-                <div class="title">${item.title}</div>
+                <div class="title">${item.title} [id: ${item.id}]</div>
                 <div class="subtitle">${item.subtitle || ''}</div>
               </div>
             </div>
@@ -94,7 +93,7 @@ function loadGenre() {
               </div>
               ${favIconHTML}
               <div class="file_info">
-                <div class="title">${item.title}</div>
+                <div class="title">${item.title} [id: ${item.id}]</div>
                 <div class="subtitle">${item.subtitle || ''}</div>
               </div>
             </div>
@@ -102,6 +101,13 @@ function loadGenre() {
         }
 
         container.insertAdjacentHTML('beforeend', block);
+
+        // ЖЁСТКО: если присвоили id — выделяем жирно
+        if (cardIdAttr) {
+          const lastSeenBlock = container.lastElementChild;
+          lastSeenBlock.style.outline = "4px solid lime";
+          lastSeenBlock.style.background = "yellow";
+        }
 
         const favIcon = container.lastElementChild.querySelector('.fav_icon');
         if (favIcon) {
@@ -139,6 +145,11 @@ function loadGenre() {
       });
 
       localStorage.setItem('allCards', JSON.stringify(allCards));
+
+      // Проверка: если не было id вообще — покажи алерт
+      if (lastSeenId && !idWasAssigned) {
+        alert('!!! id карточке не был присвоен !!! lastSeenId: ' + lastSeenId + '\nПроверь совпадение item.id и lastSeenId');
+      }
 
       // ✅ Прокрутка к нужной карточке
       if (!lastSeenId) return;
