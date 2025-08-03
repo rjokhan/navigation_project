@@ -68,10 +68,10 @@
 </div>
 
 <div class="search_block">
-    <a href="{% url 'index' %}"><div class="back_button"></div></a>
-    <form class="searcher">
-      <img class="search_icon" src="{% static 'images/search icon.png' %}">
-      <input class="searcher_block" placeholder="Поиск..." autocomplete="off">
+  <a href="{% url 'index' %}"><div class="back_button"></div></a>
+  <form class="searcher">
+    <img class="search_icon" src="{% static 'images/search icon.png' %}">
+    <input class="searcher_block" placeholder="Поиск..." autocomplete="off">
   </form>
 </div>
 
@@ -84,7 +84,6 @@
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
   const session = localStorage.getItem('last_session');
-  // --- теперь ищем по title, а не по id!
   const lastTitle = session ? JSON.parse(session).itemTitle : null;
 
   const tg = window.Telegram.WebApp;
@@ -109,7 +108,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!genre || !genre.items.length) return contentBody.innerHTML = '<p>Контент пока не добавлен</p>';
 
   const allCards = [];
-  let scrollAnchor = null;
 
   genre.items.forEach(item => {
     const isFavourited = favourites.includes(item.id);
@@ -117,43 +115,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
     const open = `openTelegramAndCollapse('${item.telegram_url}', '${genre.id}', '${genre.title}', '${item.title}', '${item.id}')`;
 
-    // --- Если title совпал, ставим якорь для скролла
-    let cardIdAttr = '';
-    if (lastTitle && (item.title === lastTitle || item.title.trim() === lastTitle.trim())) {
-      cardIdAttr = 'id="scroll_target_card"';
-      scrollAnchor = 'scroll_target_card';
-    }
-
-    let block = '';
-
-    if (item.content_type === 'video') {
-      block = `<div class="video" ${cardIdAttr}>
-        <div class="video_thumbnail" onclick="${open}">
-          <img src="${item.thumbnail}" />
-          <div class="video_duration">${item.duration}</div>
+    const block = `
+      <div class="${item.content_type}">
+        <div class="${item.content_type}_thumbnail" onclick="${open}">
+          <img src="${item.thumbnail || '/static/images/file_icon.png'}" />
+          <div class="${item.content_type}_duration">${item.duration}</div>
         </div>
         ${favIcon}
-        <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
-      </div>`;
-    } else if (item.content_type === 'audio') {
-      block = `<div class="audio" ${cardIdAttr} onclick="${open}">
-        <div class="audio_menu" >
-          <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}" /></div>
-          <div class="audio_duration">${item.duration}</div>
+        <div class="${item.content_type}_info">
+          <div class="title">${item.title}</div>
+          <div class="subtitle">${item.subtitle || ''}</div>
         </div>
-        ${favIcon}
-        <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
-      </div>`;
-    } else if (item.content_type === 'file') {
-      block = `<div class="file" ${cardIdAttr} onclick="${open}">
-        <div class="file_menu">
-          <div class="static_icon"><img src="{% static 'images/file_icon.png' %}" /></div>
-          <div class="file_duration">${item.duration}</div>
-        </div>
-        ${favIcon}
-        <div class="file_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
-      </div>`;
-    }
+      </div>
+    `;
 
     contentBody.insertAdjacentHTML('beforeend', block);
     const favEl = contentBody.lastElementChild.querySelector('.fav_icon');
@@ -163,131 +137,65 @@ document.addEventListener('DOMContentLoaded', async () => {
       e.stopPropagation();
       const id = parseInt(favEl.dataset.id);
       const popup = document.getElementById('popup');
-
-      if (favEl.classList.contains('favourited')) {
-        popup.classList.add('show');
-        document.getElementById('popup_yes').onclick = async () => {
-          await fetch(`/api/favourites/remove/${id}/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ telegram_id: user.id })
-          });
-          favEl.classList.remove('favourited');
-          favEl.classList.add('not_favourited');
-          popup.classList.remove('show');
-        };
-        document.getElementById('popup_no').onclick = () => popup.classList.remove('show');
-      } else {
-        await fetch(`/api/favourites/add/${id}/`, {
+      popup.classList.add('show');
+      document.getElementById('popup_yes').onclick = async () => {
+        const method = favEl.classList.contains('favourited') ? 'remove' : 'add';
+        await fetch(`/api/favourites/${method}/${id}/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ telegram_id: user.id })
         });
-
-        favEl.classList.remove('not_favourited');
-        favEl.classList.add('favourited');
-        favEl.classList.add('animate-pulse');
-        setTimeout(() => favEl.classList.remove('animate-pulse'), 600);
-
-        const block = favEl.closest('.video, .audio, .file');
-        const explosion = document.createElement('div');
-        explosion.classList.add('fav_explosion');
-        block.appendChild(explosion);
-        setTimeout(() => explosion.remove(), 600);
-      }
+        favEl.classList.toggle('favourited');
+        favEl.classList.toggle('not_favourited');
+        popup.classList.remove('show');
+      };
+      document.getElementById('popup_no').onclick = () => popup.classList.remove('show');
     });
   });
 
   localStorage.setItem('allCards', JSON.stringify(allCards));
 
-  // --- Скроллим к карточке по title!
-  if (scrollAnchor) {
+  if (lastTitle) {
     setTimeout(() => {
-      const el = document.getElementById(scrollAnchor);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        localStorage.removeItem('last_session');
+      const cards = document.querySelectorAll('.video, .audio, .file');
+      for (let card of cards) {
+        const titleEl = card.querySelector('.title');
+        if (titleEl && titleEl.textContent.trim() === lastTitle.trim()) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          localStorage.removeItem('last_session');
+          break;
+        }
       }
-    }, 150);
+    }, 300);
   }
 });
 </script>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const overlay = document.querySelector('.blur_overlay');
-  requestAnimationFrame(() => overlay.classList.remove('active'));
-  document.querySelectorAll('.header a').forEach(link => {
-    link.addEventListener('click', e => {
-      e.preventDefault();
-      const href = link.getAttribute('href');
-      overlay.classList.add('active');
-      setTimeout(() => window.location.href = href, 300);
-    });
-  });
-});
-</script>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.querySelector(".searcher");
-  const input = document.querySelector(".searcher_block");
-
-  if (!form || !input) {
-    console.error("⛔ Поисковая форма не найдена");
-    return;
-  }
-
-  form.addEventListener("submit", (e) => {
+document.querySelectorAll('.header a').forEach(link => {
+  link.addEventListener('click', e => {
     e.preventDefault();
-    const query = input.value.trim();
-    if (query) {
-      const encoded = encodeURIComponent(query);
-      window.location.href = `/searched/?query=${encoded}`;
-    }
+    document.querySelector('.blur_overlay').classList.add('active');
+    setTimeout(() => window.location.href = link.getAttribute('href'), 300);
   });
+});
+</script>
+
+<script>
+document.querySelector(".searcher").addEventListener("submit", e => {
+  e.preventDefault();
+  const query = document.querySelector(".searcher_block").value.trim();
+  if (query) window.location.href = `/searched/?query=${encodeURIComponent(query)}`;
 });
 </script>
 
 <script>
 function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
-  localStorage.setItem('last_session', JSON.stringify({
-    genreId,
-    genreTitle,
-    itemTitle,
-    itemId
-  }));
-
+  localStorage.setItem('last_session', JSON.stringify({genreId, genreTitle, itemTitle, itemId}));
   window.location.href = url;
-
-  setTimeout(() => {
-    try {
-      Telegram.WebApp.close();
-    } catch (e) {
-      console.warn("Не удалось закрыть мини-апп:", e);
-    }
-  }, 500);
+  setTimeout(() => Telegram.WebApp.close(), 500);
 }
 </script>
 
-
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    setTimeout(function () {
-      const targetTitle = "Тест - переход на последний просмотренный контент";  // ← точный title
-  
-      const cards = document.querySelectorAll('.video, .audio, .file');
-      for (let card of cards) {
-        const titleEl = card.querySelector('.title');
-        if (titleEl && titleEl.textContent.trim() === targetTitle) {
-          card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          break;  // сразу выходим после нахождения
-        }
-      }
-    }, 400);  // немного времени на загрузку контента
-  });
-  </script>
-  
-  
 </body>
 </html>
