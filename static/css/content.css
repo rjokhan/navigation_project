@@ -482,3 +482,12 @@ a {
     transform: translate(-50%, -50%) scale(1.5);
   }
 }
+
+
+#scroll_target {
+  height: 4px !important;
+  background-color: #ff0055;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  box-shadow: 0 0 10px #ff0055;
+}
