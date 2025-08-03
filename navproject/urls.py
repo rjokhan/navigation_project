@@ -18,8 +18,9 @@ urlpatterns = [
     path('chat/', TemplateView.as_view(template_name='chat.html'), name='chat'),
 ]
 
-# Только при отладке (локально)
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    if settings.STATICFILES_DIRS:
-        urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
+# Добавляем поддержку media-файлов даже при DEBUG = False
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Статика только при DEBUG
+if settings.DEBUG and settings.STATICFILES_DIRS:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
