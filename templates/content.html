@@ -71,7 +71,7 @@
   <a href="{% url 'index' %}"><div class="back_button"></div></a>
   <form class="searcher">
     <img class="search_icon" src="{% static 'images/search icon.png' %}">
-    <input class="searcher_block" placeholder="Поиск..." autocomplete="off">
+    <input class="searcher_block" placeholder="Қидириш..." autocomplete="off">
   </form>
 </div>
 
@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const res = await fetch('/api/genres/');
   const genres = await res.json();
   const genre = genres.find(g => g.id == genreId);
-  if (!genre || !genre.items.length) return contentBody.innerHTML = '<p>Контент пока не добавлен</p>';
+  if (!genre || !genre.items.length) return contentBody.innerHTML = '<p>Ҳозирча контент юкланмади</p>';
 
   const allCards = [];
 
