@@ -302,9 +302,15 @@ setTimeout(() => {
     renderFavourites(allFavourites);
   }
 
-  requestAnimationFrame(() => {
-    document.querySelector('.blur_overlay').classList.remove("active");
-  });
+setTimeout(() => {
+  const overlay = document.querySelector('.blur_overlay');
+  if (overlay.classList.contains('active')) {
+    overlay.classList.remove('active');
+  } else {
+    overlay.style.display = "none";
+  }
+}, 100);
+
 
   document.querySelectorAll('.header a').forEach(link => {
     link.addEventListener('click', e => {
