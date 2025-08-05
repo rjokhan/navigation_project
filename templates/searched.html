@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Favourites</title>
+  <title>Поиск контента</title>
   <link rel="stylesheet" href="{% static 'css/content.css' %}">
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -34,6 +34,11 @@
     .video, .audio, .file {
       position: relative;
       cursor: pointer;
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     .no-results {
       text-align: center;
@@ -41,77 +46,17 @@
       font-size: 18px;
       color: #aaa;
     }
-    .confirm_popup {
-      display: none;
-      position: fixed;
-      z-index: 9999;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-      justify-content: center;
-      align-items: center;
-    }
-    .confirm_popup.show {
-      display: flex;
-    }
-    .popup_box {
-      background: #fff;
-      border-radius: 8px;
-      padding: 20px 30px;
-      text-align: center;
-    }
-    .popup_buttons {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 15px;
-    }
-    .popup_buttons button {
-      padding: 8px 20px;
-      border: none;
-      background: #ff0049;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
 
-<div id="popup" class="confirm_popup">
-  <div class="popup_box">
-    <p>Севимлилардан олиб ташлашни хоҳлайсизми?</p>
-    <div class="popup_buttons">
-      <button id="popup_yes">ҲА</button>
-      <button id="popup_no">ЙЎҚ</button>
-    </div>
-  </div>
-</div>
-
-<div class="blur_overlay active"></div>
-<div class="vertical-waves">
-  <div class="wave"></div>
-  <div class="wave"></div>
-  <div class="wave"></div>
-</div>
-
-<div class="header">
-  <a href="{% url 'index' %}"><div class="header_icon"><img src="{% static 'images/home_page.png' %}"><p>A CLUB</p></div></a>
-  <a href="{% url 'favourited' %}"><div class="header_icon"><img src="{% static 'images/fav.png' %}"><p>Севимли</p></div></a>
-  <a href="{% url 'profile' %}"><div class="header_icon"><img src="{% static 'images/profile.png' %}"><p>Профиль</p></div></a>
-  <a href="{% url 'chat' %}"><div class="header_icon"><img src="{% static 'images/chat.png' %}"><p>Чатлар</p></div></a>
-</div>
-
 <div class="search_block">
-  <a href="{% url 'index' %}"><div class="back_button"></div></a>
-  <form class="searcher">
-    <img class="search_icon" src="{% static 'images/search icon.png' %}">
-    <input class="searcher_block" placeholder="Қидириш..." autocomplete="off">
+  <form class="searcher" style="max-width: 600px; margin: 20px auto; display: flex; align-items: center;">
+    <input class="searcher_block" type="search" placeholder="Поиск по названию и описанию..." autocomplete="off" style="flex-grow:1; padding: 10px; font-size: 16px; border-radius: 8px; border: 1px solid #ccc;">
   </form>
 </div>
 
-<div class="content_body"></div>
+<div class="content_body" style="max-width: 600px; margin: 0 auto;"></div>
 
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
@@ -124,15 +69,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const container = document.querySelector('.content_body');
   const searchInput = document.querySelector('.searcher_block');
-  const popup = document.getElementById("popup");
-  const popupYes = document.getElementById("popup_yes");
-  const popupNo = document.getElementById("popup_no");
-  let targetToRemove = null;
 
-  // Получаем массив избранных id
+  // Получаем список избранных id для отображения статуса избранного
   const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
   const favIdsArray = (await favRes.json()).favourites || [];
-  const favIds = new Set(favIdsArray); // Для быстрого поиска
+  const favIds = new Set(favIdsArray);
 
   // Получаем все жанры с контентом
   const genresRes = await fetch('/api/genres/');
@@ -141,11 +82,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Собираем все элементы в один массив
   const allItems = genres.flatMap(g => g.items);
 
-  // Функция отрисовки карточек
-  function renderCards(items) {
+  function renderItems(items) {
     container.innerHTML = '';
+
     if (items.length === 0) {
-      container.innerHTML = '<div class="no-results">Ҳеч нарса топилмади</div>';
+      container.innerHTML = '<div class="no-results">Ничего не найдено</div>';
       return;
     }
 
@@ -155,68 +96,79 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const wrapper = document.createElement('div');
       wrapper.className = item.content_type;
-      wrapper.style.cursor = "pointer";
       wrapper.setAttribute('data-url', item.telegram_url);
+      wrapper.style.position = 'relative';
 
       const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
       let innerHTML = '';
 
       if (item.content_type === 'video') {
         innerHTML = `
-          <div class="video_thumbnail">
-            <img src="${item.thumbnail}" alt="video_thumbnail">
-            <div class="video_duration">${item.duration}</div>
+          <div class="video_thumbnail" style="margin-bottom:10px;">
+            <img src="${item.thumbnail}" alt="thumbnail" style="width:100%; border-radius: 8px;">
+            <div class="video_duration" style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.6); color:#fff; padding:2px 6px; border-radius:4px;">${item.duration}</div>
           </div>
           ${favIconHTML}
-          <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+          <div><strong>${item.title}</strong></div>
+          <div style="color:#555;">${item.subtitle || ''}</div>
         `;
       } else if (item.content_type === 'audio') {
         innerHTML = `
-          <div class="audio_menu">
-            <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}"></div>
-            <div class="audio_duration">${item.duration}</div>
+          <div class="audio_menu" style="margin-bottom:10px; display:flex; align-items:center;">
+            <img src="{% static 'images/audio_icon.png' %}" alt="audio" style="width:24px; margin-right:8px;">
+            <span>${item.duration}</span>
           </div>
           ${favIconHTML}
-          <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+          <div><strong>${item.title}</strong></div>
+          <div style="color:#555;">${item.subtitle || ''}</div>
         `;
       } else if (item.content_type === 'file') {
         innerHTML = `
-          <div class="file_menu">
-            <div class="static_icon"><img src="{% static 'images/file_icon.png' %}"></div>
-            <div class="file_duration">${item.duration}</div>
+          <div class="file_menu" style="margin-bottom:10px; display:flex; align-items:center;">
+            <img src="{% static 'images/file_icon.png' %}" alt="file" style="width:24px; margin-right:8px;">
+            <span>${item.duration}</span>
           </div>
           ${favIconHTML}
-          <div class="file_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+          <div><strong>${item.title}</strong></div>
+          <div style="color:#555;">${item.subtitle || ''}</div>
         `;
       }
 
       wrapper.innerHTML = innerHTML;
       container.appendChild(wrapper);
 
+      // Обработка клика по иконке избранного (быстрое добавление/удаление)
       const favIcon = wrapper.querySelector('.fav_icon');
-
       favIcon.addEventListener('click', e => {
         e.stopPropagation();
         const id = parseInt(favIcon.dataset.id);
 
-        if (!favIcon.classList.contains('favourited')) {
+        if (!favIds.has(id)) {
           // Добавляем в избранное
           fetch(`/api/favourites/add/${id}/`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ telegram_id: user.id })
+            body: JSON.stringify({telegram_id: user.id})
           }).then(() => {
             favIcon.classList.remove('not_favourited');
             favIcon.classList.add('favourited');
             favIds.add(id);
           });
         } else {
-          // Показываем попап удаления только для избранных
-          targetToRemove = { favIcon, id, wrapper };
-          popup.classList.add("show");
+          // Удаляем из избранного
+          fetch(`/api/favourites/remove/${id}/`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({telegram_id: user.id})
+          }).then(() => {
+            favIcon.classList.remove('favourited');
+            favIcon.classList.add('not_favourited');
+            favIds.delete(id);
+          });
         }
       });
 
+      // Клик по карточке открывает ссылку в Telegram
       wrapper.addEventListener('click', e => {
         if (e.target.classList.contains('fav_icon')) return;
         const url = wrapper.getAttribute('data-url');
@@ -230,42 +182,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  popupNo.onclick = () => popup.classList.remove("show");
+  // Отрисовка изначальная - все элементы
+  renderItems(allItems);
 
-  popupYes.onclick = async () => {
-    if (targetToRemove) {
-      const { favIcon, id, wrapper } = targetToRemove;
-      await fetch(`/api/favourites/remove/${id}/`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ telegram_id: user.id })
-      });
-
-      wrapper.style.transition = "transform 0.3s ease, opacity 0.3s ease";
-      wrapper.style.transform = "scale(0.95)";
-      wrapper.style.opacity = "0";
-
-      setTimeout(() => {
-        wrapper.style.transition = "height 0.4s ease, margin 0.4s ease, padding 0.4s ease";
-        wrapper.style.height = "0";
-        wrapper.style.margin = "0";
-        wrapper.style.padding = "0";
-      }, 300);
-
-      setTimeout(() => {
-        wrapper.remove();
-        favIds.delete(id);
-      }, 800);
-
-      popup.classList.remove("show");
-      targetToRemove = null;
-    }
-  };
-
-  // Отрисовываем все карточки сразу
-  renderCards(allItems);
-
-  // Фильтрация по поиску
+  // Поиск по названию и описанию
   searchInput.addEventListener('input', () => {
     const query = searchInput.value.toLowerCase().trim();
     const filtered = allItems.filter(item => {
@@ -273,20 +193,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       const subtitle = (item.subtitle || '').toLowerCase();
       return title.includes(query) || subtitle.includes(query);
     });
-    renderCards(filtered);
+    renderItems(filtered);
   });
 
+  // Удаляем наложение после загрузки
   requestAnimationFrame(() => {
     document.querySelector('.blur_overlay').classList.remove("active");
-  });
-
-  document.querySelectorAll('.header a').forEach(link => {
-    link.addEventListener('click', e => {
-      e.preventDefault();
-      const href = link.getAttribute('href');
-      document.querySelector('.blur_overlay').classList.add("active");
-      setTimeout(() => window.location.href = href, 300);
-    });
   });
 });
 </script>
