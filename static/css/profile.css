@@ -182,11 +182,13 @@ a {
   pointer-events: all;
 }
 .avatar_wrapper {
+  display: flex;
   justify-content: center;
   margin-bottom: 20px;
   position: relative;
-  width: 200px;
-  height: 200px;
+  width: 200px !important;
+  height: 200px !important;
+  background-color: #4d0016;
 }
 
 .avatar_circle {
