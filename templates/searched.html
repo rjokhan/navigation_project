@@ -261,6 +261,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }, 300);
 
       setTimeout(() => {
+        wrapper.remove();
         allFavourites = allFavourites.filter(item => item.id !== id);
         favourites = favourites.filter(item => item.id !== id);
         renderFavourites(favourites);
