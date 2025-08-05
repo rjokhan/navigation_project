@@ -27,6 +27,10 @@
       background-image: url('{% static "images/fav_icon_active.png" %}');
       background-color: #ff0049;
     }
+    .not_favourited {
+      background-image: url('{% static "images/fav_icon_inactive.png" %}');
+      background-color: white;
+    }
     .video, .audio, .file {
       position: relative;
       cursor: pointer;
@@ -107,7 +111,6 @@
   </form>
 </div>
 
-
 <div class="content_body"></div>
 
 <script>
@@ -125,34 +128,35 @@ document.addEventListener("DOMContentLoaded", async () => {
   const popupYes = document.getElementById("popup_yes");
   const popupNo = document.getElementById("popup_no");
   let targetToRemove = null;
-  let allFavourites = [];
 
+  // Получаем избранные ID
   const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
-  const favIds = (await favRes.json()).favourites || [];
+  const favIds = new Set((await favRes.json()).favourites || []);
 
+  // Получаем все жанры и все элементы
   const genresRes = await fetch('/api/genres/');
   const genres = await genresRes.json();
 
   const allItems = genres.flatMap(g => g.items);
-  allFavourites = allItems.filter(item => favIds.includes(item.id));
-  let favourites = [...allFavourites];
 
-  function renderFavourites(filteredItems) {
+  // Функция отрисовки карточек с учётом избранного
+  function renderCards(items) {
     container.innerHTML = '';
-    favourites = filteredItems;
-
-    if (filteredItems.length === 0) {
+    if (items.length === 0) {
       container.innerHTML = '<div class="no-results">Ҳеч нарса топилмади</div>';
       return;
     }
 
-    filteredItems.forEach(item => {
+    items.forEach(item => {
+      const isFavourited = favIds.has(item.id);
+      const favClass = isFavourited ? 'favourited' : 'not_favourited';
+
       const wrapper = document.createElement('div');
       wrapper.className = item.content_type;
       wrapper.style.cursor = "pointer";
       wrapper.setAttribute('data-url', item.telegram_url);
 
-      const favIconHTML = `<div class="fav_icon favourited" data-id="${item.id}"></div>`;
+      const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
       let innerHTML = '';
 
       if (item.content_type === 'video') {
@@ -188,14 +192,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       container.appendChild(wrapper);
 
       const favIcon = wrapper.querySelector('.fav_icon');
-      favIcon.addEventListener('click', (e) => {
+      favIcon.addEventListener('click', e => {
         e.stopPropagation();
         const id = parseInt(favIcon.dataset.id);
         targetToRemove = { favIcon, id, wrapper };
         popup.classList.add("show");
       });
 
-      wrapper.addEventListener('click', (e) => {
+      wrapper.addEventListener('click', e => {
         if (e.target.classList.contains('fav_icon')) return;
         const url = wrapper.getAttribute('data-url');
         if (url) {
@@ -232,9 +236,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       setTimeout(() => {
         wrapper.remove();
-        allFavourites = allFavourites.filter(item => item.id !== id);
-        favourites = favourites.filter(item => item.id !== id);
-        renderFavourites(favourites);
+        // Удаляем из favIds, чтобы синхронизировать состояние
+        favIds.delete(id);
       }, 800);
 
       popup.classList.remove("show");
@@ -242,39 +245,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
+  // Поиск
   const urlParams = new URLSearchParams(window.location.search);
   const initialQuery = urlParams.get("query") || "";
   searchInput.value = initialQuery;
 
-  document.querySelector(".searcher").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const newQuery = searchInput.value.trim();
-    if (newQuery) {
-      const encoded = encodeURIComponent(newQuery);
-      window.location.href = `/favourited/?query=${encoded}`;
-    }
-  });
-
   searchInput.addEventListener('input', () => {
     const query = searchInput.value.toLowerCase().trim();
-    const filtered = allFavourites.filter(item => {
+    const filtered = allItems.filter(item => {
       const title = (item.title || '').toLowerCase();
       const subtitle = (item.subtitle || '').toLowerCase();
       return title.includes(query) || subtitle.includes(query);
     });
-    renderFavourites(filtered);
+    renderCards(filtered);
   });
 
   if (initialQuery) {
     const query = initialQuery.toLowerCase().trim();
-    const filtered = allFavourites.filter(item => {
+    const filtered = allItems.filter(item => {
       const title = (item.title || '').toLowerCase();
       const subtitle = (item.subtitle || '').toLowerCase();
       return title.includes(query) || subtitle.includes(query);
     });
-    renderFavourites(filtered);
+    renderCards(filtered);
   } else {
-    renderFavourites(allFavourites);
+    renderCards(allItems);
   }
 
   requestAnimationFrame(() => {
