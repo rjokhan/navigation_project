@@ -30,11 +30,6 @@
   font-size: 55px;
   font-family: BEBAS !important;
   color: white;
-  background-color: #ccc;
-  position: fixed;
-  z-index: 1;
-  height: 300px;
-  width: 100vw;
 }
 
 
