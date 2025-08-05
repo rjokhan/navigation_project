@@ -75,13 +75,13 @@
           avatarAction.textContent = '–';
           avatarExists = true;
         } else {
-          avatarImg.src = "{% static 'images/profile.png' %}";
+          avatarImg.src = "{% static 'imagesdef_icon.png' %}";
           avatarAction.textContent = '+';
           avatarExists = false;
         }
       } catch (err) {
         console.warn("Аватарка не найдена.");
-        avatarImg.src = "{% static 'images/profile.png' %}";
+        avatarImg.src = "{% static 'images/def_icon.png' %}";
         avatarAction.textContent = '+';
         avatarExists = false;
       }
