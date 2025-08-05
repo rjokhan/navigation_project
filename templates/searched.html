@@ -2,305 +2,68 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Favourites</title>
+  <meta charset="UTF-8">
+  <title>Результаты поиска</title>
   <link rel="stylesheet" href="{% static 'css/content.css' %}" />
-  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    .fav_icon {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      width: 35px;
-      height: 35px;
-      cursor: pointer;
-      border-radius: 50%;
-      background-size: contain;
-      background-repeat: no-repeat;
-      z-index: 10;
-      background-color: white;
-    }
-    .favourited {
-      background-image: url('{% static "images/fav_icon_active.png" %}');
-      background-color: #ff0049;
-    }
-    .not_favourited {
-      background-image: url('{% static "images/fav_icon_inactive.png" %}'); /* добавьте иконку для не избранного */
-      background-color: white;
-    }
-    .video, .audio, .file {
-      position: relative;
-      cursor: pointer;
-      margin-bottom: 15px;
-    }
-    .no-results {
-      text-align: center;
-      padding: 50px;
-      font-size: 18px;
-      color: #aaa;
-    }
-    .confirm_popup {
-      display: none;
-      position: fixed;
-      z-index: 9999;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-      justify-content: center;
-      align-items: center;
-    }
-    .confirm_popup.show {
-      display: flex;
-    }
-    .popup_box {
-      background: #fff;
-      border-radius: 8px;
-      padding: 20px 30px;
-      text-align: center;
-      max-width: 300px;
-      width: 90%;
-    }
-    .popup_buttons {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 15px;
-    }
-    .popup_buttons button {
-      padding: 8px 20px;
-      border: none;
-      background: #ff0049;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-      min-width: 70px;
-    }
-  </style>
 </head>
 <body>
 
-<div id="popup" class="confirm_popup">
-  <div class="popup_box">
-    <p>Севимлилардан олиб ташлашни хоҳлайсизми?</p>
-    <div class="popup_buttons">
-      <button id="popup_yes">ҲА</button>
-      <button id="popup_no">ЙЎҚ</button>
-    </div>
-  </div>
-</div>
-
-<div class="blur_overlay active"></div>
-<div class="vertical-waves">
-  <div class="wave"></div>
-  <div class="wave"></div>
-  <div class="wave"></div>
-</div>
-
-<div class="header">
-  <a href="{% url 'index' %}"><div class="header_icon"><img src="{% static 'images/home_page.png' %}" /><p>A CLUB</p></div></a>
-  <a href="{% url 'favourited' %}"><div class="header_icon"><img src="{% static 'images/fav.png' %}" /><p>Севимли</p></div></a>
-  <a href="{% url 'profile' %}"><div class="header_icon"><img src="{% static 'images/profile.png' %}" /><p>Профиль</p></div></a>
-  <a href="{% url 'chat' %}"><div class="header_icon"><img src="{% static 'images/chat.png' %}" /><p>Чатлар</p></div></a>
-</div>
-
 <div class="search_block">
-  <a href="{% url 'index' %}"><div class="back_button"></div></a>
-  <form class="searcher">
-    <img class="search_icon" src="{% static 'images/search icon.png' %}" />
-    <input class="searcher_block" placeholder="Қидириш..." autocomplete="off" />
+  <a href="index.html"><div class="back_button"></div></a>
+  <form class="searcher" onsubmit="return handleSearch(event)">
+    <img class="search_icon" src="{% static 'images/search icon.png' %}">
+    <input class="searcher_block" id="searchInput" placeholder="Поиск..." />
   </form>
 </div>
 
-<div class="content_body"></div>
+<div class="choosed_genre"><span class="red">Результаты</span> поиска:</div>
+
+<div class="content_body" id="searchResults"></div>
 
 <script>
-document.addEventListener("DOMContentLoaded", async () => {
-  const tg = window.Telegram.WebApp;
-  const user = tg.initDataUnsafe?.user;
-  if (!user || !user.id) {
-    document.querySelector('.content_body').innerHTML = '<div class="no-results">Ошибка авторизации</div>';
-    return;
-  }
+  const params = new URLSearchParams(window.location.search);
+  const query = params.get("query")?.toLowerCase() || "";
+  const searchInput = document.getElementById("searchInput");
+  if (searchInput) searchInput.value = query;
 
-  const container = document.querySelector('.content_body');
-  const searchInput = document.querySelector('.searcher_block');
-  const popup = document.getElementById("popup");
-  const popupYes = document.getElementById("popup_yes");
-  const popupNo = document.getElementById("popup_no");
-  let targetToRemove = null;
+  const allContent = JSON.parse(localStorage.getItem("all_content")) || [];
+  const resultsContainer = document.getElementById("searchResults");
 
-  // Получаем id избранных для текущего пользователя
-  const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
-  const favIds = new Set((await favRes.json()).favourites || []);
+  const filtered = allContent.filter(item => {
+    return (
+      item.title?.toLowerCase().includes(query) ||
+      item.subtitle?.toLowerCase().includes(query)
+    );
+  });
 
-  // Получаем все жанры и все элементы
-  const genresRes = await fetch('/api/genres/');
-  const genres = await genresRes.json();
-  const allItems = genres.flatMap(g => g.items);
-
-  // Функция для отрисовки карточек
-  function renderItems(items) {
-    container.innerHTML = '';
-
-    if (items.length === 0) {
-      container.innerHTML = '<div class="no-results">Ҳеч нарса топилмади</div>';
-      return;
-    }
-
-    items.forEach(item => {
-      const isFavourited = favIds.has(item.id);
-      const favClass = isFavourited ? 'favourited' : 'not_favourited';
-
-      const wrapper = document.createElement('div');
-      wrapper.className = item.content_type;
-      wrapper.style.cursor = "pointer";
-      wrapper.setAttribute('data-url', item.telegram_url);
-      wrapper.style.position = 'relative';
-
-      const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
-      let innerHTML = '';
-
-      if (item.content_type === 'video') {
-        innerHTML = `
-          <div class="video_thumbnail">
-            <img src="${item.thumbnail}" alt="video_thumbnail" />
-            <div class="video_duration">${item.duration}</div>
-          </div>
-          ${favIconHTML}
-          <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
-        `;
-      } else if (item.content_type === 'audio') {
-        innerHTML = `
-          <div class="audio_menu">
-            <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}" /></div>
-            <div class="audio_duration">${item.duration}</div>
-          </div>
-          ${favIconHTML}
-          <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
-        `;
-      } else if (item.content_type === 'file') {
-        innerHTML = `
-          <div class="file_menu">
-            <div class="static_icon"><img src="{% static 'images/file_icon.png' %}" /></div>
-            <div class="file_duration">${item.duration}</div>
-          </div>
-          ${favIconHTML}
-          <div class="file_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
-        `;
-      }
-
-      wrapper.innerHTML = innerHTML;
-      container.appendChild(wrapper);
-
-      // Обработка клика по иконке избранного
-      const favIcon = wrapper.querySelector('.fav_icon');
-      favIcon.addEventListener('click', e => {
-        e.stopPropagation();
-        const id = parseInt(favIcon.dataset.id);
-
-        if (!favIds.has(id)) {
-          // Добавляем в избранное
-          fetch(`/api/favourites/add/${id}/`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({telegram_id: user.id})
-          }).then(() => {
-            favIcon.classList.remove('not_favourited');
-            favIcon.classList.add('favourited');
-            favIds.add(id);
-          });
-        } else {
-          // Показываем подтверждение на удаление из избранного
-          targetToRemove = { favIcon, id, wrapper };
-          popup.classList.add("show");
-        }
-      });
-
-      // Клик по карточке открывает ссылку
-      wrapper.addEventListener('click', e => {
-        if (e.target.classList.contains('fav_icon')) return;
-        const url = wrapper.getAttribute('data-url');
-        if (url) {
-          window.location.href = url;
-          setTimeout(() => {
-            try { Telegram.WebApp.close(); } catch(e) {}
-          }, 400);
-        }
-      });
+  if (filtered.length === 0) {
+    resultsContainer.innerHTML = `<div class="no_results">Ничего не найдено</div>`;
+  } else {
+    filtered.forEach(item => {
+      const block = document.createElement("div");
+      block.className = "content_block";
+      block.innerHTML = `
+        <div class="fav_icon not_favourited" data-id="${item.id}"></div>
+        <div class="content_info" onclick="window.open('${item.telegram_url}', '_blank')">
+          <div class="content_title">${item.title}</div>
+          <div class="content_subtitle">${item.subtitle}</div>
+        </div>
+      `;
+      resultsContainer.appendChild(block);
     });
   }
 
-  // Закрыть попап без действия
-  popupNo.onclick = () => popup.classList.remove("show");
-
-  // Подтверждение удаления из избранного
-  popupYes.onclick = async () => {
-    if (targetToRemove) {
-      const { favIcon, id, wrapper } = targetToRemove;
-      await fetch(`/api/favourites/remove/${id}/`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({telegram_id: user.id})
-      });
-
-      wrapper.style.transition = "transform 0.3s ease, opacity 0.3s ease";
-      wrapper.style.transform = "scale(0.95)";
-      wrapper.style.opacity = "0";
-
-      setTimeout(() => {
-        wrapper.style.transition = "height 0.4s ease, margin 0.4s ease, padding 0.4s ease";
-        wrapper.style.height = "0";
-        wrapper.style.margin = "0";
-        wrapper.style.padding = "0";
-      }, 300);
-
-      setTimeout(() => {
-        wrapper.remove();
-        favIds.delete(id);
-      }, 800);
-
-      popup.classList.remove("show");
-      targetToRemove = null;
+  function handleSearch(e) {
+    e.preventDefault();
+    const value = document.getElementById("searchInput").value.trim();
+    if (value) {
+      window.location.href = `searched.html?query=${encodeURIComponent(value)}`;
     }
-  };
-
-  // Поиск по всем элементам по названию и описанию
-  searchInput.addEventListener('input', () => {
-    const query = searchInput.value.toLowerCase().trim();
-    if (!query) {
-      renderItems(allItems);
-      return;
-    }
-    const filtered = allItems.filter(item => {
-      const title = (item.title || '').toLowerCase();
-      const subtitle = (item.subtitle || '').toLowerCase();
-      return title.includes(query) || subtitle.includes(query);
-    });
-    renderItems(filtered);
-  });
-
-  // Отобразить все при загрузке
-  renderItems(allItems);
-
-  // Убрать overlay
-  requestAnimationFrame(() => {
-    document.querySelector('.blur_overlay').classList.remove("active");
-  });
-
-  // Анимация перехода по меню
-  document.querySelectorAll('.header a').forEach(link => {
-    link.addEventListener('click', e => {
-      e.preventDefault();
-      const href = link.getAttribute('href');
-      document.querySelector('.blur_overlay').classList.add("active");
-      setTimeout(() => window.location.href = href, 300);
-    });
-  });
-});
+    return false;
+  }
 </script>
 
 </body>
