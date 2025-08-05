@@ -241,36 +241,29 @@ document.addEventListener("DOMContentLoaded", async () => {
   popupNo.onclick = () => popup.classList.remove("show");
 
   popupYes.onclick = async () => {
-    if (targetToRemove) {
-      const { favIcon, id, wrapper } = targetToRemove;
-      await fetch(`/api/favourites/remove/${id}/`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ telegram_id: user.id })
-      });
+  if (targetToRemove) {
+    const { favIcon, id } = targetToRemove;
 
-      wrapper.style.transition = "transform 0.3s ease, opacity 0.3s ease";
-      wrapper.style.transform = "scale(0.95)";
-      wrapper.style.opacity = "0";
+    await fetch(`/api/favourites/remove/${id}/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_id: user.id })
+    });
 
-      setTimeout(() => {
-        wrapper.style.transition = "height 0.4s ease, margin 0.4s ease, padding 0.4s ease";
-        wrapper.style.height = "0";
-        wrapper.style.margin = "0";
-        wrapper.style.padding = "0";
-      }, 300);
+    // ❗ Удаляем ID из favIds
+    const index = favIds.indexOf(id);
+    if (index !== -1) favIds.splice(index, 1);
 
-      setTimeout(() => {
-        wrapper.remove();
-        allFavourites = allFavourites.filter(item => item.id !== id);
-        favourites = favourites.filter(item => item.id !== id);
-        renderFavourites(favourites);
-      }, 800);
+    // ❗ Обновляем иконку
+    favIcon.classList.remove("favourited");
+    favIcon.classList.add("not_favourited");
 
-      popup.classList.remove("show");
-      targetToRemove = null;
-    }
-  };
+    // ❗ Закрываем попап
+    popup.classList.remove("show");
+    targetToRemove = null;
+  }
+};
+
 
   const urlParams = new URLSearchParams(window.location.search);
   const initialQuery = urlParams.get("query") || "";
