@@ -1,4 +1,7 @@
 from django.urls import path
+from .views import proxy_check_user
+
+
 from .views import (
     proxy_check_user,
     avatar_upload,
@@ -7,8 +10,17 @@ from .views import (
 )
 
 urlpatterns = [
+    path("api/users/proxy-check-user/", proxy_check_user),
+    path("api/users/avatar/upload/", avatar_upload),
+    path("api/users/avatar/delete/", avatar_delete),
+    path("api/users/avatar/", avatar_get),
+]
+
+
+urlpatterns = [
     path("proxy-check-user/", proxy_check_user),
-    path("avatar/upload/", avatar_upload),
-    path("avatar/delete/", avatar_delete),
-    path("avatar/", avatar_get),
+
+    path('avatar/upload/', avatar_upload),
+    path('avatar/delete/', avatar_delete),
+    path('avatar/', avatar_get),
 ]
