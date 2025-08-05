@@ -4,15 +4,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Search</title>
-  <link rel="stylesheet" href="{% static 'css/content.css' %}">
-  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet">
+  <title>SEARCH</title>
+  <link rel="stylesheet" href="{% static 'css/content.css' %}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
 <div class="blur_overlay active"></div>
+
 <div class="vertical-waves">
   <div class="wave"></div>
   <div class="wave"></div>
@@ -20,150 +23,151 @@
 </div>
 
 <div class="header">
-  <a href="{% url 'index' %}"><div class="header_icon"><img src="{% static 'images/home_page.png' %}"><p>A CLUB</p></div></a>
-  <a href="{% url 'favourited' %}"><div class="header_icon"><img src="{% static 'images/fav.png' %}"><p>Севимли</p></div></a>
-  <a href="{% url 'profile' %}"><div class="header_icon"><img src="{% static 'images/profile.png' %}"><p>Профиль</p></div></a>
-  <a href="{% url 'chat' %}"><div class="header_icon"><img src="{% static 'images/chat.png' %}"><p>Чатлар</p></div></a>
+  <a href="{% url 'index' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/home_page.png' %}">
+      <p>A CLUB</p>
+    </div>
+  </a>
+  <a href="{% url 'favourited' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/fav.png' %}">
+      <p>Севимли</p>
+    </div>
+  </a>
+  <a href="{% url 'profile' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/profile.png' %}">
+      <p>Профиль</p>
+    </div>
+  </a>
+  <a href="{% url 'chat' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/chat.png' %}">
+      <p>Чатлар</p>
+    </div>
+  </a>
 </div>
 
 <div class="search_block">
   <a href="{% url 'index' %}"><div class="back_button"></div></a>
   <form class="searcher">
     <img class="search_icon" src="{% static 'images/search icon.png' %}">
-    <input class="searcher_block" placeholder="Қидириш..." autocomplete="off">
+    <input class="searcher_block" placeholder="Қидириш..." id="searchInput" autocomplete="off">
   </form>
 </div>
 
-<div class="choosed_genre"><span class="red">Натижалар:</span></div>
+<div class="choosed_genre">
+  <span class="red">Натижалар</span> бўйича:
+</div>
+
 <div class="content_body"></div>
 
 <script>
-document.addEventListener("DOMContentLoaded", async () => {
-  const container = document.querySelector(".content_body");
-  const input = document.querySelector(".searcher_block");
-  const overlay = document.querySelector(".blur_overlay");
+document.addEventListener("DOMContentLoaded", () => {
+  const overlay = document.querySelector('.blur_overlay');
+  requestAnimationFrame(() => overlay.classList.remove('active'));
 
-  const favourites = JSON.parse(localStorage.getItem("favourites") || "[]");
-
-  // 🌀 Загрузка жанров и карточек
-  const genresRes = await fetch('/api/genres/');
-  const genres = await genresRes.json();
-  const allItems = genres.flatMap(g => g.items);
-
-  // 🔍 Поиск
-  function filterItems(query) {
-    return allItems.filter(item => {
-      const title = (item.title || '').toLowerCase();
-      const subtitle = (item.subtitle || '').toLowerCase();
-      return title.includes(query) || subtitle.includes(query);
+  document.querySelectorAll('.header a').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const href = link.getAttribute('href');
+      overlay.classList.add('active');
+      setTimeout(() => window.location.href = href, 300);
     });
+  });
+
+  const input = document.getElementById("searchInput");
+  const params = new URLSearchParams(window.location.search);
+  const query = (params.get("query") || "").toLowerCase();
+  input.value = query;
+
+  const container = document.querySelector(".content_body");
+  const allCards = JSON.parse(localStorage.getItem("allCards") || "[]");
+  let favourites = JSON.parse(localStorage.getItem("favourites") || "[]");
+
+  const filtered = allCards.filter(item => {
+    const title = (item.title || "").toLowerCase();
+    const subtitle = (item.subtitle || "").toLowerCase();
+    return title.includes(query) || subtitle.includes(query);
+  });
+
+  if (!filtered.length) {
+    container.innerHTML = "<p style='padding: 20px;'>Натижа топилмади.</p>";
+    return;
   }
 
-  // 🧱 Рендер карточек
-  function render(items) {
-    container.innerHTML = '';
+  for (const item of filtered) {
+    const isFavourited = favourites.some(f => f.id === item.id && f.genreId === item.genreId);
+    const favClass = isFavourited ? 'favourited' : 'not_favourited';
+    const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}" data-genre="${item.genreId}"></div>`;
+    const open = `window.open('${item.telegram_url}', '_blank')`;
 
-    if (items.length === 0) {
-      container.innerHTML = '<div class="no-results">Ҳеч нарса топилмади</div>';
-      return;
-    }
-
-    items.forEach(item => {
-      const wrapper = document.createElement('div');
-      wrapper.className = item.content_type;
-      wrapper.style.cursor = "pointer";
-      wrapper.setAttribute('data-url', item.telegram_url);
-
-      const isFav = favourites.some(f => f.id === item.id && f.genreId === item.genreId);
-      const favClass = isFav ? "favourited" : "not_favourited";
-      const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}" data-genre="${item.genreId}"></div>`;
-
-      let inner = '';
-      if (item.content_type === 'video') {
-        inner = `
-          <div class="video_thumbnail">
-            <img src="${item.thumbnail}">
+    let block = '';
+    if (item.content_type === 'video') {
+      block = `
+        <div class="video">
+          <div class="video_thumbnail" onclick="${open}">
+            <img src="${item.thumbnail}" />
             <div class="video_duration">${item.duration}</div>
           </div>
           ${favIcon}
-          <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>`;
-      } else if (item.content_type === 'audio') {
-        inner = `
-          <div class="audio_menu">
-            <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}"></div>
+          <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+        </div>`;
+    } else if (item.content_type === 'audio') {
+      block = `
+        <div class="audio">
+          <div class="audio_menu" onclick="${open}">
+            <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}" /></div>
             <div class="audio_duration">${item.duration}</div>
           </div>
           ${favIcon}
-          <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>`;
-      } else if (item.content_type === 'file') {
-        inner = `
-          <div class="file_menu">
-            <div class="static_icon"><img src="{% static 'images/file_icon.png' %}"></div>
+          <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+        </div>`;
+    } else if (item.content_type === 'file') {
+      block = `
+        <div class="file">
+          <div class="file_menu" onclick="${open}">
+            <div class="static_icon"><img src="{% static 'images/file_icon.png' %}" /></div>
             <div class="file_duration">${item.duration}</div>
           </div>
           ${favIcon}
-          <div class="file_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>`;
+          <div class="file_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+        </div>`;
+    }
+
+    container.insertAdjacentHTML("beforeend", block);
+
+    const favEl = container.lastElementChild.querySelector(".fav_icon");
+    favEl.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const id = parseInt(favEl.dataset.id);
+      const genreId = parseInt(favEl.dataset.genre);
+
+      const exists = favourites.find(f => f.id === id && f.genreId === genreId);
+      if (exists) {
+        favourites = favourites.filter(f => !(f.id === id && f.genreId === genreId));
+        favEl.classList.remove("favourited");
+        favEl.classList.add("not_favourited");
+      } else {
+        const itemToSave = allCards.find(f => f.id === id && f.genreId === genreId);
+        favourites.push(itemToSave);
+        favEl.classList.remove("not_favourited");
+        favEl.classList.add("favourited");
+        favEl.classList.add("animate-pulse");
+
+        const explosion = document.createElement("div");
+        explosion.className = "fav_explosion";
+        favEl.parentElement.appendChild(explosion);
+        setTimeout(() => {
+          explosion.remove();
+          favEl.classList.remove("animate-pulse");
+        }, 600);
       }
 
-      wrapper.innerHTML = inner;
-      container.appendChild(wrapper);
-
-      // 🎯 Переход по клику
-      wrapper.addEventListener("click", e => {
-        if (e.target.classList.contains("fav_icon")) return;
-        window.location.href = item.telegram_url;
-        setTimeout(() => {
-          try { Telegram.WebApp.close(); } catch (e) {}
-        }, 300);
-      });
-
-      // ❤️ Обработка избранного
-      const icon = wrapper.querySelector(".fav_icon");
-      icon.addEventListener("click", e => {
-        e.stopPropagation();
-        const id = parseInt(icon.dataset.id);
-        const genreId = parseInt(icon.dataset.genre);
-        const idx = favourites.findIndex(f => f.id === id && f.genreId === genreId);
-
-        if (idx >= 0) {
-          favourites.splice(idx, 1);
-          icon.classList.remove("favourited");
-          icon.classList.add("not_favourited");
-        } else {
-          const toSave = allItems.find(i => i.id === id && i.genreId === genreId);
-          if (toSave) {
-            favourites.push(toSave);
-            icon.classList.remove("not_favourited");
-            icon.classList.add("favourited");
-            icon.classList.add("animate-pulse");
-
-            const boom = document.createElement("div");
-            boom.className = "fav_explosion";
-            icon.parentElement.appendChild(boom);
-            setTimeout(() => {
-              boom.remove();
-              icon.classList.remove("animate-pulse");
-            }, 600);
-          }
-        }
-
-        localStorage.setItem("favourites", JSON.stringify(favourites));
-      });
+      localStorage.setItem("favourites", JSON.stringify(favourites));
     });
   }
-
-  // 🧠 Фильтрация по вводу
-  input.addEventListener("input", () => {
-    const q = input.value.toLowerCase().trim();
-    const result = filterItems(q);
-    render(result);
-  });
-
-  // 🔁 Первая отрисовка
-  render(allItems);
-
-  // 🎬 Убрать размытие
-  requestAnimationFrame(() => overlay.classList.remove("active"));
 });
 </script>
 
