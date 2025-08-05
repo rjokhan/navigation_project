@@ -129,17 +129,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   const popupNo = document.getElementById("popup_no");
   let targetToRemove = null;
 
-  // Получаем избранные ID
+  // Получаем избранные id
   const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
-  const favIds = new Set((await favRes.json()).favourites || []);
+  const favIdsArray = (await favRes.json()).favourites || [];
+  // Для быстрого поиска по id
+  const favIds = new Set(favIdsArray);
 
-  // Получаем все жанры и все элементы
+  // Получаем все жанры и их элементы
   const genresRes = await fetch('/api/genres/');
   const genres = await genresRes.json();
 
+  // Собираем все элементы в один массив
   const allItems = genres.flatMap(g => g.items);
 
-  // Функция отрисовки карточек с учётом избранного
+  // Функция отрисовки карточек
   function renderCards(items) {
     container.innerHTML = '';
     if (items.length === 0) {
@@ -192,11 +195,26 @@ document.addEventListener("DOMContentLoaded", async () => {
       container.appendChild(wrapper);
 
       const favIcon = wrapper.querySelector('.fav_icon');
+
       favIcon.addEventListener('click', e => {
         e.stopPropagation();
         const id = parseInt(favIcon.dataset.id);
-        targetToRemove = { favIcon, id, wrapper };
-        popup.classList.add("show");
+
+        if (!favIcon.classList.contains('favourited')) {
+          // Добавляем в избранное
+          fetch(`/api/favourites/add/${id}/`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ telegram_id: user.id })
+          }).then(() => {
+            favIcon.classList.remove('not_favourited');
+            favIcon.classList.add('favourited');
+          });
+        } else {
+          // Показываем попап удаления
+          targetToRemove = { favIcon, id, wrapper };
+          popup.classList.add("show");
+        }
       });
 
       wrapper.addEventListener('click', e => {
@@ -236,7 +254,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       setTimeout(() => {
         wrapper.remove();
-        // Удаляем из favIds, чтобы синхронизировать состояние
+        // Обновляем favIds и список после удаления
         favIds.delete(id);
       }, 800);
 
@@ -245,11 +263,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
-  // Поиск
-  const urlParams = new URLSearchParams(window.location.search);
-  const initialQuery = urlParams.get("query") || "";
-  searchInput.value = initialQuery;
+  // Отрисовываем все карточки по умолчанию
+  renderCards(allItems);
 
+  // Фильтрация по поиску
   searchInput.addEventListener('input', () => {
     const query = searchInput.value.toLowerCase().trim();
     const filtered = allItems.filter(item => {
@@ -259,18 +276,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     renderCards(filtered);
   });
-
-  if (initialQuery) {
-    const query = initialQuery.toLowerCase().trim();
-    const filtered = allItems.filter(item => {
-      const title = (item.title || '').toLowerCase();
-      const subtitle = (item.subtitle || '').toLowerCase();
-      return title.includes(query) || subtitle.includes(query);
-    });
-    renderCards(filtered);
-  } else {
-    renderCards(allItems);
-  }
 
   requestAnimationFrame(() => {
     document.querySelector('.blur_overlay').classList.remove("active");
