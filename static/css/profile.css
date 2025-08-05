@@ -190,7 +190,7 @@ a {
   pointer-events: all;
 }
 .avatar_wrapper {
-  display: none;
+  display: none !important;
   display: flex;
   justify-content: center;
   margin: 0 auto;
@@ -202,6 +202,7 @@ a {
 }
 
 .avatar_circle {
+  display: none !important;
   width: 200px;
   height: 200px;
   border-radius: 30px;
@@ -212,6 +213,7 @@ a {
 }
 
 .avatar_circle img {
+  display: none !important;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -220,6 +222,7 @@ a {
 }
 
 .avatar_action {
+  display: none !important;
   position: absolute;
   bottom: 0;
   right: 0;
