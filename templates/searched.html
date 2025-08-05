@@ -129,13 +129,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   const popupNo = document.getElementById("popup_no");
   let targetToRemove = null;
 
-  // Получаем избранные id
+  // Получаем массив избранных id
   const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
   const favIdsArray = (await favRes.json()).favourites || [];
-  // Для быстрого поиска по id
-  const favIds = new Set(favIdsArray);
+  const favIds = new Set(favIdsArray); // Для быстрого поиска
 
-  // Получаем все жанры и их элементы
+  // Получаем все жанры с контентом
   const genresRes = await fetch('/api/genres/');
   const genres = await genresRes.json();
 
@@ -209,9 +208,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           }).then(() => {
             favIcon.classList.remove('not_favourited');
             favIcon.classList.add('favourited');
+            favIds.add(id);
           });
         } else {
-          // Показываем попап удаления
+          // Показываем попап удаления только для избранных
           targetToRemove = { favIcon, id, wrapper };
           popup.classList.add("show");
         }
@@ -254,7 +254,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       setTimeout(() => {
         wrapper.remove();
-        // Обновляем favIds и список после удаления
         favIds.delete(id);
       }, 800);
 
@@ -263,7 +262,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
-  // Отрисовываем все карточки по умолчанию
+  // Отрисовываем все карточки сразу
   renderCards(allItems);
 
   // Фильтрация по поиску
