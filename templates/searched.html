@@ -14,17 +14,6 @@
 </head>
 <body>
 
-<!-- 🟨 Попап подтверждения удаления -->
-<div id="popup" class="confirm_popup">
-  <div class="popup_box">
-    <p>Севимлилардан олиб ташлашни хоҳлайсизми?</p>
-    <div class="popup_buttons">
-      <button id="popup_yes">ҲА</button>
-      <button id="popup_no">ЙЎҚ</button>
-    </div>
-  </div>
-</div>
-
 <div class="blur_overlay active"></div>
 
 <div class="vertical-waves">
@@ -97,13 +86,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const allCards = JSON.parse(localStorage.getItem("allCards") || "[]");
   let favourites = JSON.parse(localStorage.getItem("favourites") || "[]");
 
-  const popup = document.getElementById("popup");
-  const yesBtn = document.getElementById("popup_yes");
-  const noBtn = document.getElementById("popup_no");
-
-  let currentFavEl = null;
-  let currentItem = null;
-
   const filtered = allCards.filter(item => {
     const title = (item.title || "").toLowerCase();
     const subtitle = (item.subtitle || "").toLowerCase();
@@ -155,19 +137,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     container.insertAdjacentHTML("beforeend", block);
-    const favEl = container.lastElementChild.querySelector(".fav_icon");
 
+    const favEl = container.lastElementChild.querySelector(".fav_icon");
     favEl.addEventListener("click", (e) => {
       e.stopPropagation();
       const id = parseInt(favEl.dataset.id);
       const genreId = parseInt(favEl.dataset.genre);
-      const exists = favourites.find(f => f.id === id && f.genreId === genreId);
 
+      const exists = favourites.find(f => f.id === id && f.genreId === genreId);
       if (exists) {
-        // показать попап
-        currentFavEl = favEl;
-        currentItem = { id, genreId };
-        popup.classList.add("show");
+        favourites = favourites.filter(f => !(f.id === id && f.genreId === genreId));
+        favEl.classList.remove("favourited");
+        favEl.classList.add("not_favourited");
       } else {
         const itemToSave = allCards.find(f => f.id === id && f.genreId === genreId);
         favourites.push(itemToSave);
@@ -187,18 +168,6 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("favourites", JSON.stringify(favourites));
     });
   }
-
-  // обработка кнопок в попапе
-  yesBtn.onclick = () => {
-    if (!currentFavEl || !currentItem) return;
-    favourites = favourites.filter(f => !(f.id === currentItem.id && f.genreId === currentItem.genreId));
-    currentFavEl.classList.remove("favourited");
-    currentFavEl.classList.add("not_favourited");
-    localStorage.setItem("favourites", JSON.stringify(favourites));
-    popup.classList.remove("show");
-  };
-
-  noBtn.onclick = () => popup.classList.remove("show");
 });
 </script>
 
