@@ -231,4 +231,5 @@ a {
   text-align: center;
   border: 2px solid white;
   cursor: pointer;
+  z-index: 9999;
 }
