@@ -186,15 +186,14 @@ a {
   justify-content: center;
   margin-bottom: 20px;
   position: relative;
-  width: 120px !important;
-  height: 120px !important;
-  background-color: #4d0016;
+  width: 200px !important;
+  height: 200px !important;
 }
 
 .avatar_circle {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
+  width: 200px;
+  height: 200px;
+  border-radius: 30px;
   background: #ccc;
   overflow: hidden;
   position: absolute;
