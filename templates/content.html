@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <div class="video_duration">${item.duration}</div>
         </div>
         ${favIcon}
-        <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+        <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle ? item.subtitle.replace(/\n/g, '<br>') : ''}</div></div>
       </div>`;
     } else if (item.content_type === 'audio') {
       block = `<div class="audio" onclick="${open}">
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <div class="audio_duration">${item.duration}</div>
         </div>
         ${favIcon}
-        <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+        <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle ? item.subtitle.replace(/\n/g, '<br>') : ''}</div></div>
       </div>`;
     } else if (item.content_type === 'file') {
       block = `<div class="file" onclick="${open}">
@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <div class="file_duration">${item.duration}</div>
         </div>
         ${favIcon}
-        <div class="file_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+        <div class="file_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle ? item.subtitle.replace(/\n/g, '<br>') : ''}</div></div>
       </div>`;
     }
 
