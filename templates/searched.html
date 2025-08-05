@@ -94,7 +94,7 @@
 
 <div class="header">
   <a href="{% url 'index' %}"><div class="header_icon"><img src="{% static 'images/home_page.png' %}"><p>A CLUB</p></div></a>
-  <a href="{% url 'favourited' %}"><div class="header_icon active"><img src="{% static 'images/fav.png' %}"><p>Севимли</p></div></a>
+  <a href="{% url 'favourited' %}"><div class="header_icon"><img src="{% static 'images/fav.png' %}"><p>Севимли</p></div></a>
   <a href="{% url 'profile' %}"><div class="header_icon"><img src="{% static 'images/profile.png' %}"><p>Профиль</p></div></a>
   <a href="{% url 'chat' %}"><div class="header_icon"><img src="{% static 'images/chat.png' %}"><p>Чатлар</p></div></a>
 </div>
@@ -103,11 +103,10 @@
   <a href="{% url 'index' %}"><div class="back_button"></div></a>
   <form class="searcher">
     <img class="search_icon" src="{% static 'images/search icon.png' %}">
-    <input class="searcher_block" placeholder="Поиск избранного..." autocomplete="off">
+    <input class="searcher_block" placeholder="Қидириш..." autocomplete="off">
   </form>
 </div>
 
-<div class="choosed_genre"><span class="red">A </span>FAVOURITES:</div>
 
 <div class="content_body"></div>
 
