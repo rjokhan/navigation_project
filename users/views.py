@@ -110,7 +110,7 @@ def avatar_get(request):
         return JsonResponse({'success': False, 'message': 'User not found'}, status=404)
 
 
-# === Новая простая логика загрузки и получения аватар без UserProfile ===
+# === Новая простая логика загрузки и получения аватара без UserProfile ===
 
 @csrf_exempt
 def avatar_upload_simple(request):
