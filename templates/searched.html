@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const genres = await genresRes.json();
 
   const allItems = genres.flatMap(g => g.items);
-  allFavourites = allItems.filter(item => favIds.includes(item.id));
+  allFavourites = allItems;
   let favourites = [...allFavourites];
 
   function renderFavourites(filteredItems) {
