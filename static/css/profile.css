@@ -194,11 +194,10 @@ a {
   justify-content: center;
   margin: 0 auto;
   position: relative;
-  width: 230px !important;
-  height: 230px !important;
+  width: 250px !important;
+  height: 250px !important;
   justify-content: center;
   align-items: center;
-  border: 2px dashed red;
 }
 
 .avatar_circle {
