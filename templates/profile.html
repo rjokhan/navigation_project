@@ -96,7 +96,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ telegram_id: telegramUser.id })
         }).then(() => {
-          avatarImg.src = "{% static 'images/profile.png' %}";
+          avatarImg.src = "{% static 'images/def_icon.png' %}";
           avatarAction.textContent = '+';
           avatarExists = false;
         });
