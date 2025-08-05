@@ -267,14 +267,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const initialQuery = urlParams.get("query") || "";
   searchInput.value = initialQuery;
 
-  document.querySelector(".searcher").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const newQuery = searchInput.value.trim();
-    if (newQuery) {
-      const encoded = encodeURIComponent(newQuery);
-      window.location.href = `/favourited/?query=${encoded}`;
-    }
-  });
+document.querySelector(".searcher").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const newQuery = searchInput.value.trim();
+  if (newQuery) {
+    const encoded = encodeURIComponent(newQuery);
+    window.location.href = `/favourited/?query=${encoded}`;
+  }
+});
+
 
   searchInput.addEventListener('input', () => {
     const query = searchInput.value.toLowerCase().trim();
