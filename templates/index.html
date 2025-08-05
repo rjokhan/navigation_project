@@ -16,10 +16,10 @@
 
 <div id="resume_popup" class="popup_resume hidden">
   <div class="popup_inner">
-    <div id="resume_text">Вы остановились...</div>
+    <div id="resume_text">Оҳирги марта очилган:</div>
     <div class="popup_buttons">
-      <button id="resume_yes">Да</button>
-      <button id="resume_no">Нет</button>
+      <button id="resume_yes">Ҳа</button>
+      <button id="resume_no">Йўқ</button>
     </div>
   </div>
 </div>
@@ -60,7 +60,7 @@
 </div>
 
 <!-- GREETING -->
-<div class="name">Hello, <span id="user-name">Гость</span></div>
+<div class="name">Салом, <span id="user-name">Гость</span></div>
 
 <!-- SEARCH -->
 <form class="searcher">
@@ -70,7 +70,7 @@
 
 <!-- GENRES -->
 <div class="container_genre">
-  <div class="loading">Загрузка...</div>
+  <div class="loading">Юкланяпти...</div>
 </div>
 
 <!-- POPUP for non-residents -->
@@ -90,7 +90,7 @@
   text-align: center;
   padding: 20px;
 ">
-  Сиз резидент емассиз
+  Сиз клуб резиденти емассиз
 </div>
 
 <script>
@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   const overlay = document.querySelector(".blur_overlay");
 
   if (!user || !user.id) {
-    genreContainer.innerHTML = "<div class='error'>Ошибка авторизации через Telegram</div>";
+    genreContainer.innerHTML = "<div class='error'>Упс, қандайдир хатолик юз берди</div>";
     return;
   }
 
@@ -131,19 +131,19 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   } catch (err) {
     console.error("Ошибка при проверке пользователя:", err);
-    genreContainer.innerHTML = "<div class='error'>Ошибка сервера</div>";
+    genreContainer.innerHTML = "<div class='error'>Сервер хатоси</div>";
   }
 
   async function loadGenres() {
     const container = document.querySelector('.container_genre');
-    container.innerHTML = '<div class="loading">Загрузка жанров...</div>';
+    container.innerHTML = '<div class="loading">Рубрикалар рўйхати юкланяпти...</div>';
 
     try {
       const res = await fetch("/api/genres/");
       const genres = await res.json();
 
       if (!Array.isArray(genres)) {
-        container.innerHTML = "<div class='error'>Неверный формат данных жанров</div>";
+        container.innerHTML = "<div class='error'>Нотоғри формат</div>";
         return;
       }
 
@@ -179,7 +179,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     } catch (error) {
       console.error("Ошибка загрузки жанров:", error);
-      container.innerHTML = "<div class='error'>Ошибка загрузки жанров</div>";
+      container.innerHTML = "<div class='error'>Рубрикаларни йўклашда хатолик бўлди</div>";
     }
   }
 });
@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const yes = document.getElementById('resume_yes');
     const no = document.getElementById('resume_no');
 
-    text.innerHTML = `Вы остановились на:<br><strong>${data.genreTitle} – ${data.itemTitle}</strong><br>Продолжить?`;
+    text.innerHTML = `Оҳирги марта очилган:<br><strong>${data.genreTitle} – ${data.itemTitle}</strong><br>Давом этамизми?`;
 
     // Снимаем hidden и ставим show
     popup.classList.remove('hidden');
