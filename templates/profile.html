@@ -28,55 +28,10 @@
 
 
   <div class="profile_title">Резидент маълумотлари</div>
-
-
-
-
-  <div id="avatar-circle"></div>
-
-<style>
-  #avatar-circle {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background-color: #ccc;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    /* рамка белая для стиля */
-    border: 3px solid white;
-  }
-</style>
-
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const tg = window.Telegram.WebApp;
-    const user = tg.initDataUnsafe?.user || {};
-    const avatarDiv = document.getElementById("avatar-circle");
-
-    if (user.photo_url) {
-      avatarDiv.style.backgroundImage = `url(${user.photo_url})`;
-    } else {
-      // дефолтный аватар (можешь заменить на свой)
-      avatarDiv.style.backgroundImage = "url('/static/images/def_icon.png')";
-    }
-  });
-</script>
-
-
-
-
-
+  
   <div class="profile_container">
 
     <!-- Аватар -->
-<div class="avatar_wrapper">
-  <div class="avatar_circle">
-    <img id="avatar_img" src="{% static 'images/def_icon.png' %}" alt="avatar">
-  </div>
-  <label id="avatar_action" class="avatar_action">+</label>
-  <input type="file" id="avatar_input" accept="image/*" style="display: none;">
-</div>
 
 
 
