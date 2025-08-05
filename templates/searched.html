@@ -192,12 +192,38 @@ document.addEventListener("DOMContentLoaded", async () => {
       container.appendChild(wrapper);
 
       const favIcon = wrapper.querySelector('.fav_icon');
-      favIcon.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const id = parseInt(favIcon.dataset.id);
-        targetToRemove = { favIcon, id, wrapper };
-        popup.classList.add("show");
-      });
+      favIcon.addEventListener('click', async (e) => {
+  e.stopPropagation();
+  const id = parseInt(favIcon.dataset.id);
+
+  const isAlreadyFav = favIds.includes(id);
+  if (isAlreadyFav) {
+    // 🔥 Удаление — показать попап
+    targetToRemove = { favIcon, id };
+    popup.classList.add("show");
+  } else {
+    // ✅ Добавление
+    await fetch(`/api/favourites/add/${id}/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_id: user.id })
+    });
+
+    favIcon.classList.remove("not_favourited");
+    favIcon.classList.add("favourited");
+    favIds.push(id); // добавим в локальный список
+
+    favIcon.classList.add("animate-pulse");
+    const boom = document.createElement("div");
+    boom.className = "fav_explosion";
+    favIcon.parentElement.appendChild(boom);
+    setTimeout(() => {
+      boom.remove();
+      favIcon.classList.remove("animate-pulse");
+    }, 600);
+  }
+});
+
 
       wrapper.addEventListener('click', (e) => {
         if (e.target.classList.contains('fav_icon')) return;
