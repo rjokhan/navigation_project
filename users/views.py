@@ -1,13 +1,34 @@
 import os
+import json
+import requests
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-import json
-
 
 AVATAR_FOLDER = os.path.join(settings.MEDIA_ROOT, 'avatars')
+
+@csrf_exempt
+def proxy_check_user(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        telegram_id = data.get('telegram_id')
+        if not telegram_id:
+            return JsonResponse({'success': False, 'message': 'Telegram ID не передан'})
+
+        response = requests.post(
+            'https://api.ayolclub.uz/en/api/v1/telegram-bot/check-user/',
+            headers={'X-API-Token': 'your_token_here'},  # <-- замените на актуальный токен
+            json={'telegram_id': telegram_id}
+        )
+        api_data = response.json()
+        return JsonResponse(api_data)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
 
 
 @csrf_exempt
@@ -21,19 +42,16 @@ def avatar_upload(request):
     if not telegram_id or not avatar_file:
         return JsonResponse({'success': False, 'message': 'Missing data'}, status=400)
 
-    # Определим расширение
     ext = avatar_file.name.split('.')[-1].lower()
     if ext not in ['jpg', 'jpeg', 'png', 'webp']:
         return JsonResponse({'success': False, 'message': 'Invalid image format'}, status=400)
 
     try:
-        # Удаляем старую фотку, если есть
         for file_ext in ['jpg', 'jpeg', 'png', 'webp']:
             path = os.path.join(AVATAR_FOLDER, f"{telegram_id}.{file_ext}")
             if os.path.isfile(path):
                 os.remove(path)
 
-        # Сохраняем новую
         filename = f"{telegram_id}.{ext}"
         path = os.path.join(AVATAR_FOLDER, filename)
         default_storage.save(path, ContentFile(avatar_file.read()))
