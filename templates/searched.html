@@ -64,27 +64,43 @@
 <div class="content_body"></div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const overlay = document.querySelector('.blur_overlay');
-  requestAnimationFrame(() => overlay.classList.remove('active'));
+document.addEventListener("DOMContentLoaded", async () => {
+  const overlay = document.querySelector(".blur_overlay");
+  requestAnimationFrame(() => overlay.classList.remove("active"));
 
-  document.querySelectorAll('.header a').forEach(link => {
-    link.addEventListener('click', e => {
+  document.querySelectorAll(".header a").forEach(link => {
+    link.addEventListener("click", e => {
       e.preventDefault();
-      const href = link.getAttribute('href');
-      overlay.classList.add('active');
+      const href = link.getAttribute("href");
+      overlay.classList.add("active");
       setTimeout(() => window.location.href = href, 300);
     });
   });
 
   const input = document.getElementById("searchInput");
   const params = new URLSearchParams(window.location.search);
-  const query = (params.get("query") || "").toLowerCase();
+  const query = (params.get("query") || "").toLowerCase().trim();
   input.value = query;
 
   const container = document.querySelector(".content_body");
-  const allCards = JSON.parse(localStorage.getItem("allCards") || "[]");
-  let favourites = JSON.parse(localStorage.getItem("favourites") || "[]");
+  const favourites = JSON.parse(localStorage.getItem("favourites") || "[]");
+  let allCards = JSON.parse(localStorage.getItem("allCards") || "[]");
+
+  if (!Array.isArray(allCards) || allCards.length === 0) {
+    // Подгрузить с сервера, если localStorage пустой
+    try {
+      const res = await fetch("/api/genres/");
+      const genres = await res.json();
+      allCards = genres.flatMap(g => g.items);
+      localStorage.setItem("allCards", JSON.stringify(allCards));
+      location.reload();
+      return;
+    } catch (e) {
+      container.innerHTML = "<p style='padding: 20px;'>Хатолик юз берди</p>";
+      console.error("Ошибка загрузки genres:", e);
+      return;
+    }
+  }
 
   const filtered = allCards.filter(item => {
     const title = (item.title || "").toLowerCase();
@@ -104,6 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const open = `window.open('${item.telegram_url}', '_blank')`;
 
     let block = '';
+
     if (item.content_type === 'video') {
       block = `
         <div class="video">
