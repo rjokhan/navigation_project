@@ -267,15 +267,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   const initialQuery = urlParams.get("query") || "";
   searchInput.value = initialQuery;
 
-document.querySelector(".searcher").addEventListener("submit", function(e) {
-  e.preventDefault();
-  const newQuery = searchInput.value.trim();
-  if (newQuery) {
-    const encoded = encodeURIComponent(newQuery);
-    window.location.href = `/favourited/?query=${encoded}`;
-  }
-});
+  document.querySelector(".searcher").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const newQuery = searchInput.value.trim();
+    if (newQuery) {
+      const encoded = encodeURIComponent(newQuery);
+      document.querySelector('.blur_overlay').classList.add("active");
+setTimeout(() => {
+  window.location.href = `/favourited/?query=${encoded}`;
+}, 300);
 
+    }
+  });
 
   searchInput.addEventListener('input', () => {
     const query = searchInput.value.toLowerCase().trim();
