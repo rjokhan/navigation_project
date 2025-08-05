@@ -181,8 +181,6 @@ a {
   opacity: 1;
   pointer-events: all;
 }
-
-
 .avatar_wrapper {
   display: flex;
   justify-content: center;
@@ -196,6 +194,8 @@ a {
   border-radius: 50%;
   background: #ccc;
   overflow: hidden;
+  position: relative; /* ⬅️ добавлено */
+  z-index: 1;          /* ⬅️ добавлено */
 }
 
 .avatar_circle img {
@@ -231,5 +231,7 @@ a {
   text-align: center;
   border: 2px solid white;
   cursor: pointer;
-  z-index: 9999;
+  z-index: 2; /* ⬅️ обязательно выше чем аватарка */
 }
+
+
