@@ -153,7 +153,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       wrapper.style.cursor = "pointer";
       wrapper.setAttribute('data-url', item.telegram_url);
 
-      const favIconHTML = `<div class="fav_icon favourited" data-id="${item.id}"></div>`;
+      const isFavourited = favIds.includes(item.id);
+      const favClass = isFavourited ? "favourited" : "not_favourited";
+      const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
+
       let innerHTML = '';
 
       if (item.content_type === 'video') {
