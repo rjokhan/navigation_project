@@ -194,6 +194,7 @@ a {
   background: #ccc;
   overflow: hidden;
   position: relative;
+  border: 2px solid white;
 }
 
 .avatar_circle img {
