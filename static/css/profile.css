@@ -188,6 +188,8 @@ a {
   position: relative;
   width: 210px !important;
   height: 210px !important;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .avatar_circle {
