@@ -4,6 +4,7 @@ import requests
 from django.conf import settings
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
+from django.core.files.base import ContentFile
 from .models import UserProfile
 
 
@@ -53,11 +54,16 @@ def avatar_upload(request):
     try:
         profile = UserProfile.objects.get(telegram_id=telegram_id)
 
+        # удалить старую аву, если есть
         if profile.avatar and os.path.isfile(profile.avatar.path):
             os.remove(profile.avatar.path)
 
-        profile.avatar = avatar_file
-        profile.save()
+        # читаем содержимое и сохраняем с кастомным именем
+        avatar_data = avatar_file.read()
+        ext = avatar_file.name.split('.')[-1]
+        filename = f"{telegram_id}_avatar.{ext}"
+
+        profile.avatar.save(filename, ContentFile(avatar_data), save=True)
 
         return JsonResponse({'success': True, 'avatar_url': profile.avatar.url})
 
