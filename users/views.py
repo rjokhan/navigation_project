@@ -42,13 +42,20 @@ def proxy_check_user(request):
 
 @csrf_exempt
 def avatar_upload(request):
+    print("📥 ЗАПРОС НА ЗАГРУЗКУ АВАТАРКИ")
+
     if request.method != 'POST':
+        print("❌ Неверный метод запроса")
         return JsonResponse({'success': False, 'message': 'Invalid method'}, status=405)
 
     telegram_id = request.POST.get('telegram_id')
     avatar_file = request.FILES.get('avatar')
 
+    print(f"➡️ telegram_id = {telegram_id}")
+    print(f"➡️ avatar_file = {avatar_file}")
+
     if not telegram_id or not avatar_file:
+        print("⚠️ Не хватает данных")
         return JsonResponse({'success': False, 'message': 'Missing data'}, status=400)
 
     try:
@@ -56,6 +63,7 @@ def avatar_upload(request):
 
         # удалить старую аву, если есть
         if profile.avatar and os.path.isfile(profile.avatar.path):
+            print(f"🗑 Удаляется старая аватарка: {profile.avatar.path}")
             os.remove(profile.avatar.path)
 
         # читаем содержимое и сохраняем с кастомным именем
@@ -65,10 +73,16 @@ def avatar_upload(request):
 
         profile.avatar.save(filename, ContentFile(avatar_data), save=True)
 
+        print(f"✅ Сохранена аватарка: {profile.avatar.path}")
+
         return JsonResponse({'success': True, 'avatar_url': profile.avatar.url})
 
     except UserProfile.DoesNotExist:
+        print("❌ Пользователь не найден")
         return JsonResponse({'success': False, 'message': 'User not found'}, status=404)
+    except Exception as e:
+        print(f"❌ Ошибка при загрузке: {str(e)}")
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 
 @csrf_exempt
