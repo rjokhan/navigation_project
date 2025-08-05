@@ -9,13 +9,6 @@ from .views import (
     avatar_get,
 )
 
-urlpatterns = [
-    path("api/users/proxy-check-user/", proxy_check_user),
-    path("api/users/avatar/upload/", avatar_upload),
-    path("api/users/avatar/delete/", avatar_delete),
-    path("api/users/avatar/", avatar_get),
-]
-
 
 urlpatterns = [
     path("proxy-check-user/", proxy_check_user),
