@@ -188,49 +188,38 @@ a {
 }
 
 .avatar_circle {
-  width: 120px !important;
-  height: 120px !important;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   background: #ccc;
   overflow: hidden;
-  position: relative; /* ⬅️ обязательно */
-  z-index: 1;
+  position: relative;
 }
 
 .avatar_circle img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: none;
-}
-
-.avatar_overlay_icon {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  font-size: 36px;
-  color: white;
-  justify-content: center;
-  align-items: center;
+  display: block;
 }
 
 .avatar_action {
   position: absolute;
-  right: 0;
   bottom: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  right: 0;
+  width: 34px;
+  height: 34px;
   background: #ff0049;
-  color: white;
-  font-size: 20px;
-  line-height: 32px;
-  text-align: center;
+  border-radius: 50%;
   border: 2px solid white;
+  color: white;
+  font-size: 22px;
+  line-height: 34px;
+  text-align: center;
   cursor: pointer;
-  z-index: 5; /* ⬅️ выше всего! */
+  z-index: 10;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
 }
 
 
