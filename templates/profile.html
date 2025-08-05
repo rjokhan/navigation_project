@@ -46,7 +46,7 @@
 
     <!-- Данные -->
     <div id="user_info">
-      <p>Загружаем данные...</p>
+      <p>Маълумотларингиз юкланяпти...</p>
     </div>
   </div>
 
@@ -140,10 +140,10 @@
           const tariff = Array.isArray(data.tariffs) && data.tariffs.length > 0 ? data.tariffs[0] : null;
 
           infoEl.innerHTML = `
-            <p><strong>Имя:</strong> ${userInfo.first_name || userInfo.full_name || userInfo.username || '—'}</p>
+            <p><strong>Ф.И.Ш:</strong> ${userInfo.first_name || userInfo.full_name || userInfo.username || '—'}</p>
             <p><strong>Телефон:</strong> ${userInfo.phone_number || '—'}</p>
             <p><strong>Тариф:</strong> ${tariff ? tariff.name : '—'}</p>
-            <p><strong>Подписка до:</strong> ${tariff ? tariff.expires_at.split(' ')[0] : '—'}</p>
+            <p><strong>Обуна муддати:</strong> ${tariff ? tariff.expires_at.split(' ')[0] : '—'}</p>
           `;
         } else {
           infoEl.innerHTML = `<p>${data.message || 'Данные не найдены.'}</p>`;
