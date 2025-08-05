@@ -198,7 +198,7 @@ a {
   height: 230px !important;
   justify-content: center;
   align-items: center;
-  outline: 2px dashed red;
+  border: 2px dashed red;
 }
 
 .avatar_circle {
