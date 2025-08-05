@@ -190,7 +190,7 @@ a {
 .avatar_circle {
   width: 120px;
   height: 120px;
-  border-radius: 20%;
+  border-radius: 50%;
   background: #ccc;
   overflow: hidden;
   position: relative;
