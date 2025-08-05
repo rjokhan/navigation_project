@@ -100,12 +100,12 @@ document.addEventListener("DOMContentLoaded", () => {
   for (const item of filtered) {
     const isFavourited = favourites.some(f => f.id === item.id && f.genreId === item.genreId);
     const favClass = isFavourited ? 'favourited' : 'not_favourited';
-    const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}" data-genre="${item.genreId}"></div>`;
-    const open = `window.open('${item.telegram_url}', '_blank')`;
+    const favIcon = <div class="fav_icon ${favClass}" data-id="${item.id}" data-genre="${item.genreId}"></div>;
+    const open = window.open('${item.telegram_url}', '_blank');
 
     let block = '';
     if (item.content_type === 'video') {
-      block = `
+      block = 
         <div class="video">
           <div class="video_thumbnail" onclick="${open}">
             <img src="${item.thumbnail}" />
@@ -113,9 +113,9 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
           ${favIcon}
           <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
-        </div>`;
+        </div>;
     } else if (item.content_type === 'audio') {
-      block = `
+      block = 
         <div class="audio">
           <div class="audio_menu" onclick="${open}">
             <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}" /></div>
@@ -123,9 +123,9 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
           ${favIcon}
           <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
-        </div>`;
+        </div>;
     } else if (item.content_type === 'file') {
-      block = `
+      block = 
         <div class="file">
           <div class="file_menu" onclick="${open}">
             <div class="static_icon"><img src="{% static 'images/file_icon.png' %}" /></div>
@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
           ${favIcon}
           <div class="file_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
-        </div>`;
+        </div>;
     }
 
     container.insertAdjacentHTML("beforeend", block);
