@@ -187,10 +187,10 @@ a {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
+  position: relative;
 }
 
 .avatar_circle {
-  position: relative;
   width: 120px !important;
   height: 120px !important;
   border-radius: 50%;
