@@ -1,131 +1,145 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Результаты поиска</title>
-  <link rel="stylesheet" href="css/content.css">
-  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SEARCH</title>
+  <link rel="stylesheet" href="{% static 'css/content.css' %}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-  <!-- 🔙 Назад и строка поиска -->
-  <div class="search_block">
-    <a href="index.html"><div class="back_button"></div></a>
-    <form class="searcher">
-      <img class="search_icon" src="images/search icon.png">
-      <input class="searcher_block" id="searchInput" placeholder="Поиск...">
-    </form>
-  </div>
 
-  <!-- 🔍 Заголовок -->
-  <div class="choosed_genre"><span class="red">Результаты</span> поиска:</div>
+<div class="blur_overlay active"></div>
 
-  <!-- 📦 Контент -->
-  <div class="content_body" id="searchResults"></div>
+<div class="vertical-waves">
+  <div class="wave"></div>
+  <div class="wave"></div>
+  <div class="wave"></div>
+</div>
 
-  <script>
-    // Обработка формы поиска
-    document.querySelector('.searcher').addEventListener('submit', function (e) {
+<div class="header">
+  <a href="{% url 'index' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/home_page.png' %}">
+      <p>A CLUB</p>
+    </div>
+  </a>
+  <a href="{% url 'favourited' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/fav.png' %}">
+      <p>Севимли</p>
+    </div>
+  </a>
+  <a href="{% url 'profile' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/profile.png' %}">
+      <p>Профиль</p>
+    </div>
+  </a>
+  <a href="{% url 'chat' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/chat.png' %}">
+      <p>Чатлар</p>
+    </div>
+  </a>
+</div>
+
+<div class="search_block">
+  <a href="{% url 'index' %}"><div class="back_button"></div></a>
+  <form class="searcher">
+    <img class="search_icon" src="{% static 'images/search icon.png' %}">
+    <input class="searcher_block" placeholder="Қидириш..." id="searchInput" autocomplete="off">
+  </form>
+</div>
+
+<div class="choosed_genre">
+  <span class="red">Натижалар</span> бўйича:
+</div>
+
+<div class="content_body"></div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const overlay = document.querySelector('.blur_overlay');
+  requestAnimationFrame(() => overlay.classList.remove('active'));
+
+  document.querySelectorAll('.header a').forEach(link => {
+    link.addEventListener('click', e => {
       e.preventDefault();
-      const query = document.getElementById("searchInput").value.trim();
-      if (query) {
-        window.location.href = `searched.html?query=${encodeURIComponent(query)}`;
-      }
+      const href = link.getAttribute('href');
+      overlay.classList.add('active');
+      setTimeout(() => window.location.href = href, 300);
     });
+  });
 
-    const container = document.getElementById('searchResults');
-    const urlParams = new URLSearchParams(window.location.search);
-    const query = (urlParams.get('query') || '').toLowerCase();
+  const input = document.getElementById("searchInput");
+  const params = new URLSearchParams(window.location.search);
+  const query = (params.get("query") || "").toLowerCase();
+  input.value = query;
 
-    document.getElementById("searchInput").value = query;
+  const container = document.querySelector(".content_body");
+  const allCards = JSON.parse(localStorage.getItem("allCards") || "[]");
+  const favourites = JSON.parse(localStorage.getItem("favourites") || "[]");
 
-    const allCards = JSON.parse(localStorage.getItem('allCards') || '[]');
-    const favourites = JSON.parse(localStorage.getItem('favourites') || '[]');
+  const filtered = allCards.filter(item => {
+    const title = (item.title || "").toLowerCase();
+    const subtitle = (item.subtitle || "").toLowerCase();
+    return title.includes(query) || subtitle.includes(query);
+  });
 
-    const filtered = allCards.filter(item => {
-      const title = (item.title || '').toLowerCase();
-      const subtitle = (item.subtitle || '').toLowerCase();
-      return title.includes(query) || subtitle.includes(query);
-    });
+  if (!filtered.length) {
+    container.innerHTML = "<p style='padding: 20px;'>Натижа топилмади.</p>";
+    return;
+  }
 
-    if (filtered.length === 0) {
-      container.innerHTML = '<div class="no-results">Ничего не найдено</div>';
+  for (const item of filtered) {
+    const isFavourited = favourites.some(f => f.id === item.id && f.genreId === item.genreId);
+    const favClass = isFavourited ? 'favourited' : 'not_favourited';
+    const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}" data-genre="${item.genreId}"></div>`;
+    const open = `window.open('${item.telegram_url}', '_blank')`;
+
+    let block = '';
+    if (item.content_type === 'video') {
+      block = `
+        <div class="video">
+          <div class="video_thumbnail" onclick="${open}">
+            <img src="${item.thumbnail}" />
+            <div class="video_duration">${item.duration}</div>
+          </div>
+          ${favIcon}
+          <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+        </div>`;
+    } else if (item.content_type === 'audio') {
+      block = `
+        <div class="audio" onclick="${open}">
+          <div class="audio_menu">
+            <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}" /></div>
+            <div class="audio_duration">${item.duration}</div>
+          </div>
+          ${favIcon}
+          <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+        </div>`;
+    } else if (item.content_type === 'file') {
+      block = `
+        <div class="file" onclick="${open}">
+          <div class="file_menu">
+            <div class="static_icon"><img src="{% static 'images/file_icon.png' %}" /></div>
+            <div class="file_duration">${item.duration}</div>
+          </div>
+          ${favIcon}
+          <div class="file_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+        </div>`;
     }
 
-    for (const item of filtered) {
-      const isFavourited = favourites.some(f => f.id === item.id && f.genreId === item.genreId);
-      const favClass = isFavourited ? 'favourited' : 'not_favourited';
-      const favIconHTML = `<div class="fav_icon ${favClass}"></div>`;
-      let block = '';
+    container.insertAdjacentHTML("beforeend", block);
+  }
+});
+</script>
 
-      if (item.content_type === 'video') {
-        block = `
-          <div class="video">
-            <div class="video_thumbnail" onclick="window.open('${item.telegram_url}', '_blank')">
-              <img src="${item.thumbnail}" alt="video_thumbnail">
-              <div class="video_duration">${item.duration}</div>
-            </div>
-            ${favIconHTML}
-            <div class="video_info">
-              <div class="title">${item.title}</div>
-              <div class="subtitle">${item.subtitle || ''}</div>
-            </div>
-          </div>
-        `;
-      } else if (item.content_type === 'audio') {
-        block = `
-          <div class="audio">
-            <div class="audio_menu" onclick="window.open('${item.telegram_url}', '_blank')">
-              <div class="static_icon"><img src="/images/audio_icon.png"></div>
-              <div class="audio_duration">${item.duration}</div>
-            </div>
-            ${favIconHTML}
-            <div class="audio_info">
-              <div class="title">${item.title}</div>
-              <div class="subtitle">${item.subtitle || ''}</div>
-            </div>
-          </div>
-        `;
-      } else if (item.content_type === 'file') {
-        block = `
-          <div class="file">
-            <div class="file_menu" onclick="window.open('${item.telegram_url}', '_blank')">
-              <div class="static_icon"><img src="/images/file_icon.png"></div>
-              <div class="file_duration">${item.duration}</div>
-            </div>
-            ${favIconHTML}
-            <div class="file_info">
-              <div class="title">${item.title}</div>
-              <div class="subtitle">${item.subtitle || ''}</div>
-            </div>
-          </div>
-        `;
-      }
-
-      container.insertAdjacentHTML('beforeend', block);
-
-      const last = container.lastElementChild;
-      const favIcon = last.querySelector('.fav_icon');
-
-      favIcon.addEventListener('click', (e) => {
-        e.stopPropagation();
-        let currentFavs = JSON.parse(localStorage.getItem('favourites') || '[]');
-        const exists = currentFavs.find(f => f.id === item.id && f.genreId === item.genreId);
-
-        if (exists) {
-          currentFavs = currentFavs.filter(f => !(f.id === item.id && f.genreId === item.genreId));
-          favIcon.classList.remove('favourited');
-          favIcon.classList.add('not_favourited');
-        } else {
-          currentFavs.push(item);
-          favIcon.classList.remove('not_favourited');
-          favIcon.classList.add('favourited');
-        }
-
-        localStorage.setItem('favourites', JSON.stringify(currentFavs));
-      });
-    }
-  </script>
 </body>
 </html>
