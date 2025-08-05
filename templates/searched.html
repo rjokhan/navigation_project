@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const container = document.querySelector(".content_body");
   const allCards = JSON.parse(localStorage.getItem("allCards") || "[]");
-  const favourites = JSON.parse(localStorage.getItem("favourites") || "[]");
+  let favourites = JSON.parse(localStorage.getItem("favourites") || "[]");
 
   const filtered = allCards.filter(item => {
     const title = (item.title || "").toLowerCase();
@@ -116,8 +116,8 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>`;
     } else if (item.content_type === 'audio') {
       block = `
-        <div class="audio" onclick="${open}">
-          <div class="audio_menu">
+        <div class="audio">
+          <div class="audio_menu" onclick="${open}">
             <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}" /></div>
             <div class="audio_duration">${item.duration}</div>
           </div>
@@ -126,8 +126,8 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>`;
     } else if (item.content_type === 'file') {
       block = `
-        <div class="file" onclick="${open}">
-          <div class="file_menu">
+        <div class="file">
+          <div class="file_menu" onclick="${open}">
             <div class="static_icon"><img src="{% static 'images/file_icon.png' %}" /></div>
             <div class="file_duration">${item.duration}</div>
           </div>
@@ -137,6 +137,36 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     container.insertAdjacentHTML("beforeend", block);
+
+    const favEl = container.lastElementChild.querySelector(".fav_icon");
+    favEl.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const id = parseInt(favEl.dataset.id);
+      const genreId = parseInt(favEl.dataset.genre);
+
+      const exists = favourites.find(f => f.id === id && f.genreId === genreId);
+      if (exists) {
+        favourites = favourites.filter(f => !(f.id === id && f.genreId === genreId));
+        favEl.classList.remove("favourited");
+        favEl.classList.add("not_favourited");
+      } else {
+        const itemToSave = allCards.find(f => f.id === id && f.genreId === genreId);
+        favourites.push(itemToSave);
+        favEl.classList.remove("not_favourited");
+        favEl.classList.add("favourited");
+        favEl.classList.add("animate-pulse");
+
+        const explosion = document.createElement("div");
+        explosion.className = "fav_explosion";
+        favEl.parentElement.appendChild(explosion);
+        setTimeout(() => {
+          explosion.remove();
+          favEl.classList.remove("animate-pulse");
+        }, 600);
+      }
+
+      localStorage.setItem("favourites", JSON.stringify(favourites));
+    });
   }
 });
 </script>
