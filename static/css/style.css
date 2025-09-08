@@ -226,60 +226,7 @@ input::placeholder{
   display: none;
 }
 
-.header {
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: space-between;
-  align-items: center;
-  padding: 5px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(45deg, rgba(128, 26, 48, 0.164), rgba(78, 5, 21, 0.281));
-  border: 1px solid #ffffff8f;
-  border-radius: 50px;
-  backdrop-filter: blur(5px);
 
-  position: fixed;
-  width: 90vw;
-  height: 100px;
-  bottom: 20px;
-
-  box-sizing: border-box;
-  z-index: 9999;
-
-  box-shadow:
-    inset 0 20px 30px -20px rgba(255, 255, 255, 0.3),  /* верх */
-    inset 0 -20px 30px -20px rgba(255, 255, 255, 0.3); /* низ */
-}
-.header_icon{
-  width: 22vw;
-  height: 90px;
-  border-radius: 50px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.header_icon img{
-  margin-top: 17px;
-  width: 30px;
-  height: 30px;
- 
-}
-.header_icon p{
-  font-family: Arial, Helvetica, sans-serif;
-  color: white;
-  padding: 0;
-  margin: 0;margin-top: 5px;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 700;
-}
-.header_icon.active {
-  background-color: #0000009c;
-  animation: fadeInActive 0.5s ease-out forwards;
-  opacity: 0;
-  transform: scale(0.8);
-}
 
 @keyframes fadeInActive {
   to {
@@ -395,58 +342,69 @@ a {
   background-color: #3d0011 !important;
 }
 
+
+
 /* === NAVBAR 5 TABS PATCH === */
-/* Ничего не удаляем — только переопределяем ниже, чтобы 5 пунктов влезли и не выходили за рамки */
+/* 1) Сетка: 5 равных колонок, без “распухания” содержимого */
 .header{
   display: grid !important;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 0;
-  width: 92vw;                 /* чуть уже, чтобы не касаться краёв */
-  height: 92px;
-  padding: 6px 8px;
-  overflow: hidden;            /* на всякий случай */
+  grid-template-columns: repeat(5, minmax(0, 1fr)); /* критично: minmax(0,1fr) */
+  width: calc(100vw - 16px);                        /* ширина почти на весь экран */
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  height: 86px;                                     /* компактнее по высоте */
   box-sizing: border-box;
+  overflow: hidden;                                 /* ничего не вылезает */
 }
 
+/* 2) Каждый <a> — блочный grid-элемент, умеет сжиматься */
+.header > a{
+  display: block !important;
+  min-width: 0 !important;                          /* разрешаем ужимать контент */
+}
+
+/* 3) Внутренняя капсула таба — без фиксированной ширины */
 .header_icon{
-  width: auto !important;      /* не 22vw — пусть сетка сама распределяет */
-  height: 80px;
+  width: 100% !important;                           /* растянуть в свою колонку */
+  height: 72px;
+  border-radius: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-width: 0;                /* чтобы текст мог ужиматься */
+  gap: 4px;
+  min-width: 0;
 }
 
+/* 4) Иконка + подпись — компактнее */
 .header_icon img{
-  width: 26px;
-  height: 26px;
-  margin-top: 10px;            /* чтобы уместилось с подписью */
+  width: 22px; height: 22px; margin-top: 0;
   object-fit: contain;
 }
-
 .header_icon p{
-  margin-top: 4px;
-  font-size: 11px;
+  margin: 0;
+  font-size: 10px;                                  /* уменьшили шрифт */
   line-height: 1.1;
-  max-width: 64px;
+  max-width: 100%;                                  /* используем всю ширину колонки */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* активный таб чуть ярче, но без увеличения высоты */
+/* 5) Активный таб — без масштабов, чтобы не ломать высоту */
 .header_icon.active{
   background-color: #00000080;
-  opacity: 1;
-  transform: none;
+  opacity: 1; transform: none; animation: none;
 }
 
-/* очень узкие экраны */
+/* 6) Очень узкие экраны */
 @media (max-width: 360px){
-  .header{ height: 88px; padding: 6px; }
-  .header_icon{ height: 76px; }
-  .header_icon img{ width: 24px; height: 24px; margin-top: 8px; }
-  .header_icon p{ font-size: 10px; max-width: 56px; }
+  .header{ height: 82px; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); }
+  .header_icon{ height: 68px; }
+  .header_icon img{ width: 20px; height: 20px; }
+  .header_icon p{ font-size: 9px; }
 }
 
-/* запас под навбар для контента (если нужно больше — оставьте margin-bottom в body) */
-:root{ --bottom-nav-h: 110px; }
+/* запас под навбар для контента (если нужно): */
+:root{ --bottom-nav-h: 100px; }
