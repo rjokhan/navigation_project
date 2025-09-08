@@ -76,24 +76,11 @@
     </section>
   </main>
 
-  <!-- Навбар -->
-  <nav class="header">
-    <a href="index.html" class="header_icon">
-      <img src="{% static 'core/images/nav-home.png' %}" alt="Home">
-      <p>Home</p>
-    </a>
-    <a href="support.html" class="header_icon">
-      <img src="{% static 'core/images/nav-support.png' %}" alt="Support">
-      <p>Support</p>
-    </a>
-    <a href="saved.html" class="header_icon">
-      <img src="{% static 'core/images/nav-saved.png' %}" alt="Saved">
-      <p>Saved</p>
-    </a>
-    <a href="profile.html" class="header_icon active">
-      <img src="{% static 'core/images/avatar-default.jpg' %}" alt="Profile">
-      <p>Profile</p>
-    </a>
-  </nav>
+  <div class="header">
+    <a href="{% url 'index' %}"><div class="header_icon"><img src="{% static 'images/home_page.png' %}"><p>A CLUB</p></div></a>
+    <a href="{% url 'favourited' %}"><div class="header_icon"><img src="{% static 'images/fav.png' %}"><p>Севимли</p></div></a>
+    <a href="{% url 'profile' %}"><div class="header_icon active"><img src="{% static 'images/profile.png' %}"><p>Профиль</p></div></a>
+    <a href="{% url 'chat' %}"><div class="header_icon"><img src="{% static 'images/chat.png' %}"><p>Чатлар</p></div></a>
+  </div>
 </body>
 </html>
