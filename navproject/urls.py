@@ -16,6 +16,7 @@ urlpatterns = [
     path('profile/', TemplateView.as_view(template_name='profile.html'), name='profile'),
     path('searched/', TemplateView.as_view(template_name='searched.html'), name='searched'),
     path('chat/', TemplateView.as_view(template_name='chat.html'), name='chat'),
+    path('rules/', TemplateView.as_view(template_name='rules.html'), name='rules'),
 ]
 
 # Добавляем поддержку media-файлов даже при DEBUG = False
