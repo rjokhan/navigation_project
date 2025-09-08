@@ -4,14 +4,22 @@
 <head>
   <meta charset="UTF-8">
   <title>AClub — Қоидалар</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2025-09-08">
   <link rel="stylesheet" href="{% static 'css/rules.css' %}?v=2025-09-08">
-
+  <style>
+    /* SAFE inline patch — только слои/отступы, чтобы не было «наездов» */
+    .vertical-waves{position:fixed;inset:0;z-index:0;pointer-events:none}
+    main{position:relative;z-index:10}
+    nav.header{position:fixed;left:0;right:0;bottom:0;z-index:1000}
+    :root{--bottom-nav-h:86px}
+    main{padding-bottom:max(var(--bottom-nav-h),calc(env(safe-area-inset-bottom) + var(--bottom-nav-h)))}
+    *{min-width:0}
+  </style>
 </head>
 <body>
   <!-- Фоновые волны -->
-  <div class="vertical-waves">
+  <div class="vertical-waves" aria-hidden="true">
     <div class="wave"></div>
     <div class="wave"></div>
     <div class="wave"></div>
@@ -24,10 +32,10 @@
     <section class="rules_section">
       <div class="rule">
         <h2>1. Клуб муҳити</h2>
-        <p>AClub — бу ўзаро ишонч, ҳурмат ва илҳом маконидир.</p>
-        <p>Клубда ҳар бир иштирокчи мулоқот, ривожланиш ва тажриба алмашиши учун шароит яратилади.</p>
-        <p>Клуб доирасида биз ўзаро қўллаб-қувватлаш ва хавфсизлик муҳитини сақлаймиз.</p>
-        <p>Клубда биз ўзимизга ва бошқаларга ҳурмат билан муносабатда бўламиз.</p>
+        <p class="nobullet">AClub — бу ўзаро ишонч, ҳурмат ва илҳом маконидир.</p>
+        <p class="nobullet">Клубда ҳар бир иштирокчи мулоқот, ривожланиш ва тажриба алмашиши учун шароит яратилади.</p>
+        <p class="nobullet">Клуб доирасида биз ўзаро қўллаб-қувватлаш ва хавфсизлик муҳитини сақлаймиз.</p>
+        <p class="nobullet">Клубда биз ўзимизга ва бошқаларга ҳурмат билан муносабатда бўламиз.</p>
       </div>
 
       <div class="rule">
@@ -78,20 +86,20 @@
 
   <!-- Навбар -->
   <nav class="header">
-    <a href="index.html" class="header_icon">
-      <img src="{% static 'core/images/nav-home.png' %}" alt="Home">
+    <a href="{% url 'travelapp:index' %}" class="header_icon">
+      <img src="{% static 'images/nav-home.png' %}" alt="Home">
       <p>Home</p>
     </a>
-    <a href="support.html" class="header_icon">
-      <img src="{% static 'core/images/nav-support.png' %}" alt="Support">
+    <a href="{% url 'travelapp:support' %}" class="header_icon">
+      <img src="{% static 'images/nav-support.png' %}" alt="Support">
       <p>Support</p>
     </a>
-    <a href="saved.html" class="header_icon">
-      <img src="{% static 'core/images/nav-saved.png' %}" alt="Saved">
+    <a href="{% url 'travelapp:saved' %}" class="header_icon">
+      <img src="{% static 'images/nav-saved.png' %}" alt="Saved">
       <p>Saved</p>
     </a>
-    <a href="profile.html" class="header_icon active">
-      <img src="{% static 'core/images/avatar-default.jpg' %}" alt="Profile">
+    <a href="{% url 'travelapp:profile' %}" class="header_icon active">
+      <img src="{% static 'images/avatar-default.jpg' %}" alt="Profile">
       <p>Profile</p>
     </a>
   </nav>

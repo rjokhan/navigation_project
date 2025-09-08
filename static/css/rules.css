@@ -1,39 +1,28 @@
-/* ============ Rules Page Styling ============ */
+/* ========== AClub Rules Page Styling ========== */
 
-:root{
-  --ac-burgundy:#be0036;
-  --ac-burgundy-2:#9d002d;
-  --ac-dark:#111318;
-  --ac-text:#ffffff;
-  --ac-text-dim:#d6d8dc;
-  --ac-border:#2a2f38;
-  --radius-xl:22px;
-  --shadow-soft:0 10px 30px rgba(0,0,0,.35);
-}
-
-/* Контейнер */
-main{
-  padding: 20px 16px 100px;
-  color: var(--ac-text);
-}
-
-/* Заголовок */
-h1.chat_block.big{
-  text-align: center;
-  margin: 0 0 20px;
-  font-size: 26px;
-  text-shadow: 0 1px 0 rgba(255,255,255,.05);
+:root {
+  --ac-burgundy: #be0036;
+  --ac-burgundy-2: #9d002d;
+  --ac-dark: #111318;
+  --ac-text: #ffffff;
+  --ac-text-dim: #d6d8dc;
+  --ac-border: #2a2f38;
+  --radius-xl: 22px;
+  --shadow-soft: 0 10px 30px rgba(0,0,0,.35);
 }
 
 /* Секция правил */
-.rules_section{
+.rules_section {
+  position: relative;
+  z-index: 20;
   display: grid;
   gap: 14px;
 }
 
-/* Блок правила */
-.rule{
+/* Карточка правила */
+.rule {
   position: relative;
+  z-index: 1;
   border-radius: var(--radius-xl);
   background: linear-gradient(180deg, rgba(26,31,39,.92), rgba(26,31,39,.65));
   border: 1px solid rgba(255,255,255,.08);
@@ -42,40 +31,75 @@ h1.chat_block.big{
   overflow: hidden;
 }
 
-/* Полоса слева */
-.rule::before{
-  content:"";
-  position:absolute;
-  top:0;left:0;bottom:0;
-  width:4px;
+/* Левая полоса */
+.rule::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
   background: linear-gradient(180deg, var(--ac-burgundy), var(--ac-burgundy-2));
   box-shadow: 0 0 16px rgba(190,0,54,.6);
+  z-index: 0;
 }
 
-/* Заголовок правила */
-.rule > h2{
-  font-size: 18px;
+/* Контент поверх полосы */
+.rule > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Заголовки */
+.rule > h2 {
   margin: 0 0 10px;
-  color:#fff;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
 }
 
-/* Текст правила */
-.rule > p{
+/* Текст */
+.rule > p {
   margin: 6px 0;
   font-size: 14px;
   line-height: 1.55;
   color: var(--ac-text-dim);
 }
 
-/* Авто-список для пунктов с "—" */
-.rule > p:where(:not(:has(> *))){
+/* Авто-маркеры для строк с "—" */
+.rule > p:where(:not(:has(> *))) {
   display: grid;
   grid-template-columns: 16px 1fr;
   gap: 8px;
 }
-.rule > p:where(:not(:has(> *)))::before{
+.rule > p:where(:not(:has(> *)))::before {
   content: "—";
   color: var(--ac-burgundy);
   font-weight: 700;
   transform: translateY(-.5px);
+}
+
+/* Если нужно отключить маркер */
+.rule > p.nobullet::before {
+  content: "";
+}
+
+/* Заголовок страницы */
+h1.chat_block.big {
+  text-align: center;
+  margin: 0 0 20px;
+  font-size: 26px;
+  text-shadow: 0 1px 0 rgba(255,255,255,.05);
+  color: #fff;
+}
+
+/* Адаптив */
+@media (min-width: 768px) {
+  .rules_section { gap: 16px; }
+  .rule { padding: 18px; }
+  .rule > h2 { font-size: 20px; }
+}
+
+@media (min-width: 1200px) {
+  .rules_section { gap: 20px; }
+  .rule { padding: 20px; }
+  .rule > h2 { font-size: 22px; }
 }
