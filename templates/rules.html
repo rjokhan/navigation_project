@@ -10,21 +10,19 @@
 
 
 
-  <style>
-/* NAVBAR — ICONS ONLY */
+<style>
+/* NAVBAR — ICONS BIG + SMALL TEXT */
 .header, .header * { box-sizing: border-box; }
 
 .header{
   position: fixed !important;
   left: 8px !important; right: 8px !important;
   bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
-  top: auto !important;
-  transform: none !important;
-  width: auto !important; height: 78px !important;
+  width: auto !important; height: 86px !important;
   padding: 6px 8px !important;
   display: grid !important;
   grid-template-columns: repeat(5, 1fr) !important;
-  gap: 6px !important; /* маленький промежуток между иконками */
+  gap: 4px !important;
   overflow: hidden !important;
   border-radius: 40px !important;
   background: linear-gradient(45deg, rgba(128,26,48,.16), rgba(78,5,21,.28));
@@ -36,14 +34,25 @@
 
 .header > a{ display:block !important; min-width:0 !important; }
 .header_icon{
-  width:100% !important; height:64px !important;
+  width:100% !important; height:74px !important;
   border-radius:32px !important;
-  display:flex !important; align-items:center !important; justify-content:center !important;
+  display:flex !important; flex-direction:column !important;
+  align-items:center !important; justify-content:center !important;
+  gap:2px !important;
 }
 
 .header_icon img{
   width:34px !important; height:34px !important;
   object-fit:contain !important;
+}
+
+.header_icon p{
+  margin:0 !important;
+  font-size:10px !important;
+  line-height:1.1;
+  color:#fff;
+  text-align:center;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 
 .header_icon.active{
@@ -52,9 +61,10 @@
 }
 
 @media (max-width:360px){
-  .header{ height:72px !important; gap:4px !important; }
-  .header_icon{ height:58px !important; }
+  .header{ height:80px !important; }
+  .header_icon{ height:68px !important; }
   .header_icon img{ width:30px !important; height:30px !important; }
+  .header_icon p{ font-size:9px !important; }
 }
 </style>
 
@@ -135,26 +145,31 @@
   <a href="{% url 'index' %}">
     <div class="header_icon">
       <img src="{% static 'images/home_page.png' %}" alt="Home">
+      <p>A CLUB</p>
     </div>
   </a>
   <a href="{% url 'favourited' %}">
     <div class="header_icon">
       <img src="{% static 'images/fav.png' %}" alt="Fav">
+      <p>Севимли</p>
     </div>
   </a>
   <a href="{% url 'profile' %}">
     <div class="header_icon">
       <img src="{% static 'images/profile.png' %}" alt="Profile">
+      <p>Профиль</p>
     </div>
   </a>
   <a href="{% url 'chat' %}">
     <div class="header_icon">
       <img src="{% static 'images/chat.png' %}" alt="Chat">
+      <p>Чатлар</p>
     </div>
   </a>
   <a href="{% url 'rules' %}">
     <div class="header_icon active">
       <img src="{% static 'images/rules.png' %}" alt="Rules">
+      <p>Қоидалар</p>
     </div>
   </a>
 </div>
