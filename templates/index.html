@@ -11,24 +11,18 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
-/* === NAVBAR FULL CSS — ICONS + SMALL TEXT (taller capsule + spacing) === */
-.header, .header * { 
-  box-sizing: border-box !important; 
-}
-
+/* === NAVBAR — FULL HEIGHT CAPSULE + INNER PADDING === */
 .header {
   position: fixed !important;
   left: 8px !important;
   right: 8px !important;
   bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
-  top: auto !important;
-  transform: none !important;
   width: auto !important;
-  height: 88px !important;             /* бар стал чуть выше */
-  padding: 6px 6px !important;
+  height: 88px !important;            /* сам бар выше */
+  padding: 4px !important;
   display: grid !important;
   grid-template-columns: repeat(5, 1fr) !important;
-  gap: 6px !important;                 /* немного больше промежуток */
+  gap: 6px !important;
   overflow: hidden !important;
   border-radius: 40px !important;
   background: linear-gradient(45deg, rgba(128,26,48,.16), rgba(78,5,21,.28)) !important;
@@ -36,25 +30,26 @@
   -webkit-backdrop-filter: blur(5px) !important;
   backdrop-filter: blur(5px) !important;
   z-index: 9999 !important;
-  align-items: center !important;
 }
 
 .header > a {
   display: block !important;
   min-width: 0 !important;
+  height: 100% !important;            /* ссылка тоже на весь рост */
 }
 
 .header_icon {
   width: 100% !important;
-  height: 100% !important;
+  height: 100% !important;            /* капсула занимает всё */
   border-radius: 32px !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  padding: 6px 0 !important;           /* добавили сверху и снизу */
-  gap: 4px !important;                 /* отступ между иконкой и текстом */
+  padding: 8px 0 !important;          /* внутренний отступ сверху/снизу */
+  gap: 6px !important;                /* расстояние между иконкой и текстом */
   min-width: 0 !important;
+  box-sizing: border-box !important;
 }
 
 .header_icon img {
@@ -68,7 +63,7 @@
 .header_icon p {
   margin: 0 !important;
   font-size: 10px !important;
-  line-height: 1.1 !important;
+  line-height: 1.2 !important;
   color: #fff !important;
   text-align: center !important;
   white-space: nowrap !important;
@@ -79,19 +74,17 @@
 .header_icon.active {
   background-color: #00000066 !important;
   opacity: 1 !important;
-  transform: none !important;
-  animation: none !important;
 }
 
 @media (max-width: 360px) {
   .header {
     height: 80px !important;
-    padding: 6px 4px calc(6px + env(safe-area-inset-bottom)) 4px !important;
+    padding: 4px !important;
     gap: 4px !important;
   }
   .header_icon {
-    padding: 4px 0 !important;
-    gap: 3px !important;
+    padding: 6px 0 !important;
+    gap: 4px !important;
   }
   .header_icon img {
     width: 30px !important;
@@ -101,6 +94,7 @@
     font-size: 9px !important;
   }
 }
+
 </style>
 
 
