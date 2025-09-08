@@ -8,8 +8,57 @@
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
   <link rel="stylesheet" href="{% static 'css/rules.css' %}?v=2025-09-08">
 
+
+
+  <style>
+/* NAVBAR — FORCE FIT (inline test) */
+.header, .header * { box-sizing: border-box; }
+
+.header{
+  position: fixed !important;
+  left: 8px !important; right: 8px !important;
+  bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
+  top: auto !important;
+  transform: none !important;
+  width: auto !important; height: 86px !important;
+  padding: 6px 8px !important;
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+  border-radius: 40px !important;
+  z-index: 9999 !important;
+}
+
+.header > a{ display:block !important; min-width:0 !important; }
+.header_icon{
+  width:100% !important; height:72px !important;
+  border-radius:40px !important;
+  display:flex !important; flex-direction:column !important;
+  align-items:center !important; justify-content:center !important;
+  gap:4px !important; min-width:0 !important;
+}
+.header_icon img{ width:22px !important; height:22px !important; margin:0 !important; object-fit:contain !important; }
+.header_icon p{
+  margin:0 !important; font-size:10px !important; line-height:1.1 !important;
+  max-width:100% !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important;
+}
+.header_icon.active{ background-color:#00000080 !important; transform:none !important; animation:none !important; opacity:1 !important; }
+@media (max-width:360px){
+  .header{ height:82px !important; padding:6px 6px calc(6px + env(safe-area-inset-bottom)) 6px !important; }
+  .header_icon{ height:68px !important; }
+  .header_icon img{ width:20px !important; height:20px !important; }
+  .header_icon p{ font-size:9px !important; }
+}
+</style>
+
+
+
+
 </head>
 <body>
+
+  
   <!-- Фоновые волны -->
   <div class="vertical-waves">
     <div class="wave"></div>
