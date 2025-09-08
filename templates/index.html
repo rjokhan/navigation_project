@@ -11,7 +11,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
-/* === NAVBAR FULL CSS — ICONS + SMALL TEXT === */
+/* === NAVBAR FULL CSS — ICONS + SMALL TEXT (taller capsule + spacing) === */
 .header, .header * { 
   box-sizing: border-box !important; 
 }
@@ -24,11 +24,11 @@
   top: auto !important;
   transform: none !important;
   width: auto !important;
-  height: 80px !important;             /* общая высота бара */
-  padding: 4px 6px !important;
+  height: 88px !important;             /* бар стал чуть выше */
+  padding: 6px 6px !important;
   display: grid !important;
   grid-template-columns: repeat(5, 1fr) !important;
-  gap: 4px !important;                 /* промежуток между колонками */
+  gap: 6px !important;                 /* немного больше промежуток */
   overflow: hidden !important;
   border-radius: 40px !important;
   background: linear-gradient(45deg, rgba(128,26,48,.16), rgba(78,5,21,.28)) !important;
@@ -36,7 +36,7 @@
   -webkit-backdrop-filter: blur(5px) !important;
   backdrop-filter: blur(5px) !important;
   z-index: 9999 !important;
-  align-items: center !important;      /* центрирование по вертикали */
+  align-items: center !important;
 }
 
 .header > a {
@@ -52,13 +52,13 @@
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 0 !important;
-  padding: 2px 0 !important;
+  padding: 6px 0 !important;           /* добавили сверху и снизу */
+  gap: 4px !important;                 /* отступ между иконкой и текстом */
   min-width: 0 !important;
 }
 
 .header_icon img {
-  display: block !important;           /* убираем зазор у inline-img */
+  display: block !important;
   width: 34px !important;
   height: 34px !important;
   margin: 0 !important;
@@ -66,7 +66,7 @@
 }
 
 .header_icon p {
-  margin: 2px 0 0 0 !important;
+  margin: 0 !important;
   font-size: 10px !important;
   line-height: 1.1 !important;
   color: #fff !important;
@@ -85,12 +85,13 @@
 
 @media (max-width: 360px) {
   .header {
-    height: 74px !important;
-    padding: 4px 4px calc(6px + env(safe-area-inset-bottom)) 4px !important;
-    gap: 3px !important;
+    height: 80px !important;
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom)) 4px !important;
+    gap: 4px !important;
   }
   .header_icon {
-    height: 100% !important;
+    padding: 4px 0 !important;
+    gap: 3px !important;
   }
   .header_icon img {
     width: 30px !important;
@@ -101,6 +102,7 @@
   }
 }
 </style>
+
 
 
 </head>
