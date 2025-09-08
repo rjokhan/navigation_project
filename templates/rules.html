@@ -10,19 +10,21 @@
 
 
 
-<style>
-/* NAVBAR — ICONS BIG + SMALL TEXT */
+  <style>
+/* NAVBAR — ICONS ONLY */
 .header, .header * { box-sizing: border-box; }
 
 .header{
   position: fixed !important;
   left: 8px !important; right: 8px !important;
   bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
-  width: auto !important; height: 86px !important;
+  top: auto !important;
+  transform: none !important;
+  width: auto !important; height: 78px !important;
   padding: 6px 8px !important;
   display: grid !important;
   grid-template-columns: repeat(5, 1fr) !important;
-  gap: 4px !important;
+  gap: 6px !important; /* маленький промежуток между иконками */
   overflow: hidden !important;
   border-radius: 40px !important;
   background: linear-gradient(45deg, rgba(128,26,48,.16), rgba(78,5,21,.28));
@@ -34,25 +36,14 @@
 
 .header > a{ display:block !important; min-width:0 !important; }
 .header_icon{
-  width:100% !important; height:74px !important;
+  width:100% !important; height:64px !important;
   border-radius:32px !important;
-  display:flex !important; flex-direction:column !important;
-  align-items:center !important; justify-content:center !important;
-  gap:2px !important;
+  display:flex !important; align-items:center !important; justify-content:center !important;
 }
 
 .header_icon img{
   width:34px !important; height:34px !important;
   object-fit:contain !important;
-}
-
-.header_icon p{
-  margin:0 !important;
-  font-size:10px !important;
-  line-height:1.1;
-  color:#fff;
-  text-align:center;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 
 .header_icon.active{
@@ -61,10 +52,9 @@
 }
 
 @media (max-width:360px){
-  .header{ height:80px !important; }
-  .header_icon{ height:68px !important; }
+  .header{ height:72px !important; gap:4px !important; }
+  .header_icon{ height:58px !important; }
   .header_icon img{ width:30px !important; height:30px !important; }
-  .header_icon p{ font-size:9px !important; }
 }
 </style>
 
