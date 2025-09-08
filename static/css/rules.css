@@ -1,0 +1,360 @@
+/* ========== A CLUB — Ethics (добавочный файл) ========== */
+/* Файл спроектирован как «поверх» вашего style.css. Ничего не удаляет, только добавляет. */
+/* Мобильный вид — базовый, desktop — прогрессивные улучшения. */
+
+/* ---- Переменные темы (если уже есть в :root, эти — просто дубль/подстраховка) ---- */
+:root{
+  --ac-bg-grad-1:#9d002d;
+  --ac-bg-grad-2:#4d0016;
+  --ac-burgundy:#be0036;
+  --ac-burgundy-2:#9d002d;
+  --ac-dark:#111318;
+  --ac-card:#151921cc;      /* полупрозрачная карта */
+  --ac-card-solid:#1a1f27;  /* плотная карта */
+  --ac-text:#ffffff;
+  --ac-text-dim:#d6d8dc;
+  --ac-border:#2a2f38;
+  --ac-shadow: 0 10px 30px rgba(0,0,0,.35);
+  --ac-blur: saturate(120%) blur(8px);
+  --radius-2xl: 24px;
+  --radius-xl: 18px;
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --gap: 14px;
+}
+
+/* ---- Базовая обёртка страницы правил ---- */
+.ethics-page{
+  position: relative;
+  min-height: 100dvh;
+  padding: 16px 16px 110px; /* снизу запас под гласс-навбар */
+  color: var(--ac-text);
+  background:
+    radial-gradient(1200px 800px at 50% 110%, rgba(190,0,54,.15), transparent 60%),
+    linear-gradient(180deg, rgba(157,0,45,.12), rgba(25,25,25,.4));
+}
+
+/* если у вас уже есть .bg-circle — оставляем, просто гарантируем слой */
+.ethics-page .bg-circle{ z-index: 0; }
+
+/* ---- Шапка раздела ---- */
+.ethics-header{
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.ethics-eyebrow{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size: 12px;
+  letter-spacing:.12em;
+  text-transform: uppercase;
+  color: var(--ac-text-dim);
+  opacity:.9;
+}
+
+.ethics-eyebrow::before{
+  content:"";
+  width:8px;height:8px;border-radius:50%;
+  background: radial-gradient(circle at 30% 30%, #fff, #fff0) , var(--ac-burgundy);
+  box-shadow: 0 0 12px rgba(190,0,54,.9);
+}
+
+.ethics-title{
+  font-family: "Bebas Neue", "Bebas", system-ui, sans-serif;
+  font-size: 36px;
+  line-height: .98;
+  letter-spacing: .02em;
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(255,255,255,.05);
+}
+
+.ethics-sub{
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ac-text-dim);
+}
+
+/* ---- Карточка содержимого (гласс) ---- */
+.ethics-card{
+  position: relative;
+  z-index:1;
+  border-radius: var(--radius-2xl);
+  padding: 14px;
+  background: linear-gradient(180deg, rgba(21,25,33,.66), rgba(21,25,33,.38));
+  -webkit-backdrop-filter: var(--ac-blur);
+  backdrop-filter: var(--ac-blur);
+  border: 1px solid var(--ac-border);
+  box-shadow: var(--ac-shadow);
+}
+
+/* ---- Блок «правила» ---- */
+.rules{
+  display: grid;
+  gap: 12px;
+}
+
+.rule{
+  position: relative;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(180deg, rgba(26,31,39,.92), rgba(26,31,39,.65));
+  border: 1px solid rgba(255,255,255,.06);
+  padding: 12px;
+  overflow: hidden;
+}
+
+/* Акцентная «полоса» слева */
+.rule::before{
+  content:"";
+  position:absolute; inset:0 auto 0 0;
+  width:4px;
+  background: linear-gradient(180deg, var(--ac-burgundy), var(--ac-burgundy-2));
+  box-shadow: 0 0 20px rgba(190,0,54,.55);
+  opacity:.9;
+}
+
+/* Заголовок правила */
+.rule-title{
+  display:flex;
+  align-items: center;
+  gap:10px;
+  font-weight: 700;
+  font-size: 16px;
+  color:#fff;
+  margin-bottom: 8px;
+}
+
+.rule-index{
+  flex: none;
+  width:28px;height:28px;border-radius: 999px;
+  display:grid;place-items:center;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing:.04em;
+  color:#fff;
+  background:
+    radial-gradient(160% 100% at 30% 20%, rgba(255,255,255,.14), rgba(255,255,255,0)),
+    linear-gradient(135deg, var(--ac-burgundy), var(--ac-burgundy-2));
+  box-shadow: 0 6px 16px rgba(190,0,54,.45), inset 0 0 0 1px rgba(255,255,255,.08);
+}
+
+/* Текст пункта */
+.rule-body{
+  color: var(--ac-text-dim);
+  font-size: 14px;
+  line-height: 1.55;
+  display:grid;
+  gap:6px;
+}
+
+/* Подпункты (—) превращаем в аккуратный список */
+.rule-body ul{
+  list-style: none;
+  padding:0;
+  margin:0;
+  display:grid;
+  gap:6px;
+}
+.rule-body li{
+  display:grid;
+  grid-template-columns: 14px 1fr;
+  gap:8px;
+}
+.rule-body li::before{
+  content:"—";
+  color: var(--ac-burgundy);
+  font-weight: 700;
+  line-height: 1.2;
+  transform: translateY(-.5px);
+}
+
+/* Небольшие подписи / пометки */
+.rule-note{
+  margin-top:8px;
+  font-size: 12px;
+  color: #b8bbc1;
+  opacity:.9;
+}
+
+/* ---- Секция «якорное» меню (если используется) ---- */
+.ethics-nav{
+  position: sticky;
+  top: 8px; /* под шапкой */
+  z-index: 2;
+  margin-bottom: 12px;
+  display:flex;
+  gap:8px;
+  overflow:auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+.ethics-nav::-webkit-scrollbar{ display:none; }
+
+.ethics-chip{
+  flex: none;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color:#fff;
+  background: rgba(190,0,54,.14);
+  border: 1px solid rgba(190,0,54,.35);
+  text-decoration: none;
+  transition: transform .18s ease, background .18s ease, border-color .18s ease;
+}
+.ethics-chip:hover{ transform: translateY(-1px); }
+.ethics-chip.is-active{
+  background:
+    radial-gradient(120% 180% at 25% 20%, rgba(255,255,255,.16), rgba(255,255,255,0)),
+    linear-gradient(135deg, var(--ac-burgundy), var(--ac-burgundy-2));
+  border-color: rgba(255,255,255,.08);
+}
+
+/* ---- Врезки / цитаты ---- */
+.ethics-quote{
+  margin: 10px 0 2px;
+  padding: 12px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+  border: 1px dashed rgba(255,255,255,.12);
+  color:#eef0f3;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+/* ---- Кнопка «Понятно» / «Назад» под блоками ---- */
+.ethics-actions{
+  margin-top: 16px;
+  display:flex;
+  gap:10px;
+  flex-wrap: wrap;
+}
+
+.btn-ethics{
+  appearance: none;
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 16px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing:.02em;
+  color:#fff;
+  background:
+    radial-gradient(140% 180% at 20% 10%, rgba(255,255,255,.16), rgba(255,255,255,0)),
+    linear-gradient(135deg, var(--ac-burgundy), var(--ac-burgundy-2));
+  box-shadow: 0 10px 22px rgba(190,0,54,.35), inset 0 0 0 1px rgba(255,255,255,.08);
+  transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
+}
+.btn-ethics:active{ transform: translateY(1px); box-shadow: 0 6px 16px rgba(190,0,54,.28), inset 0 0 0 1px rgba(255,255,255,.12); }
+
+.btn-ghost{
+  background: rgba(255,255,255,.06);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+}
+
+/* ---- Хлебные крошки (если есть) ---- */
+.breadcrumbs{
+  display:flex; align-items:center; gap:8px;
+  font-size: 12px; color: var(--ac-text-dim);
+  margin-bottom: 10px;
+}
+.breadcrumbs a{
+  color: var(--ac-text-dim);
+  text-decoration: none;
+}
+.breadcrumbs .sep{ opacity:.4; }
+
+/* ---- Разделители секций ---- */
+.section-divider{
+  height:1px; width:100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
+  margin: 8px 0;
+}
+
+/* ---- Подвал блока (маленький дисклеймер) ---- */
+.ethics-footer{
+  margin-top: 14px;
+  color: #b8bbc1;
+  font-size: 12px;
+  text-align: center;
+  opacity:.9;
+}
+
+/* ---- Совместимость с нижней гласс-навигацией проекта ---- */
+.bottom-nav{ z-index: 40; }
+.ethics-page{ padding-bottom: max(110px, calc(env(safe-area-inset-bottom) + 110px)); }
+
+/* =================== Desktop (>= 768px) =================== */
+@media (min-width: 768px){
+  .ethics-page{
+    padding: 24px 24px 120px;
+    background:
+      radial-gradient(1400px 900px at 70% 120%, rgba(190,0,54,.18), transparent 60%),
+      linear-gradient(180deg, rgba(157,0,45,.10), rgba(25,25,25,.55));
+  }
+
+  .ethics-title{ font-size: 56px; }
+
+  .ethics-layout{
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .ethics-nav{
+    position: sticky;
+    top: 24px;
+    margin: 0;
+    flex-direction: column;
+    gap:10px;
+    padding: 0;
+  }
+
+  .ethics-card{ padding: 18px; }
+  .rule{ padding: 16px; }
+  .rule-title{ font-size: 18px; }
+  .rule-body{ font-size: 15px; }
+
+  .ethics-actions{
+    justify-content: flex-end;
+  }
+}
+
+/* =================== Large Desktop (>= 1200px) =================== */
+@media (min-width: 1200px){
+  .ethics-layout{
+    grid-template-columns: 340px minmax(0, 860px);
+    gap: 20px;
+  }
+
+  .ethics-card{
+    padding: 22px;
+    border-radius: 28px;
+  }
+  .rule{
+    border-radius: 22px;
+    padding: 18px;
+  }
+  .rule-index{
+    width:32px;height:32px;font-size: 13px;
+  }
+}
+
+/* ---- Мелкие утилиты (можете переиспользовать) ---- */
+.u-dim{ color: var(--ac-text-dim); }
+.u-muted{ opacity:.8; }
+.u-center{ text-align: center; }
+.u-mt-0{ margin-top: 0 !important; }
+.u-mt-8{ margin-top: 8px !important; }
+.u-mt-12{ margin-top: 12px !important; }
+.u-mt-16{ margin-top: 16px !important; }
+.u-mb-0{ margin-bottom: 0 !important; }
+.u-mb-8{ margin-bottom: 8px !important; }
+.u-mb-12{ margin-bottom: 12px !important; }
+.u-mb-16{ margin-bottom: 16px !important; }
+
+/* ========== Конец файла ethics.css ========== */
