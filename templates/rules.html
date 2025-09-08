@@ -11,7 +11,7 @@
 
 
   <style>
-/* NAVBAR — FORCE FIT (inline test) */
+/* NAVBAR — ICONS ONLY */
 .header, .header * { box-sizing: border-box; }
 
 .header{
@@ -20,35 +20,41 @@
   bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
   top: auto !important;
   transform: none !important;
-  width: auto !important; height: 86px !important;
+  width: auto !important; height: 78px !important;
   padding: 6px 8px !important;
   display: grid !important;
-  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-  gap: 0 !important;
+  grid-template-columns: repeat(5, 1fr) !important;
+  gap: 6px !important; /* маленький промежуток между иконками */
   overflow: hidden !important;
   border-radius: 40px !important;
+  background: linear-gradient(45deg, rgba(128,26,48,.16), rgba(78,5,21,.28));
+  border: 1px solid #ffffff44;
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
   z-index: 9999 !important;
 }
 
 .header > a{ display:block !important; min-width:0 !important; }
 .header_icon{
-  width:100% !important; height:72px !important;
-  border-radius:40px !important;
-  display:flex !important; flex-direction:column !important;
-  align-items:center !important; justify-content:center !important;
-  gap:4px !important; min-width:0 !important;
+  width:100% !important; height:64px !important;
+  border-radius:32px !important;
+  display:flex !important; align-items:center !important; justify-content:center !important;
 }
-.header_icon img{ width:22px !important; height:22px !important; margin:0 !important; object-fit:contain !important; }
-.header_icon p{
-  margin:0 !important; font-size:10px !important; line-height:1.1 !important;
-  max-width:100% !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important;
+
+.header_icon img{
+  width:34px !important; height:34px !important;
+  object-fit:contain !important;
 }
-.header_icon.active{ background-color:#00000080 !important; transform:none !important; animation:none !important; opacity:1 !important; }
+
+.header_icon.active{
+  background-color:#00000066 !important;
+  opacity:1 !important;
+}
+
 @media (max-width:360px){
-  .header{ height:82px !important; padding:6px 6px calc(6px + env(safe-area-inset-bottom)) 6px !important; }
-  .header_icon{ height:68px !important; }
-  .header_icon img{ width:20px !important; height:20px !important; }
-  .header_icon p{ font-size:9px !important; }
+  .header{ height:72px !important; gap:4px !important; }
+  .header_icon{ height:58px !important; }
+  .header_icon img{ width:30px !important; height:30px !important; }
 }
 </style>
 
@@ -129,31 +135,26 @@
   <a href="{% url 'index' %}">
     <div class="header_icon">
       <img src="{% static 'images/home_page.png' %}" alt="Home">
-      <p>A CLUB</p>
     </div>
   </a>
   <a href="{% url 'favourited' %}">
     <div class="header_icon">
       <img src="{% static 'images/fav.png' %}" alt="Fav">
-      <p>Севимли</p>
     </div>
   </a>
   <a href="{% url 'profile' %}">
     <div class="header_icon">
       <img src="{% static 'images/profile.png' %}" alt="Profile">
-      <p>Профиль</p>
     </div>
   </a>
   <a href="{% url 'chat' %}">
     <div class="header_icon">
       <img src="{% static 'images/chat.png' %}" alt="Chat">
-      <p>Чатлар</p>
     </div>
   </a>
   <a href="{% url 'rules' %}">
     <div class="header_icon active">
       <img src="{% static 'images/rules.png' %}" alt="Rules">
-      <p>Қоидалар</p>
     </div>
   </a>
 </div>
