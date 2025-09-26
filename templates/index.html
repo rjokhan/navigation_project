@@ -12,9 +12,7 @@
 
   <style>
 /* === NAVBAR FULL CSS — FINAL VERSION === */
-.header, .header * { 
-  box-sizing: border-box !important; 
-}
+.header, .header * { box-sizing: border-box !important; }
 
 .header {
   position: fixed !important;
@@ -36,83 +34,57 @@
   backdrop-filter: blur(5px) !important;
   z-index: 9999 !important;
 }
-
-.header > a {
-  display: block !important;
-  min-width: 0 !important;
-  height: 100% !important;                /* ссылка тянется на весь рост */
-}
-
+.header > a { display: block !important; min-width: 0 !important; height: 100% !important; }
 .header_icon {
-  width: 100% !important;
-  height: 100% !important;                /* капсула на весь рост */
+  width: 100% !important; height: 100% !important;
   border-radius: 32px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 8px 0 !important;              /* внутренние отступы сверху/снизу */
-  gap: 6px !important;                    /* расстояние между иконкой и текстом */
-  min-width: 0 !important;
-  box-sizing: border-box !important;
+  display: flex !important; flex-direction: column !important;
+  align-items: center !important; justify-content: center !important;
+  padding: 8px 0 !important; gap: 6px !important; min-width: 0 !important; box-sizing: border-box !important;
 }
-
-.header_icon img {
-  display: block !important;
-  width: 34px !important;
-  height: 34px !important;
-  margin: 0 !important;
-  object-fit: contain !important;
-}
-
-.header_icon p {
-  margin: 0 !important;
-  font-size: 10px !important;
-  line-height: 1.2 !important;
-  color: #fff !important;
-  text-align: center !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-.header_icon.active {
-  background-color: #00000066 !important;
-  opacity: 1 !important;
-  transform: none !important;
-  animation: none !important;
-}
+.header_icon img { display: block !important; width: 34px !important; height: 34px !important; margin: 0 !important; object-fit: contain !important; }
+.header_icon p { margin: 0 !important; font-size: 10px !important; line-height: 1.2 !important; color: #fff !important; text-align: center !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+.header_icon.active { background-color: #00000066 !important; opacity: 1 !important; transform: none !important; animation: none !important; }
 
 /* на очень узких экранах */
 @media (max-width: 360px) {
-  .header {
-    height: 80px !important;
-    padding: 4px !important;
-    gap: 4px !important;
-    max-width: none !important;
-  }
-  .header_icon {
-    padding: 6px 0 !important;
-    gap: 4px !important;
-  }
-  .header_icon img {
-    width: 30px !important;
-    height: 30px !important;
-  }
-  .header_icon p {
-    font-size: 9px !important;
-  }
+  .header { height: 80px !important; padding: 4px !important; gap: 4px !important; max-width: none !important; }
+  .header_icon { padding: 6px 0 !important; gap: 4px !important; }
+  .header_icon img { width: 30px !important; height: 30px !important; }
+  .header_icon p { font-size: 9px !important; }
 }
 
 /* сброс внешних отступов у body/html */
-html, body {
-  margin: 0 !important;
+html, body { margin: 0 !important; }
+
+/* === WHAT'S NEW slider (ADD-ONLY) === */
+.whats-new { margin: 10px 0 14px; }
+.whats-new .wn-track {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  gap: 0;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  min-height: 140px;
 }
-
+.whats-new .wn-track::-webkit-scrollbar { display: none; }
+.wn-slide {
+  display: block; position: relative; scroll-snap-align: start;
+  border-radius: 14px; overflow: hidden;
+  height: 0; padding-top: 56.25%; background: #1a1a1a;
+}
+.wn-slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.wn-dots { display: flex; justify-content: center; align-items: center; gap: 10px; padding-top: 8px; }
+.wn-dot { width: 36px; height: 4px; border-radius: 999px; background: #949494; opacity: .9; transition: background .2s ease, transform .2s ease, opacity .2s ease; }
+.wn-dot.active { background: #ff155d; transform: translateY(-1px); opacity: 1; }
+@media (max-width: 360px) { .wn-dot { width: 28px; } }
   </style>
-
-
-
 </head>
 
 <body>
@@ -169,8 +141,6 @@ html, body {
   </a>
 </div>
 
-
-
 <!-- SEARCH -->
 <form class="searcher">
   <img class="search_icon" src="{% static 'images/search icon.png' %}">
@@ -202,153 +172,42 @@ html, body {
   font-size: 24px;
   font-weight: 600;
   font-family: 'Raleway', sans-serif;
-  text-align: center;
-"><div style="width: 60vw; margin: 0 auto;">
-  Навигация платформасини сиз учун янада қулай қилиш мақсадида янгилаяпмиз. Шу сабабли 30.09.2025 гача техник ишлар олиб борилади. 
-</div></div>
+  text-align: center;">
+  <div style="width: 60vw; margin: 0 auto;">
+    Навигация платформасини сиз учун янада қулай қилиш мақсадида янгилаяпмиз.
+    Шу сабабли 30.09.2025 гача техник ишлар олиб борилади.
+  </div>
+</div>
 
 <script>
-document.addEventListener("DOMContentLoaded", async function () {
-  const tg = window.Telegram.WebApp;
-  const user = tg.initDataUnsafe?.user;
-  const nameBlock = document.getElementById("user-name");
-  const genreContainer = document.querySelector(".container_genre");
-  const popup = document.getElementById("noAccessPopup");
-  const overlay = document.querySelector(".blur_overlay");
-
-  if (!user || !user.id) {
-    genreContainer.innerHTML = "<div class='error'>Упс, қандайдир хатолик юз берди</div>";
-    return;
-  }
-
-  // 🔒 ВРЕМЕННО: пропускаем только один Telegram ID
-  if (user.id === 5790925357) {
-    overlay.classList.remove("active");
-    popup.style.display = "none";
-    nameBlock.textContent = user.first_name || "Гость";
-    loadGenres();
-  } else {
-    setTimeout(() => {
-      popup.style.display = "flex";
-    }, 1000);
-  }
-
-  /*
-  // 🔕 Старый код проверки по API — временно отключен
-  try {
-    const res = await fetch("/api/users/proxy-check-user/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ telegram_id: user.id })
-    });
-
-    const data = await res.json();
-    const hasAccess = data.tariffs?.length > 0 || data.subscription_status || data.subscription_until;
-
-    if (hasAccess) {
-      overlay.classList.remove("active");
-      popup.style.display = "none";
-      nameBlock.textContent = data.first_name || data.name || user.first_name || "Гость";
-      loadGenres();
-    } else {
-      setTimeout(() => {
-        popup.style.display = "flex";
-      }, 2000);
-    }
-  } catch (err) {
-    console.error("Ошибка при проверке пользователя:", err);
-    genreContainer.innerHTML = "<div class='error'>Сервер хатоси</div>";
-  }
-  */
-
-  async function loadGenres() {
-    const container = document.querySelector('.container_genre');
-    container.innerHTML = '<div class="loading">Рубрикалар рўйхати юкланяпти...</div>';
-
-    try {
-      const res = await fetch("/api/genres/");
-      const genres = await res.json();
-
-      if (!Array.isArray(genres)) {
-        container.innerHTML = "<div class='error'>Нотоғри формат</div>";
-        return;
-      }
-
-      let allCards = [];
-      genres.forEach(g => g.items.forEach(item => allCards.push(item)));
-      localStorage.setItem("allCards", JSON.stringify(allCards));
-
-      container.innerHTML = "";
-
-      genres.forEach(genre => {
-        const count = genre.items?.length || 0;
-        const genreId = genre.id;
-        const titleRaw = genre.name || genre.title || genre.slug || "Без названия";
-        const encodedTitle = encodeURIComponent(titleRaw);
-
-        const genreBlock = document.createElement("div");
-        genreBlock.className = "genre";
-        genreBlock.style.cursor = "pointer";
-        genreBlock.innerHTML = `
-          <div class="count">${count}</div>
-          <div class="genre_name"><span class="red">A </span>${titleRaw}</div>
-        `;
-
-        genreBlock.addEventListener("click", () => {
-          overlay.classList.add("active");
-          setTimeout(() => {
-            window.location.href = `/content/?genre_id=${genreId}&genre_title=${encodedTitle}`;
-          }, 300);
-        });
-
-        container.appendChild(genreBlock);
-      });
-
-    } catch (error) {
-      console.error("Ошибка загрузки жанров:", error);
-      container.innerHTML = "<div class='error'>Рубрикаларни йўклашда хатолик бўлди</div>";
-    }
-  }
-});
-</script>
-
-
-
-<script>
-// === WHAT'S NEW logic (ADD-ONLY) ===
+/* === WHAT'S NEW logic === */
 async function loadWhatsNew() {
   const track = document.getElementById('wnTrack');
   const dots  = document.getElementById('wnDots');
   if (!track || !dots) return;
 
-  // 1) тянем до 5 новостей (старые скрыты самим лимитом)
   let items = [];
   try {
     const r = await fetch('/api/news/?limit=5', { credentials: 'same-origin' });
     if (r.ok) {
       const data = await r.json();
-      // ожидаем массив [{image, url}] — адаптируйте при необходимости
       items = Array.isArray(data) ? data.slice(0,5) : (data.results || []).slice(0,5);
     }
   } catch(e) { console.warn('WhatsNew fetch fail', e); }
 
-  // fallback (если нет данных — прячем секцию)
   if (!items.length) {
     document.querySelector('.whats-new')?.remove();
     return;
   }
 
-  // 2) рендер слайдов
   track.innerHTML = items.map((it,i) => `
     <a class="wn-slide" href="${it.url || '#'}" target="_blank" rel="noopener" aria-label="Новость ${i+1}">
       <img src="${it.image}" alt="">
     </a>
   `).join('');
 
-  // 3) индикаторы
   dots.innerHTML = items.map((_,i) => `<div class="wn-dot${i===0?' active':''}" data-i="${i}" role="tab"></div>`).join('');
 
-  // клик по индикатору — плавный скролл к нужному слайду
   dots.querySelectorAll('.wn-dot').forEach(dot => {
     dot.addEventListener('click', () => {
       const i = Number(dot.dataset.i);
@@ -357,7 +216,6 @@ async function loadWhatsNew() {
     });
   });
 
-  // 4) обновление активного индикатора при скролле
   function syncDots() {
     const idx = Math.round(track.scrollLeft / track.clientWidth);
     dots.querySelectorAll('.wn-dot').forEach((d, i) => {
@@ -365,25 +223,124 @@ async function loadWhatsNew() {
     });
   }
   track.addEventListener('scroll', () => {
-    // throttling через rAF
     if (track._ticking) return;
     track._ticking = true;
     requestAnimationFrame(() => { syncDots(); track._ticking = false; });
   });
-  // на ресайз тоже пересчёт, чтобы индикатор не «уезжал»
   window.addEventListener('resize', syncDots, { passive: true });
+}
+
+/* === GENRES loader === */
+async function loadGenres() {
+  const container = document.querySelector('.container_genre');
+  container.innerHTML = '<div class="loading">Рубрикалар рўйхати юкланяпти...</div>';
+
+  try {
+    const res = await fetch("/api/genres/");
+    const genres = await res.json();
+
+    if (!Array.isArray(genres)) {
+      container.innerHTML = "<div class='error'>Нотоғри формат</div>";
+      return;
+    }
+
+    let allCards = [];
+    genres.forEach(g => g.items.forEach(item => allCards.push(item)));
+    localStorage.setItem("allCards", JSON.stringify(allCards));
+
+    container.innerHTML = "";
+
+    const overlay = document.querySelector(".blur_overlay");
+
+    genres.forEach(genre => {
+      const count = genre.items?.length || 0;
+      const genreId = genre.id;
+      const titleRaw = genre.name || genre.title || genre.slug || "Без названия";
+      const encodedTitle = encodeURIComponent(titleRaw);
+
+      const genreBlock = document.createElement("div");
+      genreBlock.className = "genre";
+      genreBlock.style.cursor = "pointer";
+      genreBlock.innerHTML = `
+        <div class="count">${count}</div>
+        <div class="genre_name"><span class="red">A </span>${titleRaw}</div>
+      `;
+
+      genreBlock.addEventListener("click", () => {
+        overlay.classList.add("active");
+        setTimeout(() => {
+          window.location.href = `/content/?genre_id=${genreId}&genre_title=${encodedTitle}`;
+        }, 300);
+      });
+
+      container.appendChild(genreBlock);
+    });
+
+  } catch (error) {
+    console.error("Ошибка загрузки жанров:", error);
+    container.innerHTML = "<div class='error'>Рубрикаларни йўклашда хатолик бўлди</div>";
+  }
 }
 </script>
 
+<script>
+/* === ACCESS GATE + init === */
+document.addEventListener("DOMContentLoaded", async function () {
+  const tg = window.Telegram.WebApp;
+  const user = tg.initDataUnsafe?.user;
+  const genreContainer = document.querySelector(".container_genre");
+  const popup = document.getElementById("noAccessPopup");
+  const overlay = document.querySelector(".blur_overlay");
+  const nameBlock = document.getElementById("user-name"); // может отсутствовать
 
+  if (!user || !user.id) {
+    genreContainer.innerHTML = "<div class='error'>Упс, қандайдир хатолик юз берди</div>";
+    return;
+  }
 
+  // ВРЕМЕННО: пропускаем только один Telegram ID
+  if (user.id === 5790925357) {
+    overlay.classList.remove("active");
+    popup.style.display = "none";
+    if (nameBlock) nameBlock.textContent = user.first_name || "Гость";
+    await loadWhatsNew();
+    await loadGenres();
+  } else {
+    setTimeout(() => { popup.style.display = "flex"; }, 1000);
+  }
+
+  /*
+  // Старая проверка по API — временно отключена
+  try {
+    const res = await fetch("/api/users/proxy-check-user/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ telegram_id: user.id })
+    });
+    const data = await res.json();
+    const hasAccess = data.tariffs?.length > 0 || data.subscription_status || data.subscription_until;
+    if (hasAccess) {
+      overlay.classList.remove("active");
+      popup.style.display = "none";
+      if (nameBlock) nameBlock.textContent = data.first_name || data.name || user.first_name || "Гость";
+      await loadWhatsNew();
+      await loadGenres();
+    } else {
+      setTimeout(() => { popup.style.display = "flex"; }, 2000);
+    }
+  } catch (err) {
+    console.error("Ошибка при проверке пользователя:", err);
+    genreContainer.innerHTML = "<div class='error'>Сервер хатоси</div>";
+  }
+  */
+});
+</script>
 
 <script>
+/* Общие UX-мелочи */
 document.addEventListener("DOMContentLoaded", () => {
   const overlay = document.querySelector(".blur_overlay");
-  requestAnimationFrame(() => {
-    overlay.classList.remove("active");
-  });
+  requestAnimationFrame(() => { overlay.classList.remove("active"); });
 
   document.querySelectorAll(".header a").forEach(link => {
     link.addEventListener("click", e => {
@@ -419,6 +376,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 <script>
+/* Resume last session popup */
 document.addEventListener('DOMContentLoaded', () => {
   const session = localStorage.getItem('last_session');
   if (!session) return;
@@ -432,17 +390,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     text.innerHTML = `Оҳирги марта очилган:<br><strong>${data.genreTitle} – ${data.itemTitle}</strong><br>Давом этамизми?`;
 
-    // Снимаем hidden и ставим show
     popup.classList.remove('hidden');
     popup.classList.add('show');
 
     yes.onclick = () => {
       popup.classList.remove('show');
       popup.classList.add('hidden');
-      const params = new URLSearchParams({
-        genre_id: data.genreId,
-        genre_title: data.genreTitle
-      });
+      const params = new URLSearchParams({ genre_id: data.genreId, genre_title: data.genreTitle });
       window.location.href = `/content/?${params}`;
     };
 
