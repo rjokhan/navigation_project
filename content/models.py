@@ -70,3 +70,23 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"{self.username} ({self.name})"
+
+
+
+
+class NewsItem(models.Model):
+    title = models.CharField("Заголовок", max_length=200, blank=True)
+    image = models.ImageField("Изображение", upload_to="news/")
+    url = models.URLField("Ссылка", blank=True)
+    is_active = models.BooleanField("Активно", default=True)
+    order = models.PositiveIntegerField("Порядок", default=0,
+        help_text="Меньше — выше в списке")
+    created_at = models.DateTimeField("Создано", auto_now_add=True)
+
+    class Meta:
+        ordering = ["order", "-created_at"]
+        verbose_name = "Новость (What's new)"
+        verbose_name_plural = "Новости (What's new)"
+
+    def __str__(self):
+        return self.title or f"News #{self.pk}"

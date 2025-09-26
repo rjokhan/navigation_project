@@ -4,11 +4,22 @@ from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404
 from .models import Genre, ContentItem, Favourite
 from django.shortcuts import render
+from django.views.decorators.http import require_GET
+from .models import NewsItem
+
 
 import json
 
 
-
+@require_GET
+def news_list(request):
+    try:
+        limit = int(request.GET.get("limit", 5))
+    except ValueError:
+        limit = 5
+    qs = NewsItem.objects.filter(is_active=True).order_by("order", "-created_at")[:limit]
+    data = [{"image": item.image.url, "url": item.url} for item in qs]
+    return JsonResponse(data, safe=False)
 
 # ✅ Получение всех жанров и их контента
 def genre_list(request):
@@ -82,3 +93,5 @@ def remove_from_favourites(request, content_id):
 
 def searched_view(request):
     return render(request, "searched.html")
+
+

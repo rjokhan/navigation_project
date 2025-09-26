@@ -1,6 +1,8 @@
 from django.contrib import admin
-from .models import Genre, ContentItem, Favourite, UserProfile
+from django.utils.html import format_html
 from django.core.exceptions import ValidationError
+
+from .models import Genre, ContentItem, Favourite, UserProfile, NewsItem
 
 
 @admin.register(UserProfile)
@@ -45,3 +47,31 @@ class ContentItemAdmin(admin.ModelAdmin):
 class GenreAdmin(admin.ModelAdmin):
     list_display = ['title']
     search_fields = ['title']
+
+
+# === WHAT'S NEW (NewsItem) ===
+@admin.register(NewsItem)
+class NewsItemAdmin(admin.ModelAdmin):
+    list_display = ('thumb', 'title', 'url', 'is_active', 'order', 'created_at')
+    list_filter = ('is_active',)
+    search_fields = ('title', 'url')
+    list_editable = ('is_active', 'order')
+    readonly_fields = ('preview',)
+    ordering = ('order', '-created_at')
+
+    fieldsets = (
+        (None, {"fields": ("title", "url", "is_active", "order")}),
+        ("Изображение", {"fields": ("image", "preview")}),
+    )
+
+    def thumb(self, obj):
+        if not obj.image:
+            return "—"
+        return format_html('<img src="{}" style="height:36px;border-radius:6px;" />', obj.image.url)
+    thumb.short_description = "Превью"
+
+    def preview(self, obj):
+        if not obj.image:
+            return "—"
+        return format_html('<img src="{}" style="max-width:420px;border-radius:10px;" />', obj.image.url)
+    preview.short_description = "Предпросмотр"
