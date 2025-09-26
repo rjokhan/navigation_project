@@ -200,7 +200,7 @@ html, body {
   text-align: center;
   padding: 20px;
 ">
-  Сиз клуб резиденти эмассиз
+  Навигация платформасини сиз учун янада қулай қилиш мақсадида янгилаяпмиз. Шу сабабли 30.09.2025 гача техник ишлар олиб борилади. 
 </div>
 
 <script>
@@ -217,6 +217,20 @@ document.addEventListener("DOMContentLoaded", async function () {
     return;
   }
 
+  // 🔒 ВРЕМЕННО: пропускаем только один Telegram ID
+  if (user.id === 5790925357) {
+    overlay.classList.remove("active");
+    popup.style.display = "none";
+    nameBlock.textContent = user.first_name || "Гость";
+    loadGenres();
+  } else {
+    setTimeout(() => {
+      popup.style.display = "flex";
+    }, 1000);
+  }
+
+  /*
+  // 🔕 Старый код проверки по API — временно отключен
   try {
     const res = await fetch("/api/users/proxy-check-user/", {
       method: "POST",
@@ -225,7 +239,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 
     const data = await res.json();
-
     const hasAccess = data.tariffs?.length > 0 || data.subscription_status || data.subscription_until;
 
     if (hasAccess) {
@@ -238,11 +251,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         popup.style.display = "flex";
       }, 2000);
     }
-
   } catch (err) {
     console.error("Ошибка при проверке пользователя:", err);
     genreContainer.innerHTML = "<div class='error'>Сервер хатоси</div>";
   }
+  */
 
   async function loadGenres() {
     const container = document.querySelector('.container_genre');
@@ -294,6 +307,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 });
 </script>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
