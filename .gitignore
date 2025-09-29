@@ -1,15 +1,20 @@
-# Python
-*.pyc
+# Python / Django
 __pycache__/
-
-# Django
+*.py[cod]
+*.sqlite3
 db.sqlite3
-/media
-/staticfiles
+*.log
 
 # Env
 .env
+.venv/
+venv/
 
-# IDE и редакторы
+# Django collectstatic & media
+staticfiles/
+media/
+
+# VS Code / OS
 .vscode/
-.idea/
+.DS_Store
+Thumbs.db
