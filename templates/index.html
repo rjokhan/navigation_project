@@ -236,6 +236,7 @@ async function loadWhatsNew() {
 }
 
 /* === GENRES loader === */
+/* === GENRES loader === */
 async function loadGenres() {
   const container = document.querySelector('.container_genre');
   container.innerHTML = '<div class="loading">Рубрикалар рўйхати юкланяпти...</div>';
@@ -249,45 +250,42 @@ async function loadGenres() {
       return;
     }
 
-    let allCards = [];
-    genres.forEach(g => g.items.forEach(item => allCards.push(item)));
-    localStorage.setItem("allCards", JSON.stringify(allCards));
-
+    // здесь больше НЕ пытаемся читать g.items
     container.innerHTML = "";
-
     const overlay = document.querySelector(".blur_overlay");
 
-      genres.forEach(genre => {
-    const genreId = genre.id;
-    const titleRaw = genre.title || "Без названия";
-    const encodedTitle = encodeURIComponent(titleRaw);
+    genres.forEach((genre) => {
+      const genreId   = genre.id;
+      const titleRaw  = genre.title || "Без названия";
+      const encodedTitle = encodeURIComponent(titleRaw);
 
-    const genreBlock = document.createElement("div");
-    genreBlock.className = "genre";
-    genreBlock.style.cursor = "pointer";
-    genreBlock.innerHTML = `
-      <div class="count">#</div>
-      <div class="genre_name"><span class="red">A </span>${titleRaw}</div>
-    `;
+      const el = document.createElement("div");
+      el.className = "genre";
+      el.style.cursor = "pointer";
+      el.innerHTML = `
+        <div class="count"></div>
+        <div class="genre_name"><span class="red">A </span>${titleRaw}</div>
+      `;
 
-    genreBlock.addEventListener("click", () => {
-      overlay.classList.add("active");
-      setTimeout(() => {
-        if (genre.kind === "special") {
-          window.location.href = `/group/?genre_id=${genreId}&genre_title=${encodedTitle}`;
-        } else {
-          window.location.href = `/content/?genre_id=${genreId}&genre_title=${encodedTitle}`;
-        }
-      }, 300);
+      el.addEventListener("click", () => {
+        overlay.classList.add("active");
+        setTimeout(() => {
+          if (genre.kind === "special") {
+            // спец-жанр → к списку групп
+            window.location.href = `/group/?genre_id=${genreId}&genre_title=${encodedTitle}`;
+          } else {
+            // обычный жанр → сразу к контенту
+            window.location.href = `/content/?genre_id=${genreId}&genre_title=${encodedTitle}`;
+          }
+        }, 300);
+      });
+
+      container.appendChild(el);
     });
-
-    container.appendChild(genreBlock);
-  });
-
-} catch (error) {
-  console.error("Ошибка загрузки жанров:", error);
-  container.innerHTML = "<div class='error'>Рубрикаларни йўклашда хатолик бўлди</div>";
-}
+  } catch (error) {
+    console.error("Ошибка загрузки жанров:", error);
+    container.innerHTML = "<div class='error'>Рубрикаларни йўклашда хатолик бўлди</div>";
+  }
 }
 
 </script>
