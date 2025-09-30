@@ -11,32 +11,6 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
-
-
-    /* === GENRE COUNT BADGE (robust) === */
-.genre { position: relative; }               /* якорь для бейджа */
-.genre .count{
-  position: absolute;
-  top: 10px; right: 10px;
-  z-index: 5;                                /* поверх всего внутри карточки */
-  min-width: 24px; height: 24px;
-  padding: 0 6px;
-  border-radius: 999px;
-  display: grid; place-items: center;
-  background: #ff155d;
-  color: #fff;
-  font: 700 12px/1 Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
-  letter-spacing: .2px;
-  box-shadow: 0 6px 14px rgba(255,21,93,.45), inset 0 0 0 1px rgba(255,255,255,.15);
-  user-select: none;
-  pointer-events: none;
-}
-@media (min-width: 420px){
-  .genre .count{ min-width: 26px; height: 26px; font-size: 13px; }
-}
-
-
-
 /* === NAVBAR FULL CSS — FINAL VERSION === */
 .header, .header * { box-sizing: border-box !important; }
 
@@ -111,11 +85,13 @@ html, body { margin: 0 !important; }
 .wn-dot.active { background: #ff155d; transform: translateY(-1px); opacity: 1; }
 @media (max-width: 360px) { .wn-dot { width: 28px; } }
 
-/* === GENRE COUNT BADGE (ADD-ONLY) === */
-.genre { position: relative; } /* если уже есть — дубли не мешают */
+/* === GENRE COUNT BADGE (robust) === */
+.container_genre { position: relative; }     /* безопасно */
+.genre { position: relative; }               /* якорь для бейджа */
 .genre .count{
   position: absolute;
   top: 10px; right: 10px;
+  z-index: 5;                                /* поверх внутренностей карточки */
   min-width: 24px; height: 24px;
   padding: 0 6px;
   border-radius: 999px;
@@ -123,8 +99,10 @@ html, body { margin: 0 !important; }
   background: #ff155d;
   color: #fff;
   font: 700 12px/1 Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
-  box-shadow: 0 6px 14px rgba(255, 21, 93, .45), inset 0 0 0 1px rgba(255,255,255,.15);
+  letter-spacing: .2px;
+  box-shadow: 0 6px 14px rgba(255,21,93,.45), inset 0 0 0 1px rgba(255,255,255,.15);
   user-select: none;
+  pointer-events: none;
 }
 @media (min-width: 420px){
   .genre .count{ min-width: 26px; height: 26px; font-size: 13px; }
@@ -186,17 +164,17 @@ html, body { margin: 0 !important; }
   </a>
 </div>
 
-<!-- WHAT'S NEW -->
-<section class="whats-new" aria-label="What’s new?">
-  <div class="wn-track" id="wnTrack"></div>
-  <div class="wn-dots" id="wnDots" role="tablist" aria-label="Слайдер новостей"></div>
-</section>
-
 <!-- SEARCH -->
 <form class="searcher">
   <img class="search_icon" src="{% static 'images/search icon.png' %}">
   <input class="searcher_block" placeholder="Қидириш..." autocomplete="off">
 </form>
+
+<!-- WHAT'S NEW -->
+<section class="whats-new" aria-label="What’s new?">
+  <div class="wn-track" id="wnTrack"></div>
+  <div class="wn-dots" id="wnDots" role="tablist" aria-label="Слайдер новостей"></div>
+</section>
 
 <!-- GENRES -->
 <div class="container_genre">
@@ -235,11 +213,9 @@ async function loadWhatsNew() {
   try {
     const r = await fetch('/api/news/?limit=5', { credentials: 'same-origin' });
     const raw = await r.json();
-    // допускаем как массив, так и {results: [...]}
     const arr = Array.isArray(raw) ? raw : (raw?.results || []);
     items = (arr || []).map(it => {
       let img = it.image || it?.image?.url || "";
-      // если пришёл относительный /media/..., превратим в абсолютный
       try { if (img && img.startsWith('/')) img = new URL(img, location.origin).href; } catch(e){}
       return { img, url: it.url || "#" };
     }).filter(x => x.img).slice(0, 5);
@@ -247,7 +223,6 @@ async function loadWhatsNew() {
     console.warn('[WN] fetch error', e);
   }
 
-  // если активных нет → вообще скрываем секцию
   if (!items.length) {
     section.remove();
     return;
@@ -280,7 +255,7 @@ async function loadWhatsNew() {
   window.addEventListener('resize', syncDots, { passive: true });
 }
 
-/* === GENRES loader === */
+/* === GENRES loader (with counters) === */
 async function loadGenres() {
   const container = document.querySelector('.container_genre');
   container.innerHTML = '<div class="loading">Рубрикалар рўйхати юкланяпти...</div>';
@@ -297,6 +272,18 @@ async function loadGenres() {
     container.innerHTML = "";
     const overlay = document.querySelector(".blur_overlay");
 
+    // helper: достать число из любого поля с "count", или длины items[]
+    const extractCount = (g) => {
+      const direct = g.items_count ?? g.events_count ?? g.content_count ?? g.count ?? null;
+      let scanned = null;
+      for (const [k, v] of Object.entries(g)) {
+        if (typeof v === "number" && /count/i.test(k)) scanned = scanned == null ? v : Math.max(scanned, v);
+      }
+      const byItems = Array.isArray(g.items) ? g.items.length : null;
+      const candidates = [direct, scanned, byItems].filter(v => Number.isFinite(+v));
+      return candidates.length ? Number(candidates[0]) : 0;
+    };
+
     genres.forEach((genre) => {
       const genreId   = genre.id;
       const titleRaw  = genre.title || "Без названия";
@@ -310,26 +297,15 @@ async function loadGenres() {
         <div class="genre_name"><span class="red">A </span>${titleRaw}</div>
       `;
 
-      /* === RESTORE BADGE COUNT (ADD-ONLY) === */
-      let rawCount =
-          genre.items_count ??
-          genre.events_count ??
-          genre.content_count ??
-          genre.count ??
-          null;
-
-      if (rawCount == null && Array.isArray(genre.items)) {
-        rawCount = genre.items.length;
-      }
-
-      const cnt = Number.isFinite(+rawCount) ? Number(rawCount) : 0;
+      // число внутри бейджа
+      const cnt = extractCount(genre);
       const cntEl = el.querySelector('.count');
-
       if (cnt > 0) {
         cntEl.textContent = cnt > 99 ? '99+' : String(cnt);
         cntEl.style.display = 'grid';
       } else {
-        cntEl.style.display = 'none';
+        cntEl.style.display = 'none'; // если хотите — поставьте 'grid' и показывайте "0"
+        // cntEl.textContent = '0';
       }
 
       el.addEventListener("click", () => {
