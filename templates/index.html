@@ -19,9 +19,9 @@
   bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
-  width: calc(100vw - 16px) !important;   /* поля по 8px слева/справа */
-  max-width: 640px !important;            /* ограничение ширины на больших экранах */
-  height: 88px !important;                /* общая высота бара */
+  width: calc(100vw - 16px) !important;
+  max-width: 640px !important;
+  height: 88px !important;
   padding: 4px !important;
   display: grid !important;
   grid-template-columns: repeat(5, 1fr) !important;
@@ -85,27 +85,26 @@ html, body { margin: 0 !important; }
 .wn-dot.active { background: #ff155d; transform: translateY(-1px); opacity: 1; }
 @media (max-width: 360px) { .wn-dot { width: 28px; } }
 
-/* === GENRE COUNT BADGE (robust) === */
-.container_genre { position: relative; }     /* безопасно */
-.genre { position: relative; }               /* якорь для бейджа */
+/* === GENRE COUNT BADGE (override any old styles) === */
+.genre { position: relative !important; }
 .genre .count{
-  position: absolute;
-  top: 10px; right: 10px;
-  z-index: 5;                                /* поверх внутренностей карточки */
-  min-width: 24px; height: 24px;
-  padding: 0 6px;
-  border-radius: 999px;
-  display: grid; place-items: center;
-  background: #ff155d;
-  color: #fff;
-  font: 700 12px/1 Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
-  letter-spacing: .2px;
-  box-shadow: 0 6px 14px rgba(255,21,93,.45), inset 0 0 0 1px rgba(255,255,255,.15);
-  user-select: none;
-  pointer-events: none;
+  position: absolute !important;
+  top: 10px !important; right: 10px !important;
+  z-index: 5 !important;
+  min-width: 24px !important; height: 24px !important;
+  padding: 0 6px !important;
+  border-radius: 999px !important;
+  display: grid !important; place-items: center !important;
+  background: #ff155d !important;
+  color: #fff !important;
+  font: 700 12px/1 Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif !important;
+  letter-spacing: .2px !important;
+  box-shadow: 0 6px 14px rgba(255,21,93,.45), inset 0 0 0 1px rgba(255,255,255,.15) !important;
+  user-select: none !important;
+  pointer-events: none !important;
 }
 @media (min-width: 420px){
-  .genre .count{ min-width: 26px; height: 26px; font-size: 13px; }
+  .genre .count{ min-width: 26px !important; height: 26px !important; font-size: 13px !important; }
 }
   </style>
 </head>
@@ -255,7 +254,7 @@ async function loadWhatsNew() {
   window.addEventListener('resize', syncDots, { passive: true });
 }
 
-/* === GENRES loader (with counters) === */
+/* === GENRES loader (with counters + server fallback) === */
 async function loadGenres() {
   const container = document.querySelector('.container_genre');
   container.innerHTML = '<div class="loading">Рубрикалар рўйхати юкланяпти...</div>';
@@ -272,8 +271,8 @@ async function loadGenres() {
     container.innerHTML = "";
     const overlay = document.querySelector(".blur_overlay");
 
-    // helper: достать число из любого поля с "count", или длины items[]
-    const extractCount = (g) => {
+    // helper: достать число из любых *count* полей или из items[]
+    const extractLocalCount = (g) => {
       const direct = g.items_count ?? g.events_count ?? g.content_count ?? g.count ?? null;
       let scanned = null;
       for (const [k, v] of Object.entries(g)) {
@@ -281,10 +280,22 @@ async function loadGenres() {
       }
       const byItems = Array.isArray(g.items) ? g.items.length : null;
       const candidates = [direct, scanned, byItems].filter(v => Number.isFinite(+v));
-      return candidates.length ? Number(candidates[0]) : 0;
+      return candidates.length ? Number(candidates[0]) : null;
     };
 
-    genres.forEach((genre) => {
+    // server fallback: /api/content/?genre_id=...&limit=1 -> json.count
+    const fetchServerCount = async (genreId) => {
+      try {
+        const r = await fetch(`/api/content/?genre_id=${encodeURIComponent(genreId)}&limit=1`, { credentials: 'same-origin' });
+        const j = await r.json();
+        if (typeof j?.count === 'number') return j.count;
+        if (Array.isArray(j)) return j.length;             // на крайний случай
+        if (Array.isArray(j?.results)) return j.results.length; // если нет count
+      } catch(e){ console.warn('count fallback error', e); }
+      return 0;
+    };
+
+    for (const genre of genres) {
       const genreId   = genre.id;
       const titleRaw  = genre.title || "Без названия";
       const encodedTitle = encodeURIComponent(titleRaw);
@@ -293,19 +304,21 @@ async function loadGenres() {
       el.className = "genre";
       el.style.cursor = "pointer";
       el.innerHTML = `
-        <div class="count"></div>
+        <div class="count">0</div>
         <div class="genre_name"><span class="red">A </span>${titleRaw}</div>
       `;
 
-      // число внутри бейджа
-      const cnt = extractCount(genre);
       const cntEl = el.querySelector('.count');
-      if (cnt > 0) {
+
+      // 1) локально, если есть
+      let cnt = extractLocalCount(genre);
+      if (Number.isFinite(cnt) && cnt >= 0) {
         cntEl.textContent = cnt > 99 ? '99+' : String(cnt);
-        cntEl.style.display = 'grid';
       } else {
-        cntEl.style.display = 'none'; // если хотите — поставьте 'grid' и показывайте "0"
-        // cntEl.textContent = '0';
+        // 2) серверный фолбэк (асинхронно, не блокируем рендер)
+        fetchServerCount(genreId).then(n => {
+          cntEl.textContent = n > 99 ? '99+' : String(n);
+        });
       }
 
       el.addEventListener("click", () => {
@@ -320,7 +333,7 @@ async function loadGenres() {
       });
 
       container.appendChild(el);
-    });
+    }
   } catch (error) {
     console.error("Ошибка загрузки жанров:", error);
     container.innerHTML = "<div class='error'>Рубрикаларни йўклашда хатолик бўлди</div>";
@@ -353,31 +366,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   } else {
     setTimeout(() => { popup.style.display = "flex"; }, 1000);
   }
-
-  /*
-  // Старая проверка по API — временно отключена
-  try {
-    const res = await fetch("/api/users/proxy-check-user/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ telegram_id: user.id })
-    });
-    const data = await res.json();
-    const hasAccess = data.tariffs?.length > 0 || data.subscription_status || data.subscription_until;
-    if (hasAccess) {
-      overlay.classList.remove("active");
-      popup.style.display = "none";
-      if (nameBlock) nameBlock.textContent = data.first_name || data.name || user.first_name || "Гость";
-      await loadWhatsNew();
-      await loadGenres();
-    } else {
-      setTimeout(() => { popup.style.display = "flex"; }, 2000);
-    }
-  } catch (err) {
-    console.error("Ошибка при проверке пользователя:", err);
-    genreContainer.innerHTML = "<div class='error'>Сервер хатоси</div>";
-  }
-  */
 });
 </script>
 
@@ -385,7 +373,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 /* Общие UX-мелочи */
 document.addEventListener("DOMContentLoaded", () => {
   const overlay = document.querySelector(".blur_overlay");
-  requestAnimationFrame(() => { overlay.classList.remove("active"); });
+  requestAnimationFrame(() => { overlay.classList.remove('active'); });
 
   document.querySelectorAll(".header a").forEach(link => {
     link.addEventListener("click", e => {
