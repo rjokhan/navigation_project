@@ -11,6 +11,31 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
+
+    /* === GENRE COUNT BADGE (robust) === */
+.genre { position: relative; }               /* якорь для бейджа */
+.genre .count{
+  position: absolute;
+  top: 10px; right: 10px;
+  z-index: 5;                                /* поверх всего внутри карточки */
+  min-width: 24px; height: 24px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: grid; place-items: center;
+  background: #ff155d;
+  color: #fff;
+  font: 700 12px/1 Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+  letter-spacing: .2px;
+  box-shadow: 0 6px 14px rgba(255,21,93,.45), inset 0 0 0 1px rgba(255,255,255,.15);
+  user-select: none;
+  pointer-events: none;
+}
+@media (min-width: 420px){
+  .genre .count{ min-width: 26px; height: 26px; font-size: 13px; }
+}
+
+
+
 /* === NAVBAR FULL CSS — FINAL VERSION === */
 .header, .header * { box-sizing: border-box !important; }
 
