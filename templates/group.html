@@ -1,0 +1,239 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Groups</title>
+  <link rel="stylesheet" href="{% static 'css/content.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    /* Карточки групп */
+    .groups_container {
+      padding: 0 14px 110px;
+    }
+    .group_card {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 12px 0;
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      cursor: pointer;
+      transition: transform .08s ease, background .2s ease, border-color .2s ease;
+    }
+    .group_card:active { transform: scale(.99); }
+    .group_badge {
+      flex: 0 0 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #ff155d;
+      color: #fff;
+      letter-spacing: .5px;
+    }
+    .group_title {
+      font-size: 16px;
+      line-height: 1.25;
+      color: #fff;
+      font-weight: 700;
+      font-family: "Raleway", sans-serif;
+    }
+    .group_arrow {
+      margin-left: auto;
+      width: 24px; height: 24px;
+      opacity: .85;
+      filter: invert(1);
+    }
+
+    /* Заголовок жанра */
+    .choosed_genre {
+      display: block;
+      padding: 8px 16px 0;
+      font-size: 22px;
+      color: #fff;
+      font-weight: 800;
+      font-family: "Raleway", sans-serif;
+    }
+    .choosed_genre .red { color: #ff155d; }
+
+    /* Поиск */
+    .search_block { padding: 10px 12px 4px; display: grid; grid-template-columns: 40px 1fr; gap: 10px; align-items: center; }
+    .back_button { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.08) url("{% static 'images/back_icon.png' %}") center/18px no-repeat; }
+    .searcher { position: relative; }
+    .searcher .search_icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; opacity: .9; filter: invert(1); }
+    .searcher .searcher_block {
+      width: 100%; height: 40px; border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25); border-radius: 16px; padding: 0 12px 0 34px;
+      color: #fff; outline: none;
+    }
+
+    /* Низовая навигация — из ваших страниц */
+    .header, .header * { box-sizing: border-box !important; }
+    .header {
+      position: fixed !important;
+      bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
+      left: 50% !important; transform: translateX(-50%) !important;
+      width: calc(100vw - 16px) !important; max-width: 640px !important;
+      height: 88px !important; padding: 4px !important;
+      display: grid !important; grid-template-columns: repeat(5, 1fr) !important; gap: 6px !important;
+      overflow: hidden !important; border-radius: 40px !important;
+      background: linear-gradient(45deg, rgba(128,26,48,.16), rgba(78,5,21,.28)) !important;
+      border: 1px solid #ffffff44 !important; -webkit-backdrop-filter: blur(5px) !important; backdrop-filter: blur(5px) !important;
+      z-index: 9999 !important;
+    }
+    .header > a { display: block !important; min-width: 0 !important; height: 100% !important; }
+    .header_icon {
+      width: 100% !important; height: 100% !important; border-radius: 32px !important;
+      display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;
+      padding: 8px 0 !important; gap: 6px !important;
+    }
+    .header_icon img { width: 34px !important; height: 34px !important; object-fit: contain !important; }
+    .header_icon p { margin: 0 !important; font-size: 10px !important; color: #fff !important; }
+    html, body { margin: 0 !important; }
+  </style>
+</head>
+<body>
+
+<div class="blur_overlay active"></div>
+
+<!-- фоновые волны, как на остальных -->
+<div class="vertical-waves">
+  <div class="wave"></div>
+  <div class="wave"></div>
+  <div class="wave"></div>
+</div>
+
+<!-- нижняя навигация -->
+<div class="header">
+  <a href="{% url 'index' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/home_page.png' %}" alt="Home"><p>A CLUB</p>
+    </div>
+  </a>
+  <a href="{% url 'favourited' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/fav.png' %}" alt="Fav"><p>Севимли</p>
+    </div>
+  </a>
+  <a href="{% url 'profile' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/profile.png' %}" alt="Profile"><p>Профиль</p>
+    </div>
+  </a>
+  <a href="{% url 'chat' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/chat.png' %}" alt="Chat"><p>Чатлар</p>
+    </div>
+  </a>
+  <a href="{% url 'rules' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/rules.png' %}" alt="Rules"><p>Қоидалар</p>
+    </div>
+  </a>
+</div>
+
+<!-- верх: кнопка назад + поиск -->
+<div class="search_block">
+  <a href="{% url 'index' %}"><div class="back_button"></div></a>
+  <form class="searcher" onsubmit="event.preventDefault();">
+    <img class="search_icon" src="{% static 'images/search icon.png' %}" alt="">
+    <input class="searcher_block" id="searchInput" placeholder="Қидириш..." autocomplete="off">
+  </form>
+</div>
+
+<!-- заголовок жанра -->
+<div class="choosed_genre">
+  <span class="red">A </span><span id="genreTitle">...</span>
+</div>
+
+<!-- список групп -->
+<div class="groups_container" id="groupsContainer"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const overlay = document.querySelector('.blur_overlay');
+  requestAnimationFrame(() => overlay.classList.remove('active'));
+
+  // плавные переходы по нижнему меню
+  document.querySelectorAll('.header a').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const href = link.getAttribute('href');
+      overlay.classList.add('active');
+      setTimeout(() => window.location.href = href, 300);
+    });
+  });
+
+  // параметры из URL
+  const params = new URLSearchParams(window.location.search);
+  const genreId = params.get('genre_id');
+  const genreTitle = params.get('genre_title') ? decodeURIComponent(params.get('genre_title')) : '';
+  document.getElementById('genreTitle').textContent = genreTitle || '';
+
+  if (!genreId) {
+    document.getElementById('groupsContainer').innerHTML = '<div style="padding:16px;color:#fff;opacity:.8;">Жанр не указан</div>';
+    return;
+  }
+
+  try {
+    // тянем группы
+    const r = await fetch(`/api/genres/${genreId}/groups/`);
+    const data = await r.json();
+    const groups = Array.isArray(data.groups) ? data.groups : [];
+
+    const container = document.getElementById('groupsContainer');
+    if (!groups.length) {
+      container.innerHTML = '<div style="padding:16px;color:#fff;opacity:.8;">Ҳозирча гуруҳлар йўқ</div>';
+      return;
+    }
+
+    // рендер
+    container.innerHTML = groups.map((g, i) => `
+      <div class="group_card" data-id="${g.id}" data-title="${g.title}">
+        <div class="group_badge">A</div>
+        <div class="group_title">${g.title}</div>
+        <img class="group_arrow" src="{% static 'images/arrow_right.png' %}" alt="">
+      </div>
+    `).join('');
+
+    // клики
+    container.querySelectorAll('.group_card').forEach(card => {
+      card.addEventListener('click', () => {
+        const gid = card.dataset.id;
+        const gtitle = encodeURIComponent(card.dataset.title || '');
+        overlay.classList.add('active');
+        setTimeout(() => {
+          window.location.href = `/group-content/?group_id=${gid}&group_title=${gtitle}`;
+        }, 250);
+      });
+    });
+
+    // локальный поиск
+    const search = document.getElementById('searchInput');
+    search.addEventListener('input', () => {
+      const q = search.value.trim().toLowerCase();
+      container.querySelectorAll('.group_card').forEach(card => {
+        const title = (card.dataset.title || '').toLowerCase();
+        card.style.display = title.includes(q) ? '' : 'none';
+      });
+    });
+
+  } catch (e) {
+    console.warn('Ошибка загрузки групп:', e);
+    document.getElementById('groupsContainer').innerHTML = '<div style="padding:16px;color:#fff;opacity:.8;">Сервер хатоси</div>';
+  }
+});
+</script>
+
+</body>
+</html>

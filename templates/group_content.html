@@ -1,0 +1,472 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NAVIGATION</title>
+  <link rel="stylesheet" href="{% static 'css/content.css' %}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    .audio_menu, .file_menu {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* === NAVBAR FULL CSS — FINAL VERSION === */
+    .header, .header * { box-sizing: border-box !important; }
+    .header {
+      position: fixed !important;
+      bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: calc(100vw - 16px) !important;
+      max-width: 640px !important;
+      height: 88px !important;
+      padding: 4px !important;
+      display: grid !important;
+      grid-template-columns: repeat(5, 1fr) !important;
+      gap: 6px !important;
+      overflow: hidden !important;
+      border-radius: 40px !important;
+      background: linear-gradient(45deg, rgba(128,26,48,.16), rgba(78,5,21,.28)) !important;
+      border: 1px solid #ffffff44 !important;
+      -webkit-backdrop-filter: blur(5px) !important;
+      backdrop-filter: blur(5px) !important;
+      z-index: 9999 !important;
+    }
+    .header > a { display: block !important; min-width: 0 !important; height: 100% !important; }
+    .header_icon {
+      width: 100% !important; height: 100% !important;
+      border-radius: 32px !important;
+      display: flex !important; flex-direction: column !important;
+      align-items: center !important; justify-content: center !important;
+      padding: 8px 0 !important; gap: 6px !important; min-width: 0 !important; box-sizing: border-box !important;
+    }
+    .header_icon img { display: block !important; width: 34px !important; height: 34px !important; margin: 0 !important; object-fit: contain !important; }
+    .header_icon p { margin: 0 !important; font-size: 10px !important; line-height: 1.2 !important; color: #fff !important; text-align: center !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+    .header_icon.active { background-color: #00000066 !important; }
+
+    /* на очень узких экранах */
+    @media (max-width: 360px) {
+      .header { height: 80px !important; padding: 4px !important; gap: 4px !important; max-width: none !important; }
+      .header_icon { padding: 6px 0 !important; gap: 4px !important; }
+      .header_icon img { width: 30px !important; height: 30px !important; }
+      .header_icon p { font-size: 9px !important; }
+    }
+
+    /* сброс внешних отступов у body/html */
+    html, body { margin: 0 !important; }
+
+    /* === Фильтры под строкой поиска === */
+    .filters_row {
+      display: flex; gap: 10px; align-items: center;
+      padding: 8px 14px 4px;
+    }
+    .chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      color: #fff; font-weight: 700; font-size: 14px;
+      cursor: pointer; user-select: none;
+      transition: transform .05s ease, background .15s ease, border-color .15s ease;
+    }
+    .chip:active { transform: scale(.98); }
+    .chip.active {
+      background: #ff155d;
+      border-color: #ff155d;
+    }
+    .chip img {
+      width: 18px; height: 18px; object-fit: contain;
+      filter: invert(1); /* пассивные — белые */
+    }
+    .chip.active img { filter: none; } /* активные — цветные (как загружены) */
+    .chip.blind { margin-left: auto; }
+
+    /* Тост-плашка сверху */
+    .filter_toast {
+      position: fixed; top: 10px; left: 50%; transform: translate(-50%,-30px);
+      background: #28a745; color: #fff; font-weight: 800;
+      padding: 10px 16px; border-radius: 999px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.25);
+      opacity: 0; pointer-events: none; z-index: 99999;
+      transition: transform .35s ease, opacity .35s ease;
+    }
+    .filter_toast.show { transform: translate(-50%,0); opacity: 1; }
+
+    /* Пагинация — кнопка */
+    .load_more_wrap { padding: 10px 14px 110px; }
+    .load_more {
+      width: 100%; height: 44px; border-radius: 12px; border: none;
+      font-weight: 800; color: #fff; background: #ff155d; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<!-- тост -->
+<div id="filterToast" class="filter_toast">Выберите формат фильтра</div>
+
+<!-- попап подтверждения удаления из избранного -->
+<div id="popup" class="confirm_popup">
+  <div class="popup_box">
+    <p>Севимлилардан олиб ташлашни хоҳлайсизми?</p>
+    <div class="popup_buttons">
+      <button id="popup_yes">ҲА</button>
+      <button id="popup_no">ЙЎҚ</button>
+    </div>
+  </div>
+</div>
+
+<div class="blur_overlay active"></div>
+
+<div class="vertical-waves">
+  <div class="wave"></div>
+  <div class="wave"></div>
+  <div class="wave"></div>
+</div>
+
+<div class="header">
+  <a href="{% url 'index' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/home_page.png' %}" alt="Home">
+      <p>A CLUB</p>
+    </div>
+  </a>
+  <a href="{% url 'favourited' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/fav.png' %}" alt="Fav">
+      <p>Севимли</p>
+    </div>
+  </a>
+  <a href="{% url 'profile' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/profile.png' %}" alt="Profile">
+      <p>Профиль</p>
+    </div>
+  </a>
+  <a href="{% url 'chat' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/chat.png' %}" alt="Chat">
+      <p>Чатлар</p>
+    </div>
+  </a>
+  <a href="{% url 'rules' %}">
+    <div class="header_icon">
+      <img src="{% static 'images/rules.png' %}" alt="Rules">
+      <p>Қоидалар</p>
+    </div>
+  </a>
+</div>
+
+<div class="search_block">
+  <a href="{% url 'index' %}"><div class="back_button"></div></a>
+  <form class="searcher" onsubmit="event.preventDefault();">
+    <img class="search_icon" src="{% static 'images/search icon.png' %}">
+    <input class="searcher_block" id="searchInput" placeholder="Қидириш..." autocomplete="off">
+  </form>
+</div>
+
+<!-- ФИЛЬТРЫ -->
+<div class="filters_row">
+  <div class="chip" id="chip-audio" data-type="audio">
+    <img src="{% static 'images/filter_audio.png' %}" alt="">
+    <span>Audio</span>
+  </div>
+  <div class="chip" id="chip-video" data-type="video">
+    <img src="{% static 'images/filter_video.png' %}" alt="">
+    <span>Video</span>
+  </div>
+  <div class="chip" id="chip-file" data-type="file">
+    <img src="{% static 'images/filter_file.png' %}" alt="">
+    <span>File</span>
+  </div>
+  <div class="chip blind" id="chip-blind">
+    <img src="{% static 'images/filter_blind.png' %}" alt="">
+  </div>
+</div>
+
+<div class="choosed_genre">
+  <span class="red">A </span><span id="genre-title"></span>
+</div>
+
+<div class="content_body" id="contentBody"></div>
+
+<!-- LOAD MORE -->
+<div class="load_more_wrap" id="loadWrap" style="display:none;">
+  <button class="load_more" id="loadMoreBtn">Показать ещё</button>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  // last session title
+  const session = localStorage.getItem('last_session');
+  const lastTitle = session ? JSON.parse(session).itemTitle : null;
+
+  // Telegram user
+  const tg = window.Telegram.WebApp;
+  const user = tg.initDataUnsafe?.user;
+  const contentBody = document.getElementById('contentBody');
+  const loadWrap = document.getElementById('loadWrap');
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
+
+  if (!user || !user.id) {
+    contentBody.innerHTML = '<p style="padding:16px;color:#fff;opacity:.85;">Ошибка авторизации</p>';
+    return;
+  }
+
+  // genre params
+  const params = new URLSearchParams(window.location.search);
+  const genreId = params.get('genre_id');
+  const genreTitleRaw = params.get('genre_title') || '';
+  const genreTitle = genreTitleRaw.startsWith('A ') ? genreTitleRaw.slice(2).trim() : genreTitleRaw;
+  document.getElementById('genre-title').textContent = decodeURIComponent(genreTitle || '');
+
+  if (!genreId) {
+    contentBody.innerHTML = '<p style="padding:16px;color:#fff;opacity:.85;">Жанр не указан</p>';
+    return;
+  }
+
+  // favourites
+  const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
+  const favData = await favRes.json();
+  const favIds = favData.favourites || [];
+
+  // pagination + filter
+  let page = 1;
+  let total = 0;
+  const perPage = 20;
+  let currentType = null; // audio|video|file|null
+  let allLoadedItems = []; // для локального поиска
+
+  // filters
+  const chips = document.querySelectorAll('.chip[data-type]');
+  const blind = document.getElementById('chip-blind');
+  const toast = document.getElementById('filterToast');
+  const searchInput = document.getElementById('searchInput');
+
+  function showToast() {
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+  blind.addEventListener('click', showToast);
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      if (chip.classList.contains('active')) {
+        chip.classList.remove('active');
+        currentType = null;
+      } else {
+        chips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentType = chip.dataset.type;
+      }
+      // reset & reload
+      page = 1; total = 0; allLoadedItems = [];
+      contentBody.innerHTML = '';
+      fetchAndRender();
+    });
+  });
+
+  loadMoreBtn.addEventListener('click', fetchAndRender);
+
+  async function fetchAndRender() {
+    let url = `/api/genres/${genreId}/content/?page=${page}`;
+    if (currentType) url += `&content_type=${currentType}`;
+
+    const r = await fetch(url);
+    const data = await r.json();
+    total = data.total || 0;
+
+    const items = data.items || [];
+    allLoadedItems = allLoadedItems.concat(items);
+
+    renderItems(items);
+
+    const shown = allLoadedItems.length;
+    const hasMore = shown < total;
+    loadWrap.style.display = hasMore ? '' : 'none';
+    if (hasMore) page += 1;
+
+    // scroll to last opened title
+    if (page === 2 && lastTitle) {
+      setTimeout(() => {
+        const cards = document.querySelectorAll('.video, .audio, .file');
+        for (let card of cards) {
+          const titleEl = card.querySelector('.title');
+          if (titleEl && titleEl.textContent.trim() === lastTitle.trim()) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            localStorage.removeItem('last_session');
+            break;
+          }
+        }
+      }, 200);
+    }
+  }
+
+  function renderItems(items) {
+    if (!items.length && page === 1) {
+      contentBody.innerHTML = '<p style="padding:16px;color:#fff;opacity:.8;">Ҳозирча контент йўқ</p>';
+      return;
+    }
+
+    items.forEach(item => {
+      const isFavourited = favIds.includes(item.id);
+      const favClass = isFavourited ? 'favourited' : 'not_favourited';
+      const open = `openTelegramAndCollapse('${item.telegram_url}', '${genreId}', '${genreTitle}', '${item.title}', '${item.id}')`;
+
+      let block = '';
+      if (item.content_type === 'video') {
+        block = `<div class="video">
+          <div class="video_thumbnail" onclick="${open}">
+            <img src="${item.thumbnail || ''}" />
+            <div class="video_duration">${item.duration || ''}</div>
+          </div>
+          <div class="fav_icon ${favClass}" data-id="${item.id}"></div>
+          <div class="video_info">
+            <div class="title">${item.title}</div>
+            <div class="subtitle">${(item.subtitle || '').replace(/\n/g, '<br>')}</div>
+          </div>
+        </div>`;
+      } else if (item.content_type === 'audio') {
+        block = `<div class="audio" onclick="${open}">
+          <div class="audio_menu">
+            <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}" /></div>
+            <div class="audio_duration">${item.duration || ''}</div>
+          </div>
+          <div class="fav_icon ${favClass}" data-id="${item.id}"></div>
+          <div class="audio_info">
+            <div class="title">${item.title}</div>
+            <div class="subtitle">${(item.subtitle || '').replace(/\n/g, '<br>')}</div>
+          </div>
+        </div>`;
+      } else {
+        block = `<div class="file" onclick="${open}">
+          <div class="file_menu">
+            <div class="static_icon"><img src="{% static 'images/file_icon.png' %}" /></div>
+            <div class="file_duration">${item.duration || ''}</div>
+          </div>
+          <div class="fav_icon ${favClass}" data-id="${item.id}"></div>
+          <div class="file_info">
+            <div class="title">${item.title}</div>
+            <div class="subtitle">${(item.subtitle || '').replace(/\n/g, '<br>')}</div>
+          </div>
+        </div>`;
+      }
+
+      contentBody.insertAdjacentHTML('beforeend', block);
+      const favEl = contentBody.lastElementChild.querySelector('.fav_icon');
+      attachFavHandler(favEl);
+    });
+  }
+
+  // избранное
+  const popup = document.getElementById('popup');
+  const popupYes = document.getElementById('popup_yes');
+  const popupNo = document.getElementById('popup_no');
+  let targetToRemove = null;
+
+  function attachFavHandler(favEl) {
+    favEl.addEventListener('click', async e => {
+      e.stopPropagation();
+      const id = parseInt(favEl.dataset.id, 10);
+
+      if (favEl.classList.contains('favourited')) {
+        targetToRemove = { favEl, id };
+        popup.classList.add('show');
+      } else {
+        await fetch(`/api/favourites/add/${id}/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegram_id: user.id })
+        });
+
+        favEl.classList.remove('not_favourited');
+        favEl.classList.add('favourited');
+
+        const explosion = document.createElement('div');
+        explosion.classList.add('fav_explosion');
+        favEl.parentElement.appendChild(explosion);
+        setTimeout(() => explosion.remove(), 600);
+      }
+    });
+  }
+
+  popupNo.onclick = () => popup.classList.remove('show');
+  popupYes.onclick = async () => {
+    if (!targetToRemove) return;
+    const { favEl, id } = targetToRemove;
+
+    await fetch(`/api/favourites/remove/${id}/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_id: user.id })
+    });
+
+    favEl.classList.remove('favourited');
+    favEl.classList.add('not_favourited');
+    popup.classList.remove('show');
+    targetToRemove = null;
+  };
+
+  // локальный поиск по загруженным
+  const overlay = document.querySelector('.blur_overlay');
+  requestAnimationFrame(() => overlay.classList.remove('active'));
+
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim().toLowerCase();
+    if (!q) {
+      // показать уже загруженные
+      contentBody.innerHTML = '';
+      renderItems(allLoadedItems);
+      loadWrap.style.display = (allLoadedItems.length < total) ? '' : 'none';
+      return;
+    }
+    const filtered = allLoadedItems.filter(i => {
+      const t = (i.title || '').toLowerCase();
+      const s = (i.subtitle || '').toLowerCase();
+      return t.includes(q) || s.includes(q);
+    });
+    contentBody.innerHTML = '';
+    // при локальном поиске «Ещё» скрываем
+    loadWrap.style.display = 'none';
+    // отрисовка отфильтрованных
+    filtered.forEach(i => renderItems([i]));
+  });
+
+  // первая загрузка
+  await fetchAndRender();
+
+  // плавная навигация
+  document.querySelectorAll('.header a').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const href = link.getAttribute('href');
+      overlay.classList.add('active');
+      setTimeout(() => window.location.href = href, 300);
+    });
+  });
+});
+
+// открыть Telegram и запомнить позицию
+function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
+  localStorage.setItem('last_session', JSON.stringify({
+    genreId, genreTitle, itemTitle, itemId
+  }));
+  window.location.href = url;
+  setTimeout(() => {
+    try { Telegram.WebApp.close(); } catch(e) {}
+  }, 500);
+}
+</script>
+
+</body>
+</html>

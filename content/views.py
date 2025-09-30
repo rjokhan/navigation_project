@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 from django.shortcuts import get_object_or_404, render
-from .models import Genre, ContentItem, Favourite, NewsItem
+from .models import Genre, ContentItem, Favourite, NewsItem, Group
 import json
 
 
@@ -34,32 +34,116 @@ def news_list(request):
     return JsonResponse(data, safe=False)
 
 
-# ✅ Получение всех жанров и их контента
+# ✅ Получение всех жанров (спец или обычный)
+@require_GET
 def genre_list(request):
     data = []
-    for genre in Genre.objects.prefetch_related("items").all():
-        genre_data = {
+    for genre in Genre.objects.all():
+        data.append({
             "id": genre.id,
             "title": genre.title,
-            "items": [
-                {
-                    "id": item.id,
-                    "title": item.title,
-                    "subtitle": item.subtitle,
-                    "content_type": item.content_type,
-                    "telegram_url": item.telegram_url,
-                    "duration": item.duration,
-                    "thumbnail": request.build_absolute_uri(item.thumbnail.url).replace(
-                        "http://", "https://"
-                    )
-                    if item.thumbnail
-                    else None,
-                }
-                for item in genre.items.order_by("-id")
-            ],
-        }
-        data.append(genre_data)
+            "kind": getattr(genre, "kind", "regular"),  # regular / special
+        })
     return JsonResponse(data, safe=False)
+
+
+# ✅ Получение типа жанра
+@require_GET
+def genre_type(request, genre_id: int):
+    g = get_object_or_404(Genre, id=genre_id)
+    return JsonResponse({"genre_id": g.id, "genre_type": getattr(g, "kind", "regular"), "title": g.title})
+
+
+# ✅ Контент выбранного жанра (с пагинацией и фильтром)
+@require_GET
+def content_list(request, genre_id: int):
+    page = int(request.GET.get("page", 1))
+    per_page = 20
+
+    qs = ContentItem.objects.filter(genre_id=genre_id).order_by("-id")
+
+    # фильтрация по типу
+    ctype = request.GET.get("content_type")
+    if ctype in ("video", "audio", "file"):
+        qs = qs.filter(content_type=ctype)
+
+    total = qs.count()
+    start, end = (page - 1) * per_page, page * per_page
+    items = qs[start:end]
+
+    def abs_thumb(i):
+        if not i.thumbnail:
+            return None
+        u = i.thumbnail.url
+        return request.build_absolute_uri(u) if u.startswith("/") else u
+
+    return JsonResponse({
+        "genre_id": genre_id,
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "items": [{
+            "id": i.id,
+            "title": i.title,
+            "subtitle": i.subtitle,
+            "content_type": i.content_type,
+            "telegram_url": i.telegram_url,
+            "duration": i.duration,
+            "thumbnail": abs_thumb(i),
+        } for i in items]
+    })
+
+
+# ✅ Список групп поджанра (для спецжанра)
+@require_GET
+def group_list(request, genre_id: int):
+    g = get_object_or_404(Genre, id=genre_id)
+    groups = g.groups.order_by("id").values("id", "title")
+    return JsonResponse({
+        "genre_id": g.id,
+        "genre_type": getattr(g, "kind", "regular"),
+        "title": g.title,
+        "groups": list(groups),
+    })
+
+
+# ✅ Контент конкретной группы (с пагинацией и фильтром)
+@require_GET
+def group_content_list(request, group_id: int):
+    page = int(request.GET.get("page", 1))
+    per_page = 20
+
+    qs = ContentItem.objects.filter(group_id=group_id).order_by("-id")
+
+    ctype = request.GET.get("content_type")
+    if ctype in ("video", "audio", "file"):
+        qs = qs.filter(content_type=ctype)
+
+    total = qs.count()
+    start, end = (page - 1) * per_page, page * per_page
+    items = qs[start:end]
+
+    def abs_thumb(i):
+        if not i.thumbnail:
+            return None
+        u = i.thumbnail.url
+        return request.build_absolute_uri(u) if u.startswith("/") else u
+
+    return JsonResponse({
+        "group_id": group_id,
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "items": [{
+            "id": i.id,
+            "title": i.title,
+            "subtitle": i.subtitle,
+            "content_type": i.content_type,
+            "telegram_url": i.telegram_url,
+            "duration": i.duration,
+            "thumbnail": abs_thumb(i),
+        } for i in items]
+    })
 
 
 # ✅ Получение избранного по telegram_id

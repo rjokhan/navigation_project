@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Favourites</title>
+  <title>Searched</title>
   <link rel="stylesheet" href="{% static 'css/content.css' %}">
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -85,14 +85,11 @@
   </div>
 </div>
 
-
 <div class="vertical-waves">
   <div class="wave"></div>
   <div class="wave"></div>
   <div class="wave"></div>
 </div>
-
-
 
 <div class="search_block">
   <a href="{% url 'index' %}"><div class="back_button"></div></a>
@@ -119,21 +116,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   const popupYes = document.getElementById("popup_yes");
   const popupNo = document.getElementById("popup_no");
   let targetToRemove = null;
-  let allFavourites = [];
 
+  // Загружаем избранное пользователя
   const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
   const favIds = (await favRes.json()).favourites || [];
 
+  // Загружаем ВСЕ жанры и контент
   const genresRes = await fetch('/api/genres/');
   const genres = await genresRes.json();
+  const allItems = genres.flatMap(g => g.items || []);
 
-  const allItems = genres.flatMap(g => g.items);
-  allFavourites = allItems;
-  let favourites = [...allFavourites];
+  let searchResults = [...allItems];
 
-  function renderFavourites(filteredItems) {
+  function renderResults(filteredItems) {
     container.innerHTML = '';
-    favourites = filteredItems;
 
     if (filteredItems.length === 0) {
       container.innerHTML = '<div class="no-results">Ничего не найдено</div>';
@@ -151,7 +147,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
 
       let innerHTML = '';
-
       if (item.content_type === 'video') {
         innerHTML = `
           <div class="video_thumbnail">
@@ -184,40 +179,37 @@ document.addEventListener("DOMContentLoaded", async () => {
       wrapper.innerHTML = innerHTML;
       container.appendChild(wrapper);
 
+      // обработка избранного
       const favIcon = wrapper.querySelector('.fav_icon');
       favIcon.addEventListener('click', async (e) => {
-  e.stopPropagation();
-  const id = parseInt(favIcon.dataset.id);
+        e.stopPropagation();
+        const id = parseInt(favIcon.dataset.id);
 
-  const isAlreadyFav = favIds.includes(id);
-  if (isAlreadyFav) {
-    // 🔥 Удаление — показать попап
-    targetToRemove = { favIcon, id };
-    popup.classList.add("show");
-  } else {
-    // ✅ Добавление
-    await fetch(`/api/favourites/add/${id}/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telegram_id: user.id })
-    });
+        if (favIds.includes(id)) {
+          targetToRemove = { favIcon, id };
+          popup.classList.add("show");
+        } else {
+          await fetch(`/api/favourites/add/${id}/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telegram_id: user.id })
+          });
+          favIcon.classList.remove("not_favourited");
+          favIcon.classList.add("favourited");
+          favIds.push(id);
 
-    favIcon.classList.remove("not_favourited");
-    favIcon.classList.add("favourited");
-    favIds.push(id); // добавим в локальный список
+          favIcon.classList.add("animate-pulse");
+          const boom = document.createElement("div");
+          boom.className = "fav_explosion";
+          favIcon.parentElement.appendChild(boom);
+          setTimeout(() => {
+            boom.remove();
+            favIcon.classList.remove("animate-pulse");
+          }, 600);
+        }
+      });
 
-    favIcon.classList.add("animate-pulse");
-    const boom = document.createElement("div");
-    boom.className = "fav_explosion";
-    favIcon.parentElement.appendChild(boom);
-    setTimeout(() => {
-      boom.remove();
-      favIcon.classList.remove("animate-pulse");
-    }, 600);
-  }
-});
-
-
+      // открытие контента
       wrapper.addEventListener('click', (e) => {
         if (e.target.classList.contains('fav_icon')) return;
         const url = wrapper.getAttribute('data-url');
@@ -232,82 +224,56 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   popupNo.onclick = () => popup.classList.remove("show");
-
   popupYes.onclick = async () => {
-  if (targetToRemove) {
-    const { favIcon, id } = targetToRemove;
+    if (targetToRemove) {
+      const { favIcon, id } = targetToRemove;
+      await fetch(`/api/favourites/remove/${id}/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegram_id: user.id })
+      });
+      const index = favIds.indexOf(id);
+      if (index !== -1) favIds.splice(index, 1);
+      favIcon.classList.remove("favourited");
+      favIcon.classList.add("not_favourited");
+      popup.classList.remove("show");
+      targetToRemove = null;
+    }
+  };
 
-    await fetch(`/api/favourites/remove/${id}/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telegram_id: user.id })
-    });
-
-    // ❗ Удаляем ID из favIds
-    const index = favIds.indexOf(id);
-    if (index !== -1) favIds.splice(index, 1);
-
-    // ❗ Обновляем иконку
-    favIcon.classList.remove("favourited");
-    favIcon.classList.add("not_favourited");
-
-    // ❗ Закрываем попап
-    popup.classList.remove("show");
-    targetToRemove = null;
-  }
-};
-
-
+  // поиск
   const urlParams = new URLSearchParams(window.location.search);
   const initialQuery = urlParams.get("query") || "";
   searchInput.value = initialQuery;
 
-  document.querySelector(".searcher").addEventListener("submit", function(e) {
+  document.querySelector(".searcher").addEventListener("submit", (e) => {
     e.preventDefault();
     const newQuery = searchInput.value.trim();
     if (newQuery) {
       const encoded = encodeURIComponent(newQuery);
-      document.querySelector('.blur_overlay').classList.add("active");
-setTimeout(() => {
-  window.location.href = `/favourited/?query=${encoded}`;
-}, 300);
-
+      document.querySelector('.blur_overlay')?.classList.add("active");
+      setTimeout(() => {
+        window.location.href = `/searched/?query=${encoded}`;
+      }, 300);
     }
   });
 
-  searchInput.addEventListener('input', () => {
-    const query = searchInput.value.toLowerCase().trim();
-    const filtered = allFavourites.filter(item => {
+  function filterAndRender(query) {
+    const q = query.toLowerCase().trim();
+    const filtered = allItems.filter(item => {
       const title = (item.title || '').toLowerCase();
       const subtitle = (item.subtitle || '').toLowerCase();
-      return title.includes(query) || subtitle.includes(query);
+      return title.includes(q) || subtitle.includes(q);
     });
-    renderFavourites(filtered);
-  });
-
-  if (initialQuery) {
-    const query = initialQuery.toLowerCase().trim();
-    const filtered = allFavourites.filter(item => {
-      const title = (item.title || '').toLowerCase();
-      const subtitle = (item.subtitle || '').toLowerCase();
-      return title.includes(query) || subtitle.includes(query);
-    });
-    renderFavourites(filtered);
-  } else {
-    renderFavourites(allFavourites);
+    renderResults(filtered);
   }
 
-  requestAnimationFrame(() => {
-    document.querySelector('.blur_overlay').classList.remove("active");
-  });
+  searchInput.addEventListener('input', () => filterAndRender(searchInput.value));
+  if (initialQuery) filterAndRender(initialQuery);
+  else renderResults(allItems);
 
-  document.querySelectorAll('.header a').forEach(link => {
-    link.addEventListener('click', e => {
-      e.preventDefault();
-      const href = link.getAttribute('href');
-      document.querySelector('.blur_overlay').classList.add("active");
-      setTimeout(() => window.location.href = href, 300);
-    });
+  requestAnimationFrame(() => {
+    document.querySelector('.blur_overlay')?.classList.remove("active");
   });
 });
 </script>

@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
   <style>
     .audio_menu, .file_menu {
       display: flex;
@@ -19,106 +20,101 @@
       justify-content: center;
     }
 
-/* === NAVBAR FULL CSS — FINAL VERSION === */
-.header, .header * { 
-  box-sizing: border-box !important; 
-}
+    /* === NAVBAR FULL CSS — FINAL VERSION === */
+    .header, .header * { box-sizing: border-box !important; }
+    .header {
+      position: fixed !important;
+      bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: calc(100vw - 16px) !important;
+      max-width: 640px !important;
+      height: 88px !important;
+      padding: 4px !important;
+      display: grid !important;
+      grid-template-columns: repeat(5, 1fr) !important;
+      gap: 6px !important;
+      overflow: hidden !important;
+      border-radius: 40px !important;
+      background: linear-gradient(45deg, rgba(128,26,48,.16), rgba(78,5,21,.28)) !important;
+      border: 1px solid #ffffff44 !important;
+      -webkit-backdrop-filter: blur(5px) !important;
+      backdrop-filter: blur(5px) !important;
+      z-index: 9999 !important;
+    }
+    .header > a { display: block !important; min-width: 0 !important; height: 100% !important; }
+    .header_icon {
+      width: 100% !important; height: 100% !important; border-radius: 32px !important;
+      display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;
+      padding: 8px 0 !important; gap: 6px !important; min-width: 0 !important; box-sizing: border-box !important;
+    }
+    .header_icon img { display: block !important; width: 34px !important; height: 34px !important; margin: 0 !important; object-fit: contain !important; }
+    .header_icon p { margin: 0 !important; font-size: 10px !important; line-height: 1.2 !important; color: #fff !important; text-align: center !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+    .header_icon.active { background-color: #00000066 !important; opacity: 1 !important; transform: none !important; animation: none !important; }
 
-.header {
-  position: fixed !important;
-  bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: calc(100vw - 16px) !important;   /* поля по 8px слева/справа */
-  max-width: 640px !important;            /* ограничение ширины на больших экранах */
-  height: 88px !important;                /* общая высота бара */
-  padding: 4px !important;
-  display: grid !important;
-  grid-template-columns: repeat(5, 1fr) !important;
-  gap: 6px !important;
-  overflow: hidden !important;
-  border-radius: 40px !important;
-  background: linear-gradient(45deg, rgba(128,26,48,.16), rgba(78,5,21,.28)) !important;
-  border: 1px solid #ffffff44 !important;
-  -webkit-backdrop-filter: blur(5px) !important;
-  backdrop-filter: blur(5px) !important;
-  z-index: 9999 !important;
-}
+    @media (max-width: 360px) {
+      .header { height: 80px !important; padding: 4px !important; gap: 4px !important; max-width: none !important; }
+      .header_icon { padding: 6px 0 !important; gap: 4px !important; }
+      .header_icon img { width: 30px !important; height: 30px !important; }
+      .header_icon p { font-size: 9px !important; }
+    }
 
-.header > a {
-  display: block !important;
-  min-width: 0 !important;
-  height: 100% !important;                /* ссылка тянется на весь рост */
-}
+    html, body { margin: 0 !important; }
 
-.header_icon {
-  width: 100% !important;
-  height: 100% !important;                /* капсула на весь рост */
-  border-radius: 32px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 8px 0 !important;              /* внутренние отступы сверху/снизу */
-  gap: 6px !important;                    /* расстояние между иконкой и текстом */
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-}
+    /* ===== FILTER BAR (под поиском) ===== */
+    .filter_bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding: 8px 12px 0 12px;
+    }
+    .filter_btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 8px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all .25s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .filter_btn img {
+      width: 26px;
+      height: 26px;
+      filter: brightness(0) invert(1); /* пассивные — белые */
+      transition: filter .25s ease, transform .15s ease;
+    }
+    .filter_btn span {
+      font-size: 12px;
+      color: #fff;
+      margin-top: 4px;
+    }
+    .filter_btn.active img { filter: none; } /* активная — оригинальный цвет PNG (розовый) */
+    .filter_btn:active img { transform: scale(.96); }
+    .filter_btn.fake { cursor: default; }
 
-.header_icon img {
-  display: block !important;
-  width: 34px !important;
-  height: 34px !important;
-  margin: 0 !important;
-  object-fit: contain !important;
-}
-
-.header_icon p {
-  margin: 0 !important;
-  font-size: 10px !important;
-  line-height: 1.2 !important;
-  color: #fff !important;
-  text-align: center !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-.header_icon.active {
-  background-color: #00000066 !important;
-  opacity: 1 !important;
-  transform: none !important;
-  animation: none !important;
-}
-
-/* на очень узких экранах */
-@media (max-width: 360px) {
-  .header {
-    height: 80px !important;
-    padding: 4px !important;
-    gap: 4px !important;
-    max-width: none !important;
-  }
-  .header_icon {
-    padding: 6px 0 !important;
-    gap: 4px !important;
-  }
-  .header_icon img {
-    width: 30px !important;
-    height: 30px !important;
-  }
-  .header_icon p {
-    font-size: 9px !important;
-  }
-}
-
-/* сброс внешних отступов у body/html */
-html, body {
-  margin: 0 !important;
-}
-
-</style>
-
+    /* Toast («Выберите формат фильтра») */
+    #toast {
+      position: fixed;
+      top: -56px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #38b000;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 16px;
+      border-radius: 999px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.25);
+      z-index: 10000;
+      transition: top .35s ease;
+    }
+    #toast.show { top: 18px; }
+  </style>
 </head>
 <body>
 
@@ -141,36 +137,11 @@ html, body {
 </div>
 
 <div class="header">
-  <a href="{% url 'index' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/home_page.png' %}" alt="Home">
-      <p>A CLUB</p>
-    </div>
-  </a>
-  <a href="{% url 'favourited' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/fav.png' %}" alt="Fav">
-      <p>Севимли</p>
-    </div>
-  </a>
-  <a href="{% url 'profile' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/profile.png' %}" alt="Profile">
-      <p>Профиль</p>
-    </div>
-  </a>
-  <a href="{% url 'chat' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/chat.png' %}" alt="Chat">
-      <p>Чатлар</p>
-    </div>
-  </a>
-  <a href="{% url 'rules' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/rules.png' %}" alt="Rules">
-      <p>Қоидалар</p>
-    </div>
-  </a>
+  <a href="{% url 'index' %}"><div class="header_icon"><img src="{% static 'images/home_page.png' %}" alt="Home"><p>A CLUB</p></div></a>
+  <a href="{% url 'favourited' %}"><div class="header_icon"><img src="{% static 'images/fav.png' %}" alt="Fav"><p>Севимли</p></div></a>
+  <a href="{% url 'profile' %}"><div class="header_icon"><img src="{% static 'images/profile.png' %}" alt="Profile"><p>Профиль</p></div></a>
+  <a href="{% url 'chat' %}"><div class="header_icon"><img src="{% static 'images/chat.png' %}" alt="Chat"><p>Чатлар</p></div></a>
+  <a href="{% url 'rules' %}"><div class="header_icon"><img src="{% static 'images/rules.png' %}" alt="Rules"><p>Қоидалар</p></div></a>
 </div>
 
 <div class="search_block">
@@ -181,84 +152,85 @@ html, body {
   </form>
 </div>
 
-<div class="choosed_genre">
-  <span class="red">A </span><span id="genre-title"></span>
+<!-- FILTER BAR (добавлено) -->
+<div class="filter_bar">
+  <button class="filter_btn" data-type="audio">
+    <img src="{% static 'images/audio_icon.png' %}" alt="Audio">
+    <span>Audio</span>
+  </button>
+  <button class="filter_btn" data-type="video">
+    <img src="{% static 'images/video_icon.png' %}" alt="Video">
+    <span>Video</span>
+  </button>
+  <button class="filter_btn" data-type="file">
+    <img src="{% static 'images/file_icon.png' %}" alt="File">
+    <span>File</span>
+  </button>
+  <button class="filter_btn fake" aria-label="Fake filter">
+    <img src="{% static 'images/filter_icon.png' %}" alt="Filter">
+  </button>
 </div>
+
+<!-- Toast -->
+<div id="toast">Выберите формат фильтра</div>
+
+<div class="choosed_genre"><span class="red">A </span><span id="genre-title"></span></div>
 
 <div class="content_body"></div>
 
 <script>
-document.addEventListener('DOMContentLoaded', async () => {
-  // --- Получаем lastTitle из last_session
-  const session = localStorage.getItem('last_session');
-  const lastTitle = session ? JSON.parse(session).itemTitle : null;
-
-  // --- Получаем пользователя
-  const tg = window.Telegram.WebApp;
-  const user = tg.initDataUnsafe?.user;
-  if (!user || !user.id) return document.querySelector('.content_body').innerHTML = '<p>Ошибка авторизации</p>';
-
-  // --- Получаем параметры жанра из URL
-  const genreId = new URLSearchParams(window.location.search).get('genre_id');
-  const genreTitleRaw = new URLSearchParams(window.location.search).get('genre_title');
-  const genreTitle = genreTitleRaw?.startsWith('A ') ? genreTitleRaw.slice(2).trim() : genreTitleRaw || '';
-  document.getElementById('genre-title').textContent = decodeURIComponent(genreTitle || '');
-
-  const contentBody = document.querySelector('.content_body');
-  if (!genreId) return contentBody.innerHTML = '<p>Не указан жанр</p>';
-
-  // --- Получаем избранное
-  const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
-  const favData = await favRes.json();
-  const favourites = favData.favourites || [];
-
-  // --- Получаем список жанров
-  const res = await fetch('/api/genres/');
-  const genres = await res.json();
-  const genre = genres.find(g => g.id == genreId);
-  if (!genre || !genre.items.length) return contentBody.innerHTML = '<p>Ҳозирча контент юкланмади</p>';
-
+/* ---------- УТИЛИТЫ РЕНДЕРА ---------- */
+function renderItems(container, items, favourites, genreId, genreTitle) {
+  container.innerHTML = '';
   const allCards = [];
 
-  // --- Рендерим карточки
-  genre.items.forEach(item => {
+  items.forEach(item => {
     const isFavourited = favourites.includes(item.id);
     const favClass = isFavourited ? 'favourited' : 'not_favourited';
     const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
-    const open = `openTelegramAndCollapse('${item.telegram_url}', '${genre.id}', '${genre.title}', '${item.title}', '${item.id}')`;
+    const open = `openTelegramAndCollapse('${item.telegram_url}', '${genreId}', '${genreTitle}', '${item.title}', '${item.id}')`;
 
     let block = '';
     if (item.content_type === 'video') {
       block = `<div class="video">
         <div class="video_thumbnail" onclick="${open}">
-          <img src="${item.thumbnail}" />
-          <div class="video_duration">${item.duration}</div>
+          <img src="${item.thumbnail || ''}" />
+          <div class="video_duration">${item.duration || ''}</div>
         </div>
         ${favIcon}
-        <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle ? item.subtitle.replace(/\n/g, '<br>') : ''}</div></div>
+        <div class="video_info">
+          <div class="title">${item.title || ''}</div>
+          <div class="subtitle">${item.subtitle ? item.subtitle.replace(/\n/g,'<br>') : ''}</div>
+        </div>
       </div>`;
     } else if (item.content_type === 'audio') {
       block = `<div class="audio" onclick="${open}">
         <div class="audio_menu">
           <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}" /></div>
-          <div class="audio_duration">${item.duration}</div>
+          <div class="audio_duration">${item.duration || ''}</div>
         </div>
         ${favIcon}
-        <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle ? item.subtitle.replace(/\n/g, '<br>') : ''}</div></div>
+        <div class="audio_info">
+          <div class="title">${item.title || ''}</div>
+          <div class="subtitle">${item.subtitle ? item.subtitle.replace(/\n/g,'<br>') : ''}</div>
+        </div>
       </div>`;
-    } else if (item.content_type === 'file') {
+    } else {
       block = `<div class="file" onclick="${open}">
         <div class="file_menu">
           <div class="static_icon"><img src="{% static 'images/file_icon.png' %}" /></div>
-          <div class="file_duration">${item.duration}</div>
+          <div class="file_duration">${item.duration || ''}</div>
         </div>
         ${favIcon}
-        <div class="file_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle ? item.subtitle.replace(/\n/g, '<br>') : ''}</div></div>
+        <div class="file_info">
+          <div class="title">${item.title || ''}</div>
+          <div class="subtitle">${item.subtitle ? item.subtitle.replace(/\n/g,'<br>') : ''}</div>
+        </div>
       </div>`;
     }
 
-    contentBody.insertAdjacentHTML('beforeend', block);
-    const favEl = contentBody.lastElementChild.querySelector('.fav_icon');
+    container.insertAdjacentHTML('beforeend', block);
+    const favEl = container.lastElementChild.querySelector('.fav_icon');
     allCards.push(item);
 
     favEl.addEventListener('click', async e => {
@@ -270,9 +242,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         popup.classList.add('show');
         document.getElementById('popup_yes').onclick = async () => {
           await fetch(`/api/favourites/remove/${id}/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ telegram_id: user.id })
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ telegram_id: window.__uid })
           });
           favEl.classList.remove('favourited');
           favEl.classList.add('not_favourited');
@@ -281,45 +252,119 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('popup_no').onclick = () => popup.classList.remove('show');
       } else {
         await fetch(`/api/favourites/add/${id}/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegram_id: user.id })
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ telegram_id: window.__uid })
         });
-
         favEl.classList.remove('not_favourited');
         favEl.classList.add('favourited');
         favEl.classList.add('animate-pulse');
         setTimeout(() => favEl.classList.remove('animate-pulse'), 600);
-
-        const block = favEl.closest('.video, .audio, .file');
+        const host = favEl.closest('.video, .audio, .file');
         const explosion = document.createElement('div');
         explosion.classList.add('fav_explosion');
-        block.appendChild(explosion);
+        host.appendChild(explosion);
         setTimeout(() => explosion.remove(), 600);
       }
     });
   });
 
-  localStorage.setItem('allCards', JSON.stringify(allCards));
+  // вернуть список (если где-то нужен)
+  return allCards;
+}
+</script>
 
-  // --- Скроллим к карточке по title строго по тексту!
-  if (lastTitle) {
-    setTimeout(() => {
-      const cards = document.querySelectorAll('.video, .audio, .file');
-      for (let card of cards) {
-        const titleEl = card.querySelector('.title');
-        if (titleEl && titleEl.textContent.trim() === lastTitle.trim()) {
-          card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          localStorage.removeItem('last_session');
-          break;
-        }
-      }
-    }, 300);
+<script>
+/* ---------- ОСНОВНАЯ ЛОГИКА СТРАНИЦЫ ---------- */
+document.addEventListener('DOMContentLoaded', async () => {
+  // last_session — для скролла к карточке
+  const session = localStorage.getItem('last_session');
+  const lastTitle = session ? JSON.parse(session).itemTitle : null;
+
+  // Telegram user
+  const tg = window.Telegram.WebApp;
+  const user = tg.initDataUnsafe?.user;
+  if (!user || !user.id) {
+    document.querySelector('.content_body').innerHTML = '<p>Ошибка авторизации</p>';
+    return;
   }
+  window.__uid = user.id; // сохраняем для вложенных хендлеров
+
+  // параметры жанра
+  const qs = new URLSearchParams(window.location.search);
+  const genreId = qs.get('genre_id');
+  const genreTitleRaw = qs.get('genre_title');
+  const genreTitle = genreTitleRaw?.startsWith('A ') ? genreTitleRaw.slice(2).trim() : genreTitleRaw || '';
+  document.getElementById('genre-title').textContent = decodeURIComponent(genreTitle || '');
+
+  const contentBody = document.querySelector('.content_body');
+  if (!genreId) {
+    contentBody.innerHTML = '<p>Не указан жанр</p>';
+    return;
+  }
+
+  // избранное
+  const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
+  const favData = await favRes.json();
+  const favourites = favData.favourites || [];
+
+  // функция загрузки + рендера c серверной фильтрацией
+  async function fetchAndRender(type /* 'video'|'audio'|'file'|undefined */) {
+    const url = new URL(`/api/genres/${genreId}/content/`, window.location.origin);
+    if (type) url.searchParams.set('content_type', type);
+    const res = await fetch(url.toString());
+    const data = await res.json();
+    const items = data.items || [];
+    if (!items.length) {
+      contentBody.innerHTML = '<p>Ҳозирча контент юкланмади</p>';
+      return;
+    }
+    renderItems(contentBody, items, favourites, genreId, genreTitle);
+
+    // Скролл к последней карточке
+    if (lastTitle) {
+      setTimeout(() => {
+        const cards = document.querySelectorAll('.video, .audio, .file');
+        for (let card of cards) {
+          const titleEl = card.querySelector('.title');
+          if (titleEl && titleEl.textContent.trim() === lastTitle.trim()) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            localStorage.removeItem('last_session');
+            break;
+          }
+        }
+      }, 300);
+    }
+  }
+
+  // первичная загрузка (без фильтра)
+  await fetchAndRender();
+
+  // FILTER UI
+  const toast = document.getElementById('toast');
+  const btns = document.querySelectorAll('.filter_btn');
+
+  function setActive(btn) {
+    btns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  btns.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (btn.classList.contains('fake')) {
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+        return;
+      }
+      setActive(btn);
+      const type = btn.dataset.type; // audio | video | file
+      await fetchAndRender(type);
+    });
+  });
 });
 </script>
 
 <script>
+/* UX-мелочи: плавные переходы, поиск */
 document.addEventListener('DOMContentLoaded', () => {
   const overlay = document.querySelector('.blur_overlay');
   requestAnimationFrame(() => overlay.classList.remove('active'));
@@ -338,12 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector(".searcher");
   const input = document.querySelector(".searcher_block");
-
-  if (!form || !input) {
-    console.error("⛔ Поисковая форма не найдена");
-    return;
-  }
-
+  if (!form || !input) return;
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const query = input.value.trim();
@@ -357,22 +397,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <script>
 function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
-  localStorage.setItem('last_session', JSON.stringify({
-    genreId,
-    genreTitle,
-    itemTitle,
-    itemId
-  }));
-
+  localStorage.setItem('last_session', JSON.stringify({ genreId, genreTitle, itemTitle, itemId }));
   window.location.href = url;
-
-  setTimeout(() => {
-    try {
-      Telegram.WebApp.close();
-    } catch (e) {
-      console.warn("Не удалось закрыть мини-апп:", e);
-    }
-  }, 500);
+  setTimeout(() => { try { Telegram.WebApp.close(); } catch(e) {} }, 500);
 }
 </script>
 

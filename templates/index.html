@@ -258,35 +258,39 @@ async function loadGenres() {
 
     const overlay = document.querySelector(".blur_overlay");
 
-    genres.forEach(genre => {
-      const count = genre.items?.length || 0;
-      const genreId = genre.id;
-      const titleRaw = genre.name || genre.title || genre.slug || "Без названия";
-      const encodedTitle = encodeURIComponent(titleRaw);
+      genres.forEach(genre => {
+    const genreId = genre.id;
+    const titleRaw = genre.title || "Без названия";
+    const encodedTitle = encodeURIComponent(titleRaw);
 
-      const genreBlock = document.createElement("div");
-      genreBlock.className = "genre";
-      genreBlock.style.cursor = "pointer";
-      genreBlock.innerHTML = `
-        <div class="count">${count}</div>
-        <div class="genre_name"><span class="red">A </span>${titleRaw}</div>
-      `;
+    const genreBlock = document.createElement("div");
+    genreBlock.className = "genre";
+    genreBlock.style.cursor = "pointer";
+    genreBlock.innerHTML = `
+      <div class="count">#</div>
+      <div class="genre_name"><span class="red">A </span>${titleRaw}</div>
+    `;
 
-      genreBlock.addEventListener("click", () => {
-        overlay.classList.add("active");
-        setTimeout(() => {
+    genreBlock.addEventListener("click", () => {
+      overlay.classList.add("active");
+      setTimeout(() => {
+        if (genre.kind === "special") {
+          window.location.href = `/group/?genre_id=${genreId}&genre_title=${encodedTitle}`;
+        } else {
           window.location.href = `/content/?genre_id=${genreId}&genre_title=${encodedTitle}`;
-        }, 300);
-      });
-
-      container.appendChild(genreBlock);
+        }
+      }, 300);
     });
 
-  } catch (error) {
-    console.error("Ошибка загрузки жанров:", error);
-    container.innerHTML = "<div class='error'>Рубрикаларни йўклашда хатолик бўлди</div>";
-  }
+    container.appendChild(genreBlock);
+  });
+
+} catch (error) {
+  console.error("Ошибка загрузки жанров:", error);
+  container.innerHTML = "<div class='error'>Рубрикаларни йўклашда хатолик бўлди</div>";
 }
+}
+
 </script>
 
 <script>
