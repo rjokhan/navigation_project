@@ -84,6 +84,25 @@ html, body { margin: 0 !important; }
 .wn-dot { width: 36px; height: 4px; border-radius: 999px; background: #949494; opacity: .9; transition: background .2s ease, transform .2s ease, opacity .2s ease; }
 .wn-dot.active { background: #ff155d; transform: translateY(-1px); opacity: 1; }
 @media (max-width: 360px) { .wn-dot { width: 28px; } }
+
+/* === GENRE COUNT BADGE (ADD-ONLY) === */
+.genre { position: relative; } /* если уже есть — дубли не мешают */
+.genre .count{
+  position: absolute;
+  top: 10px; right: 10px;
+  min-width: 24px; height: 24px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: grid; place-items: center;
+  background: #ff155d;
+  color: #fff;
+  font: 700 12px/1 Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+  box-shadow: 0 6px 14px rgba(255, 21, 93, .45), inset 0 0 0 1px rgba(255,255,255,.15);
+  user-select: none;
+}
+@media (min-width: 420px){
+  .genre .count{ min-width: 26px; height: 26px; font-size: 13px; }
+}
   </style>
 </head>
 
@@ -236,7 +255,6 @@ async function loadWhatsNew() {
 }
 
 /* === GENRES loader === */
-/* === GENRES loader === */
 async function loadGenres() {
   const container = document.querySelector('.container_genre');
   container.innerHTML = '<div class="loading">Рубрикалар рўйхати юкланяпти...</div>';
@@ -250,7 +268,6 @@ async function loadGenres() {
       return;
     }
 
-    // здесь больше НЕ пытаемся читать g.items
     container.innerHTML = "";
     const overlay = document.querySelector(".blur_overlay");
 
@@ -267,14 +284,34 @@ async function loadGenres() {
         <div class="genre_name"><span class="red">A </span>${titleRaw}</div>
       `;
 
+      /* === RESTORE BADGE COUNT (ADD-ONLY) === */
+      let rawCount =
+          genre.items_count ??
+          genre.events_count ??
+          genre.content_count ??
+          genre.count ??
+          null;
+
+      if (rawCount == null && Array.isArray(genre.items)) {
+        rawCount = genre.items.length;
+      }
+
+      const cnt = Number.isFinite(+rawCount) ? Number(rawCount) : 0;
+      const cntEl = el.querySelector('.count');
+
+      if (cnt > 0) {
+        cntEl.textContent = cnt > 99 ? '99+' : String(cnt);
+        cntEl.style.display = 'grid';
+      } else {
+        cntEl.style.display = 'none';
+      }
+
       el.addEventListener("click", () => {
         overlay.classList.add("active");
         setTimeout(() => {
           if (genre.kind === "special") {
-            // спец-жанр → к списку групп
             window.location.href = `/group/?genre_id=${genreId}&genre_title=${encodedTitle}`;
           } else {
-            // обычный жанр → сразу к контенту
             window.location.href = `/content/?genre_id=${genreId}&genre_title=${encodedTitle}`;
           }
         }, 300);
@@ -287,7 +324,6 @@ async function loadGenres() {
     container.innerHTML = "<div class='error'>Рубрикаларни йўклашда хатолик бўлди</div>";
   }
 }
-
 </script>
 
 <script>
