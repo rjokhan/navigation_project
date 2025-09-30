@@ -368,7 +368,7 @@ a {
   border-radius: 14px;
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.08);
-  min-height: 140px;            /* адаптивный минимум */
+  min-height: 100px;            /* адаптивный минимум */
 }
 .whats-new .wn-track::-webkit-scrollbar { display: none; } /* скрыть скроллбар */
 
