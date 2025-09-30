@@ -54,8 +54,6 @@
   .header_icon p { font-size: 9px !important; }
 }
 
-/* сброс внешних отступов у body/html */
-html, body { margin: 0 !important; }
 
 /* === WHAT'S NEW slider (ADD-ONLY) === */
 .whats-new { margin: 10px 0 14px; }
@@ -86,26 +84,34 @@ html, body { margin: 0 !important; }
 @media (max-width: 360px) { .wn-dot { width: 28px; } }
 
 /* === GENRE COUNT BADGE (override any old styles) === */
+/* === GENRE COUNT BADGE — FIXED ROUND === */
 .genre { position: relative !important; }
-.genre .count{
+.genre .count {
   position: absolute !important;
-  top: 10px !important; right: 10px !important;
-  z-index: 5 !important;
-  min-width: 24px !important; height: 24px !important;
-  padding: 0 6px !important;
-  border-radius: 999px !important;
-  display: grid !important; place-items: center !important;
+  top: 6px !important; right: 6px !important;
+  z-index: 10 !important;
+
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 50% !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
   background: #ff155d !important;
   color: #fff !important;
-  font: 700 12px/1 Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif !important;
-  letter-spacing: .2px !important;
-  box-shadow: 0 6px 14px rgba(255,21,93,.45), inset 0 0 0 1px rgba(255,255,255,.15) !important;
+  font: 700 12px/1 Inter, sans-serif !important;
+  text-align: center !important;
+
+  box-shadow: 0 3px 6px rgba(255,21,93,.45) !important;
   user-select: none !important;
   pointer-events: none !important;
 }
 @media (min-width: 420px){
-  .genre .count{ min-width: 26px !important; height: 26px !important; font-size: 13px !important; }
+  .genre .count { width: 24px !important; height: 24px !important; font-size: 13px !important; }
 }
+
   </style>
 </head>
 
