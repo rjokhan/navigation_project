@@ -314,18 +314,23 @@ async function loadGenres() {
         <div class="genre_name"><span class="red">A </span>${titleRaw}</div>
       `;
 
-      const cntEl = el.querySelector('.count');
+      // число внутри бейджа
+const cntEl = el.querySelector('.count');
+let cnt = extractLocalCount(genre);
 
-      // 1) локально, если есть
-      let cnt = extractLocalCount(genre);
-      if (Number.isFinite(cnt) && cnt >= 0) {
-        cntEl.textContent = cnt > 99 ? '99+' : String(cnt);
-      } else {
-        // 2) серверный фолбэк (асинхронно, не блокируем рендер)
-        fetchServerCount(genreId).then(n => {
-          cntEl.textContent = n > 99 ? '99+' : String(n);
-        });
-      }
+if (Number.isFinite(cnt) && cnt > 0) {
+  cntEl.textContent = cnt > 99 ? '99+' : String(cnt);
+} else {
+  // запрос к контенту этого жанра
+  fetch(`/api/content/?genre_id=${encodeURIComponent(genreId)}`, {credentials:"same-origin"})
+    .then(r => r.json())
+    .then(j => {
+      const n = typeof j?.count === "number" ? j.count : (Array.isArray(j?.results) ? j.results.length : 0);
+      cntEl.textContent = n > 99 ? '99+' : String(n);
+    })
+    .catch(()=>{ cntEl.textContent="0"; });
+}
+
 
       el.addEventListener("click", () => {
         overlay.classList.add("active");
