@@ -176,7 +176,7 @@ async function loadWhatsNew() {
 
 <script>
 /* helpers + debug */
-const DEBUG = new URLSearchParams(location.search).get('debug') === '1';
+const DEBUG = true;
 const dbg = () => document.getElementById('debug-panel');
 function dlog(msg, cls='ok'){ if(!DEBUG) return; const p=dbg(); p.style.display='block'; const d=document.createElement('div'); d.className=cls; d.textContent=msg; p.appendChild(d); }
 async function getJson(url){
