@@ -33,32 +33,38 @@
 
     html,body{margin:0 !important; padding-bottom:100px !important;}
 
-    /* ===== FILTER CHIPS (как в референсе) ===== */
+    /* ===== FILTER CHIPS ===== */
+    /* сетка: 3 равные кнопки + узкий фильтр */
     .filter_bar{
-      display:flex; gap:12px; padding:12px 12px 0; align-items:center;
-      overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr 48px;
+      gap:10px;
+      padding:12px 12px 0;
+      align-items:center;
     }
-    .filter_bar::-webkit-scrollbar{ display:none; }
+    @media (max-width:360px){
+      .filter_bar{ gap:8px; grid-template-columns: 1fr 1fr 1fr 44px; }
+    }
 
     .chip{
-      display:inline-flex; align-items:center; gap:10px;
-      padding:10px 18px; border-radius:999px;
-      border:1px solid #fff;                 /* обводка всегда белая */
-      background:transparent;                 /* неактивная — прозрачная */
-      color:#fff;                             /* текст белый */
-      font:600 16px/1 Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+      min-width:0;
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      padding:10px 14px; border-radius:999px;
+      border:1px solid #fff;                   /* обводка всегда белая */
+      background:transparent;                   /* неактивная — прозрачная */
+      color:#fff;                               /* текст белый */
+      font:600 15px/1 Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
       white-space:nowrap; cursor:pointer; user-select:none; -webkit-tap-highlight-color:transparent;
-      transition:background .2s ease, color .2s ease, transform .1s ease;
+      transition:background .2s ease, transform .1s ease;
     }
     .chip:active{ transform:translateY(1px) scale(.98); }
 
     .chip__dot{
-      width:26px; height:26px; border-radius:50%;
+      width:24px; height:24px; border-radius:50%;
       display:grid; place-items:center; background:#ff155d;   /* неактивная — розовый кружок */
-      flex:0 0 26px;
+      flex:0 0 24px;
     }
-    .chip__icon{ width:16px; height:16px; object-fit:contain; filter:invert(1) brightness(200%); } /* неактивная — иконка белая */
-    .chip span{ white-space:nowrap; }
+    .chip__icon{ width:15px; height:15px; object-fit:contain; filter:invert(1) brightness(200%); } /* неактивная — иконка белая */
 
     /* активная — фон розовый, кружок белый, иконка «как есть» */
     .chip.active{ background:#ff155d; }
@@ -67,15 +73,18 @@
 
     /* маленькая «Filter» — всегда розовая */
     .chip--filter{
-      padding:10px; width:42px; height:42px; border-radius:999px; justify-content:center;
+      grid-column: 4 / 5;
+      padding:10px; width:100%; height:44px; border-radius:999px; justify-content:center;
       background:#ff155d; border:1px solid #fff;
     }
     .chip--filter .chip__dot{ background:transparent; }
     .chip--filter .chip__icon{ filter:none; width:18px; height:18px; }
+    .chip--filter span.label{ display:none; } /* без текста */
 
     @media (max-width:360px){
-      .chip{ padding:9px 14px; gap:8px; font-size:14px; }
-      .chip__dot{ width:24px; height:24px; }
+      .chip{ padding:9px 12px; font-size:14px; gap:8px; }
+      .chip__dot{ width:22px; height:22px; }
+      .chip--filter{ height:40px; }
     }
 
     /* Toast */
@@ -119,10 +128,11 @@
   </form>
 </div>
 
-<!-- ===== FILTER BAR (новый) ===== -->
+<!-- ===== FILTER BAR ===== -->
 <div class="filter_bar" id="filterBar">
   <button class="chip" data-type="audio" aria-pressed="false">
     <span class="chip__dot">
+      <!-- Иконка ТОЛЬКО для фильтра (новая) -->
       <img class="chip__icon" src="{% static 'images/ic_audio2.png' %}" alt="">
     </span>
     <span>Audio</span>
@@ -146,6 +156,7 @@
     <span class="chip__dot">
       <img class="chip__icon" src="{% static 'images/ic_filter2.png' %}" alt="">
     </span>
+    <span class="label">Filter</span>
   </button>
 </div>
 
@@ -159,7 +170,7 @@
 <div id="debugbar"></div>
 
 <script>
-/* ---------- РЕНДЕР КАРТОЧЕК ---------- */
+/* ---------- РЕНДЕР КАРТОЧЕК (иконки контента — КАК БЫЛО) ---------- */
 function renderItems(container, items, favourites, genreId, genreTitle) {
   container.innerHTML = '';
   items.forEach(item => {
@@ -184,7 +195,8 @@ function renderItems(container, items, favourites, genreId, genreTitle) {
     } else if (item.content_type === 'audio') {
       block = `<div class="audio" onclick="${open}">
         <div class="audio_menu">
-          <div class="static_icon"><img src="{% static 'images/ic_audio2.png' %}" /></div>
+          <!-- СТАРАЯ иконка аудио, как просил -->
+          <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}" /></div>
           <div class="audio_duration">${item.duration || ''}</div>
         </div>
         <div class="fav_icon ${favClass}" data-id="${item.id}"></div>
@@ -196,7 +208,8 @@ function renderItems(container, items, favourites, genreId, genreTitle) {
     } else {
       block = `<div class="file" onclick="${open}">
         <div class="file_menu">
-          <div class="static_icon"><img src="{% static 'images/ic_file2.png' %}" /></div>
+          <!-- СТАРАЯ иконка файла, как просил -->
+          <div class="static_icon"><img src="{% static 'images/file_icon.png' %}" /></div>
           <div class="file_duration">${item.duration || ''}</div>
         </div>
         <div class="fav_icon ${favClass}" data-id="${item.id}"></div>
@@ -342,7 +355,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // первая загрузка (без фильтра)
+  // первая загрузка
   await fetchAndRender();
 
   /* ====== Обработчики фильтров ====== */

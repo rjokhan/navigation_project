@@ -57,7 +57,16 @@ html, body { margin: 0 !important; }
 
 /* COUNT BADGE */
 .genre { position: relative !important; }
-
+.genre .count{
+  position: absolute !important;
+  top: 3px !important;
+  right: 3px !important; z-index: 10 !important;
+  width: 30px !important; height: 30px !important; border-radius: 50% !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  background: #ff155d !important; color: #fff !important;
+  font: 700 12px/1 Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif !important;
+  box-shadow: 0 3px 6px rgba(255,21,93,.45) !important; user-select: none !important; pointer-events: none !important;
+}
 @media (min-width: 420px){ .genre .count{ width: 24px !important; height: 24px !important; font-size: 13px !important; } }
 
 /* DEBUG (?debug=1) */
