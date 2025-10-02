@@ -182,25 +182,38 @@ async function loadWhatsNew() {
 </script>
 
 <script>
-/* === GENRES loader — правильные счётчики ===
-   default: GET /api/content/<id>/?page=1  -> json.total
-   special: GET /api/groups/<id>/         -> json.groups.length
-*/
-async function loadGenres() {
-  const dbg = document.getElementById('debug-panel');
-  const DEBUG = new URLSearchParams(location.search).get('debug') === '1';
-  const log = (msg, cls='ok') => {
-    if (!DEBUG) return;
-    dbg.style.display = 'block';
-    const d = document.createElement('div'); d.className = cls; d.textContent = msg; dbg.appendChild(d);
-  };
+/* === helpers === */
+const DEBUG = new URLSearchParams(location.search).get('debug') === '1';
+const dbg = () => document.getElementById('debug-panel');
+function dlog(msg, cls='ok'){ if(!DEBUG) return; const p=dbg(); p.style.display='block'; const d=document.createElement('div'); d.className=cls; d.textContent=msg; p.appendChild(d); }
+async function tryJson(url){
+  try{
+    const r = await fetch(url, { credentials: 'same-origin' });
+    if(!r.ok){ dlog(`HTTP ${r.status} ${url}`,'warn'); return null; }
+    const j = await r.json(); dlog(`OK ${url}`,'ok'); return j;
+  }catch(e){ dlog(`ERR ${url}: ${e.message}`,'err'); return null; }
+}
+function pickContentCount(j){
+  if(typeof j?.total === 'number') return j.total;
+  if(typeof j?.count === 'number') return j.count;
+  if(Array.isArray(j?.items)) return j.items.length;
+  if(Array.isArray(j?.results)) return j.results.length;
+  return 0;
+}
+function pickGroupsCount(j){
+  if(Array.isArray(j?.groups)) return j.groups.length;
+  if(typeof j?.count === 'number') return j.count;
+  return 0;
+}
 
+/* === GENRES loader — считает по вашим API === */
+async function loadGenres() {
   const container = document.querySelector('.container_genre');
   container.innerHTML = '<div class="loading">Рубрикалар рўйхати юкланяпти...</div>';
 
   try {
     const res = await fetch("/api/genres/", { credentials: 'same-origin' });
-    const genres = await res.json(); // формат: [{id,title,kind}]
+    const genres = await res.json(); // [{id,title,kind}]
     if (!Array.isArray(genres)) { container.innerHTML = "<div class='error'>Нотоғри формат</div>"; return; }
 
     container.innerHTML = "";
@@ -216,31 +229,38 @@ async function loadGenres() {
       `;
       const cntEl = el.querySelector('.count');
 
-      // ставим сразу, потом обновим
-      cntEl.textContent = '…';
-
-      // правильный эндпоинт под тип жанра
-      if (g.kind === "special") {
-        // группы поджанров
-        fetch(`/api/groups/${g.id}/`, { credentials: 'same-origin' })
-          .then(r => r.ok ? r.json() : Promise.reject(r.status))
-          .then(j => {
-            const n = Array.isArray(j?.groups) ? j.groups.length : 0;
-            cntEl.textContent = n > 99 ? '99+' : String(n);
-            log(`special #${g.id} ${g.title}: groups=${n}`);
-          })
-          .catch(e => { cntEl.textContent = '0'; log(`special #${g.id} fail: ${e}`, 'err'); });
-      } else {
-        // обычный жанр — контент по жанру
-        fetch(`/api/content/${g.id}/?page=1`, { credentials: 'same-origin' })
-          .then(r => r.ok ? r.json() : Promise.reject(r.status))
-          .then(j => {
-            const n = typeof j?.total === 'number' ? j.total : 0;
-            cntEl.textContent = n > 99 ? '99+' : String(n);
-            log(`default #${g.id} ${g.title}: total=${n}`);
-          })
-          .catch(e => { cntEl.textContent = '0'; log(`default #${g.id} fail: ${e}`, 'err'); });
-      }
+      (async () => {
+        if (g.kind === "special") {
+          // пробуем несколько вариантов пути для групп
+          const urls = [
+            `/api/groups/${g.id}/`,
+            `/api/group/${g.id}/`,
+            `/api/genre/${g.id}/groups/`,
+          ];
+          let n = null;
+          for (const u of urls) {
+            const j = await tryJson(u);
+            if (j) { n = pickGroupsCount(j); break; }
+          }
+          if (n == null) n = 0;
+          cntEl.textContent = n > 99 ? '99+' : String(n);
+        } else {
+          // обычный контент жанра — по ID в пути
+          const urls = [
+            `/api/content/${g.id}/?page=1`,
+            `/api/content/${g.id}/`,
+            `/api/content-list/${g.id}/?page=1`,
+            `/api/content-list/${g.id}/`,
+          ];
+          let n = null;
+          for (const u of urls) {
+            const j = await tryJson(u);
+            if (j) { n = pickContentCount(j); break; }
+          }
+          if (n == null) n = 0;
+          cntEl.textContent = n > 99 ? '99+' : String(n);
+        }
+      })();
 
       el.addEventListener("click", () => {
         overlay.classList.add("active");
@@ -256,8 +276,8 @@ async function loadGenres() {
       container.appendChild(el);
     }
   } catch (error) {
-    container.innerHTML = "<div class='error'>Рубрикаларни йўклашда хатолик бўлди</div>";
-    log(`genres load error: ${error?.message || error}`, 'err');
+    document.querySelector('.container_genre').innerHTML = "<div class='error'>Рубрикаларни йўклашда хатолик бўлди</div>";
+    dlog(`genres load error: ${error?.message || error}`, 'err');
   }
 }
 </script>
