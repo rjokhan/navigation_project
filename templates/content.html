@@ -37,9 +37,9 @@
     /* сетка: 3 равные кнопки + узкий фильтр */
     .filter_bar{
       display:grid;
-      grid-template-columns: 1fr 1fr 1fr 48px;
+      grid-template-columns: 1fr 1fr 1fr 55px;
       gap:10px;
-      padding:12px 12px 0;
+      padding:0px 0px 0;
       align-items:center;
     }
     @media (max-width:360px){
@@ -60,7 +60,7 @@
     .chip:active{ transform:translateY(1px) scale(.98); }
 
     .chip__dot{
-      width:28px; height:28px; border-radius:50%;
+      width:28px; height:24px; border-radius:50%;
       display:grid; place-items:center; background:#ff155d;   /* неактивная — розовый кружок */
       flex:0 0 24px;
     }
