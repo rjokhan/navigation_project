@@ -13,107 +13,42 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
-    .audio_menu, .file_menu {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
+    .audio_menu, .file_menu { display:flex; flex-direction:column; align-items:center; justify-content:center; }
 
-    /* === NAVBAR FULL CSS — FINAL VERSION === */
-    .header, .header * { box-sizing: border-box !important; }
+    /* NAVBAR */
+    .header, .header * { box-sizing:border-box !important; }
     .header {
-      position: fixed !important;
-      bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      width: calc(100vw - 16px) !important;
-      max-width: 640px !important;
-      height: 88px !important;
-      padding: 4px !important;
-      display: grid !important;
-      grid-template-columns: repeat(5, 1fr) !important;
-      gap: 6px !important;
-      overflow: hidden !important;
-      border-radius: 40px !important;
-      background: linear-gradient(45deg, rgba(128,26,48,.16), rgba(78,5,21,.28)) !important;
-      border: 1px solid #ffffff44 !important;
-      -webkit-backdrop-filter: blur(5px) !important;
-      backdrop-filter: blur(5px) !important;
-      z-index: 9999 !important;
+      position:fixed !important; bottom:calc(env(safe-area-inset-bottom) + 12px) !important; left:50% !important; transform:translateX(-50%) !important;
+      width:calc(100vw - 16px) !important; max-width:640px !important; height:88px !important; padding:4px !important;
+      display:grid !important; grid-template-columns:repeat(5,1fr) !important; gap:6px !important; overflow:hidden !important;
+      border-radius:40px !important; background:linear-gradient(45deg, rgba(128,26,48,.16), rgba(78,5,21,.28)) !important;
+      border:1px solid #ffffff44 !important; -webkit-backdrop-filter:blur(5px) !important; backdrop-filter:blur(5px) !important; z-index:9999 !important;
     }
-    .header > a { display: block !important; min-width: 0 !important; height: 100% !important; }
-    .header_icon {
-      width: 100% !important; height: 100% !important; border-radius: 32px !important;
-      display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;
-      padding: 8px 0 !important; gap: 6px !important; min-width: 0 !important; box-sizing: border-box !important;
-    }
-    .header_icon img { display: block !important; width: 34px !important; height: 34px !important; margin: 0 !important; object-fit: contain !important; }
-    .header_icon p { margin: 0 !important; font-size: 10px !important; line-height: 1.2 !important; color: #fff !important; text-align: center !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
-    .header_icon.active { background-color: #00000066 !important; opacity: 1 !important; transform: none !important; animation: none !important; }
+    .header>a{display:block !important; min-width:0 !important; height:100% !important;}
+    .header_icon{width:100% !important; height:100% !important; border-radius:32px !important; display:flex !important; flex-direction:column !important; align-items:center !important; justify-content:center !important; padding:8px 0 !important; gap:6px !important;}
+    .header_icon img{display:block !important; width:34px !important; height:34px !important; object-fit:contain !important;}
+    .header_icon p{margin:0 !important; font-size:10px !important; line-height:1.2 !important; color:#fff !important; text-align:center !important;}
+    .header_icon.active{background:#0006 !important;}
+    @media (max-width:360px){ .header{height:80px !important; gap:4px !important;} .header_icon img{width:30px !important; height:30px !important;} .header_icon p{font-size:9px !important;} }
 
-    @media (max-width: 360px) {
-      .header { height: 80px !important; padding: 4px !important; gap: 4px !important; max-width: none !important; }
-      .header_icon { padding: 6px 0 !important; gap: 4px !important; }
-      .header_icon img { width: 30px !important; height: 30px !important; }
-      .header_icon p { font-size: 9px !important; }
-    }
+    html,body{margin:0 !important; padding-bottom:100px !important;}
 
-    html, body { margin: 0 !important; padding-bottom: 100px !important;}
-
-    /* ===== FILTER BAR (под поиском) ===== */
-    .filter_bar {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      padding: 8px 12px 0 12px;
-    }
-    .filter_btn {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 12px;
-      padding: 8px 4px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all .25s ease;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .filter_btn img {
-      width: 26px;
-      height: 26px;
-      filter: brightness(0) invert(1);
-      transition: filter .25s ease, transform .15s ease;
-    }
-    .filter_btn span {
-      font-size: 12px;
-      color: #fff;
-      margin-top: 4px;
-    }
-    .filter_btn.active img { filter: none; }
-    .filter_btn:active img { transform: scale(.96); }
-    .filter_btn.fake { cursor: default; }
+    /* FILTER BAR */
+    .filter_bar{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:8px 12px 0 12px;}
+    .filter_btn{background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:8px 4px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:all .25s; user-select:none; -webkit-tap-highlight-color:transparent;}
+    .filter_btn img{width:26px; height:26px; filter:brightness(0) invert(1); transition:filter .25s, transform .15s;}
+    .filter_btn span{font-size:12px; color:#fff; margin-top:4px;}
+    .filter_btn.active img{filter:none;}
+    .filter_btn:active img{transform:scale(.96);}
+    .filter_btn.fake{cursor:default;}
 
     /* Toast */
-    #toast {
-      position: fixed;
-      top: -56px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #38b000;
-      color: #fff;
-      font-size: 14px;
-      font-weight: 600;
-      padding: 10px 16px;
-      border-radius: 999px;
-      box-shadow: 0 6px 20px rgba(0,0,0,.25);
-      z-index: 10000;
-      transition: top .35s ease;
-    }
-    #toast.show { top: 18px; }
+    #toast{position:fixed; top:-56px; left:50%; transform:translateX(-50%); background:#38b000; color:#fff; font-size:14px; font-weight:600; padding:10px 16px; border-radius:999px; box-shadow:0 6px 20px rgba(0,0,0,.25); z-index:10000; transition:top .35s;}
+    #toast.show{top:18px;}
+
+    /* Debug footer */
+    #debugbar{position:fixed; left:8px; right:8px; bottom:calc(env(safe-area-inset-bottom) + 100px); font:12px/1.35 Inter,sans-serif; color:#fff; background:rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.15); border-radius:10px; padding:6px 8px; display:none; z-index:99999;}
+    #debugbar .warn{color:#ffd166;} #debugbar .err{color:#ff6b6b;} #debugbar .ok{color:#a0ffb0;}
   </style>
 </head>
 <body>
@@ -130,11 +65,7 @@
 
 <div class="blur_overlay active"></div>
 
-<div class="vertical-waves">
-  <div class="wave"></div>
-  <div class="wave"></div>
-  <div class="wave"></div>
-</div>
+<div class="vertical-waves"><div class="wave"></div><div class="wave"></div><div class="wave"></div></div>
 
 <div class="header">
   <a href="{% url 'index' %}"><div class="header_icon"><img src="{% static 'images/home_page.png' %}" alt="Home"><p>A CLUB</p></div></a>
@@ -155,16 +86,13 @@
 <!-- FILTER BAR -->
 <div class="filter_bar">
   <button class="filter_btn" data-type="audio">
-    <img src="{% static 'images/audio_icon.png' %}" alt="Audio">
-    <span>Audio</span>
+    <img src="{% static 'images/audio_icon.png' %}" alt="Audio"><span>Audio</span>
   </button>
   <button class="filter_btn" data-type="video">
-    <img src="{% static 'images/video_icon.png' %}" alt="Video">
-    <span>Video</span>
+    <img src="{% static 'images/video_icon.png' %}" alt="Video"><span>Video</span>
   </button>
   <button class="filter_btn" data-type="file">
-    <img src="{% static 'images/file_icon.png' %}" alt="File">
-    <span>File</span>
+    <img src="{% static 'images/file_icon.png' %}" alt="File"><span>File</span>
   </button>
   <button class="filter_btn fake" aria-label="Fake filter">
     <img src="{% static 'images/filter_icon.png' %}" alt="Filter">
@@ -177,23 +105,24 @@
 
 <div class="content_body"></div>
 
+<!-- tiny debug footer -->
+<div id="debugbar"></div>
+
 <script>
-/* ---------- УТИЛИТЫ РЕНДЕРА ---------- */
+/* ---------- РЕНДЕР КАРТОЧЕК ---------- */
 function renderItems(container, items, favourites, genreId, genreTitle) {
   container.innerHTML = '';
-  const allCards = [];
-
   items.forEach(item => {
-    const isFavourited = favourites.includes(item.id);
-    const favClass = isFavourited ? 'favourited' : 'not_favourited';
+    const isFav = favourites.includes(item.id);
+    const favClass = isFav ? 'favourited' : 'not_favourited';
     const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
-    const open = `openTelegramAndCollapse('${item.telegram_url}', '${genreId}', '${genreTitle}', '${item.title}', '${item.id}')`;
+    const open = `openTelegramAndCollapse('${item.telegram_url}', '${genreId}', '${genreTitle}', '${(item.title||'').replace(/'/g,"&#39;")}', '${item.id}')`;
 
     let block = '';
     if (item.content_type === 'video') {
       block = `<div class="video">
         <div class="video_thumbnail" onclick="${open}">
-          <img src="${item.thumbnail || ''}" />
+          <img src="${item.thumbnail || ''}"/>
           <div class="video_duration">${item.duration || ''}</div>
         </div>
         ${favIcon}
@@ -230,7 +159,6 @@ function renderItems(container, items, favourites, genreId, genreTitle) {
 
     container.insertAdjacentHTML('beforeend', block);
     const favEl = container.lastElementChild.querySelector('.fav_icon');
-    allCards.push(item);
 
     favEl.addEventListener('click', async e => {
       e.stopPropagation();
@@ -241,65 +169,61 @@ function renderItems(container, items, favourites, genreId, genreTitle) {
         popup.classList.add('show');
         document.getElementById('popup_yes').onclick = async () => {
           await fetch(`/api/favourites/remove/${id}/`, {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
+            method: 'POST', headers: {'Content-Type':'application/json'},
             credentials: 'same-origin',
             body: JSON.stringify({ telegram_id: window.__uid })
           });
-          favEl.classList.remove('favourited');
-          favEl.classList.add('not_favourited');
+          favEl.classList.remove('favourited'); favEl.classList.add('not_favourited');
           popup.classList.remove('show');
         };
         document.getElementById('popup_no').onclick = () => popup.classList.remove('show');
       } else {
         await fetch(`/api/favourites/add/${id}/`, {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
+          method: 'POST', headers: {'Content-Type':'application/json'},
           credentials: 'same-origin',
           body: JSON.stringify({ telegram_id: window.__uid })
         });
-        favEl.classList.remove('not_favourited');
-        favEl.classList.add('favourited');
-        favEl.classList.add('animate-pulse');
-        setTimeout(() => favEl.classList.remove('animate-pulse'), 600);
+        favEl.classList.remove('not_favourited'); favEl.classList.add('favourited');
+        favEl.classList.add('animate-pulse'); setTimeout(() => favEl.classList.remove('animate-pulse'), 600);
         const host = favEl.closest('.video, .audio, .file');
-        const explosion = document.createElement('div');
-        explosion.classList.add('fav_explosion');
-        host.appendChild(explosion);
-        setTimeout(() => explosion.remove(), 600);
+        const explosion = document.createElement('div'); explosion.classList.add('fav_explosion'); host.appendChild(explosion); setTimeout(() => explosion.remove(), 600);
       }
     });
   });
+}
 
-  return allCards;
+/* ---------- ВСПОМОГАТЕЛЬНОЕ: парсер ответов ---------- */
+function pickItems(json){
+  if (!json) return [];
+  if (Array.isArray(json)) return json;
+  if (Array.isArray(json.items)) return json.items;
+  if (Array.isArray(json.results)) return json.results;
+  // иногда прилетает {data:[...]}
+  if (Array.isArray(json.data)) return json.data;
+  return [];
 }
 </script>
 
 <script>
-/* ---------- ОСНОВНАЯ ЛОГИКА СТРАНИЦЫ ---------- */
+/* ---------- ОСНОВНАЯ ЛОГИКА ---------- */
 document.addEventListener('DOMContentLoaded', async () => {
-  const session = localStorage.getItem('last_session');
-  const lastTitle = session ? JSON.parse(session).itemTitle : null;
+  const DEBUG = true;
+  const dbg = document.getElementById('debugbar');
+  const dlog = (msg, cls='ok') => { if(!DEBUG) return; dbg.style.display='block'; const s=document.createElement('span'); s.className=cls; s.style.marginRight='10px'; s.textContent=msg; dbg.appendChild(s); };
 
   const tg = window.Telegram.WebApp;
   const user = tg.initDataUnsafe?.user;
-  if (!user || !user.id) {
-    document.querySelector('.content_body').innerHTML = '<p>Ошибка авторизации</p>';
-    return;
-  }
+  if (!user || !user.id) { document.querySelector('.content_body').innerHTML = '<p>Ошибка авторизации</p>'; return; }
   window.__uid = user.id;
 
-  const qs = new URLSearchParams(window.location.search);
+  const qs = new URLSearchParams(location.search);
   const genreId = qs.get('genre_id');
   const genreTitleRaw = qs.get('genre_title');
   const genreTitle = genreTitleRaw?.startsWith('A ') ? genreTitleRaw.slice(2).trim() : (genreTitleRaw || '');
   document.getElementById('genre-title').textContent = decodeURIComponent(genreTitle || '');
 
   const contentBody = document.querySelector('.content_body');
-  if (!genreId) {
-    contentBody.innerHTML = '<p>Не указан жанр</p>';
-    return;
-  }
+  if (!genreId) { contentBody.innerHTML = '<p>Не указан жанр</p>'; return; }
 
   // избранное
   let favourites = [];
@@ -307,73 +231,92 @@ document.addEventListener('DOMContentLoaded', async () => {
     const favRes = await fetch(`/api/favourites/?telegram_id=${encodeURIComponent(user.id)}`, { credentials: 'same-origin' });
     const favData = await favRes.json();
     favourites = favData?.favourites || [];
-  } catch {}
+  } catch (e) { dlog('fav error','warn'); }
 
-  // загрузка и рендер (серверная фильтрация)
-  async function fetchAndRender(type /* 'video'|'audio'|'file'|undefined */) {
+  // функция запроса по списку возможных URL
+  async function fetchItemsByAny(urls){
+    for (const u of urls) {
+      try{
+        const r = await fetch(u, { credentials:'same-origin' });
+        dlog(`${r.status} ${u}`, r.ok?'ok':'warn');
+        if(!r.ok) continue;
+        const j = await r.json();
+        const items = pickItems(j);
+        return { items, used: u, raw: j };
+      }catch(e){
+        dlog(`ERR ${u}: ${e.message}`, 'err');
+      }
+    }
+    return { items: [], used: null, raw: null };
+  }
+
+  // загрузка и рендер (с фолбэками)
+  async function fetchAndRender(type){
     contentBody.innerHTML = '<div class="loading">Юкланяпти...</div>';
 
-    let url = `/api/genres/${encodeURIComponent(genreId)}/content/?page=1`;
-    if (type) url += `&content_type=${encodeURIComponent(type)}`;
+    const id = encodeURIComponent(genreId);
+    const t  = type ? `&content_type=${encodeURIComponent(type)}` : '';
 
-    try {
-      const res = await fetch(url, { credentials: 'same-origin' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      const items = Array.isArray(data?.items) ? data.items : [];
-      if (!items.length) {
-        contentBody.innerHTML = '<p>Ҳозирча контент юкланмади</p>';
-        return;
-      }
-      renderItems(contentBody, items, favourites, genreId, genreTitle);
+    // основной и фолбэки
+    const urls = [
+      `/api/genres/${id}/content/?page=1${t}`,       // наш основной
+      `/api/content/${id}/?page=1${t}`,              // альтернативный
+      `/api/content/?genre_id=${id}&page=1${t}`,     // старый вариант
+      `/api/contents/?genre_id=${id}&page=1${t}`     // ещё один старый
+    ];
 
-      if (lastTitle) {
-        setTimeout(() => {
-          const cards = document.querySelectorAll('.video, .audio, .file');
-          for (let card of cards) {
-            const titleEl = card.querySelector('.title');
-            if (titleEl && titleEl.textContent.trim() === lastTitle.trim()) {
-              card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              localStorage.removeItem('last_session');
-              break;
-            }
+    const {items, used} = await fetchItemsByAny(urls);
+
+    if (!items.length) {
+      contentBody.innerHTML = '<p>Ҳозирча контент юкланмади</p>';
+      if (DEBUG) dlog('no items','warn');
+      return;
+    }
+
+    renderItems(contentBody, items, favourites, genreId, genreTitle);
+    if (DEBUG && used) dlog(`USED ${used}`, 'ok');
+
+    // скролл к последней карточке, если есть last_session
+    const session = localStorage.getItem('last_session');
+    const lastTitle = session ? JSON.parse(session).itemTitle : null;
+    if (lastTitle) {
+      setTimeout(() => {
+        const cards = document.querySelectorAll('.video, .audio, .file');
+        for (let card of cards) {
+          const t = card.querySelector('.title');
+          if (t && t.textContent.trim() === lastTitle.trim()) {
+            card.scrollIntoView({ behavior:'smooth', block:'start' });
+            localStorage.removeItem('last_session');
+            break;
           }
-        }, 300);
-      }
-    } catch (e) {
-      contentBody.innerHTML = '<p>Хатолик юз берди</p>';
+        }
+      }, 300);
     }
   }
 
-  // первичная загрузка
+  // первая загрузка
   await fetchAndRender();
 
   // FILTER UI
   const toast = document.getElementById('toast');
-  const btns = document.querySelectorAll('.filter_btn');
+  const btns  = document.querySelectorAll('.filter_btn');
 
-  function setActive(btn) {
-    btns.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-  }
+  function setActive(btn){ btns.forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 
   btns.forEach(btn => {
     btn.addEventListener('click', async () => {
       if (btn.classList.contains('fake')) {
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 2000);
-        return;
+        toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'), 2000); return;
       }
       setActive(btn);
-      const type = btn.dataset.type; // audio | video | file
-      await fetchAndRender(type);
+      await fetchAndRender(btn.dataset.type); // audio | video | file
     });
   });
 });
 </script>
 
 <script>
-/* UX-мелочи: плавные переходы, поиск */
+/* UX: плавные переходы, поиск */
 document.addEventListener('DOMContentLoaded', () => {
   const overlay = document.querySelector('.blur_overlay');
   requestAnimationFrame(() => overlay.classList.remove('active'));
@@ -396,10 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const query = input.value.trim();
-    if (query) {
-      const encoded = encodeURIComponent(query);
-      window.location.href = `/searched/?query=${encoded}`;
-    }
+    if (query) window.location.href = `/searched/?query=${encodeURIComponent(query)}`;
   });
 });
 </script>
