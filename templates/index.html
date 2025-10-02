@@ -86,23 +86,15 @@
 .genre { position: relative !important; }
 .genre .count{
   position: absolute !important;
-  top: 6px !important; right: 6px !important;   /* меньше отступ от краёв */
+  top: 6px !important; right: 6px !important;
   z-index: 10 !important;
-
-  width: 22px !important;
-  height: 22px !important;
+  width: 22px !important; height: 22px !important;
   border-radius: 50% !important;
-
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-
-  background: #ff155d !important;
-  color: #fff !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  background: #ff155d !important; color: #fff !important;
   font: 700 12px/1 Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif !important;
   box-shadow: 0 3px 6px rgba(255,21,93,.45) !important;
-  user-select: none !important;
-  pointer-events: none !important;
+  user-select: none !important; pointer-events: none !important;
 }
 @media (min-width: 420px){
   .genre .count{ width: 24px !important; height: 24px !important; font-size: 13px !important; }
@@ -255,13 +247,13 @@ async function loadWhatsNew() {
   window.addEventListener('resize', syncDots, { passive: true });
 }
 
-/* === GENRES loader (counters with multi-endpoint fallback) === */
+/* === GENRES loader (counters with deep local scan + multi-endpoint fallback) === */
 async function loadGenres() {
   const container = document.querySelector('.container_genre');
   container.innerHTML = '<div class="loading">Рубрикалар рўйхати юкланяпти...</div>';
 
   try {
-    const res = await fetch("/api/genres/");
+    const res = await fetch("/api/genres/", { credentials: 'same-origin' });
     const genres = await res.json();
 
     if (!Array.isArray(genres)) {
@@ -272,32 +264,40 @@ async function loadGenres() {
     container.innerHTML = "";
     const overlay = document.querySelector(".blur_overlay");
 
-    // 1) локально: взять любое числовое поле со словом "count" или длину items[]
+    // 1) локально: числа из *count*|*total* и длины массивов (items/contents/content/events/list/data/results)
     const extractLocalCount = (g) => {
-      const direct =
-        g.items_count ?? g.events_count ?? g.content_count ?? g.contents_count ??
-        g.count ?? g.total_count ?? g.items_total ?? null;
-
-      let scanned = null;
+      // явные числовые поля
+      let bestNum = null;
       for (const [k, v] of Object.entries(g)) {
-        if (typeof v === "number" && /count/i.test(k)) {
-          scanned = scanned == null ? v : Math.max(scanned, v);
+        if (typeof v === "number" && /(count|total)/i.test(k)) {
+          bestNum = bestNum == null ? v : Math.max(bestNum, v);
         }
       }
-      const byItems = Array.isArray(g.items) ? g.items.length : null;
+      if (bestNum != null) return Number(bestNum);
 
-      const candidates = [direct, scanned, byItems].filter(v => Number.isFinite(+v));
-      return candidates.length ? Number(candidates[0]) : null;
+      // массивы типовых ключей
+      const arrayKeys = ["items","contents","content","events","list","data","results"];
+      for (const key of arrayKeys) {
+        const val = g[key];
+        if (Array.isArray(val)) return val.length;
+      }
+
+      // если вдруг корень — массив результатов
+      if (Array.isArray(g?.results)) return g.results.length;
+
+      // вообще ничего не нашли
+      return null;
     };
 
     // 2) серверный фолбэк: пробуем несколько URL до первого валидного ответа
     const fetchServerCount = async (genreId) => {
+      const q = encodeURIComponent(genreId);
       const urls = [
-        `/api/content/?genre_id=${encodeURIComponent(genreId)}`,
-        `/api/contents/?genre_id=${encodeURIComponent(genreId)}`,
-        `/api/content/?genre=${encodeURIComponent(genreId)}`,
-        `/api/items/?genre_id=${encodeURIComponent(genreId)}`,
-        `/api/items/?genre=${encodeURIComponent(genreId)}`
+        `/api/content/?genre_id=${q}`,
+        `/api/contents/?genre_id=${q}`,
+        `/api/content/?genre=${q}`,
+        `/api/items/?genre_id=${q}`,
+        `/api/items/?genre=${q}`
       ];
       for (const u of urls) {
         try {
@@ -307,7 +307,7 @@ async function loadGenres() {
           if (typeof j?.count === 'number') return j.count;
           if (Array.isArray(j?.results)) return j.results.length;
           if (Array.isArray(j)) return j.length;
-        } catch(e) { /* пробуем следующий */ }
+        } catch(e) { /* next url */ }
       }
       return 0;
     };
@@ -327,14 +327,15 @@ async function loadGenres() {
 
       const cntEl = el.querySelector('.count');
 
-      // сначала локально, потом фолбэк
+      // сначала локально
       let cnt = extractLocalCount(genre);
       if (Number.isFinite(cnt) && cnt >= 0) {
         cntEl.textContent = cnt > 99 ? '99+' : String(cnt);
       } else {
-        fetchServerCount(genreId).then(n => {
-          cntEl.textContent = n > 99 ? '99+' : String(n);
-        }).catch(()=>{ cntEl.textContent = '0'; });
+        // потом — фолбэк к серверу
+        fetchServerCount(genreId)
+          .then(n => { cntEl.textContent = n > 99 ? '99+' : String(n); })
+          .catch(() => { cntEl.textContent = '0'; });
       }
 
       el.addEventListener("click", () => {
