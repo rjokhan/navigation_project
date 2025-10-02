@@ -54,6 +54,9 @@
   .header_icon p { font-size: 9px !important; }
 }
 
+/* сброс внешних отступов у body/html */
+html, body { margin: 0 !important; }
+
 /* === WHAT'S NEW slider (ADD-ONLY) === */
 .whats-new { margin: 10px 0 14px; }
 .whats-new .wn-track {
@@ -86,15 +89,22 @@
 .genre { position: relative !important; }
 .genre .count{
   position: absolute !important;
-  top: 3px !important; right: 3px !important;
+  top: 6px !important; right: 6px !important;   /* ближе к краю */
   z-index: 10 !important;
-  width: 30px !important; height: 30px !important;
+
+  width: 22px !important; height: 22px !important;
   border-radius: 50% !important;
-  display: flex !important; align-items: center !important; justify-content: center !important;
-  background: #ff155d !important; color: #fff !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  background: #ff155d !important;
+  color: #fff !important;
   font: 700 12px/1 Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif !important;
   box-shadow: 0 3px 6px rgba(255,21,93,.45) !important;
-  user-select: none !important; pointer-events: none !important;
+  user-select: none !important;
+  pointer-events: none !important;
 }
 @media (min-width: 420px){
   .genre .count{ width: 24px !important; height: 24px !important; font-size: 13px !important; }
@@ -246,7 +256,9 @@ async function loadWhatsNew() {
   });
   window.addEventListener('resize', syncDots, { passive: true });
 }
+</script>
 
+<script>
 /* === GENRES loader (counters with deep local scan + multi-endpoint fallback) === */
 async function loadGenres() {
   const container = document.querySelector('.container_genre');
@@ -264,32 +276,29 @@ async function loadGenres() {
     container.innerHTML = "";
     const overlay = document.querySelector(".blur_overlay");
 
-    // 1) локально: числа из *count*|*total* и длины массивов (items/contents/content/events/list/data/results)
+    // === возвращаем только ПОЛОЖИТЕЛЬНЫЕ числа, иначе null
     const extractLocalCount = (g) => {
-      // явные числовые поля
-      let bestNum = null;
+      let bestPos = null;
+
+      // 1) явные числовые поля со словами count|total
       for (const [k, v] of Object.entries(g)) {
-        if (typeof v === "number" && /(count|total)/i.test(k)) {
-          bestNum = bestNum == null ? v : Math.max(bestNum, v);
+        if (typeof v === "number" && /(count|total)/i.test(k) && v > 0) {
+          bestPos = bestPos == null ? v : Math.max(bestPos, v);
         }
       }
-      if (bestNum != null) return Number(bestNum);
+      if (bestPos != null) return Number(bestPos);
 
-      // массивы типовых ключей
+      // 2) длина типовых массивов, но тоже только > 0
       const arrayKeys = ["items","contents","content","events","list","data","results"];
       for (const key of arrayKeys) {
         const val = g[key];
-        if (Array.isArray(val)) return val.length;
+        if (Array.isArray(val) && val.length > 0) return val.length;
       }
 
-      // если вдруг корень — массив результатов
-      if (Array.isArray(g?.results)) return g.results.length;
-
-      // вообще ничего не нашли
       return null;
     };
 
-    // 2) серверный фолбэк: пробуем несколько URL до первого валидного ответа
+    // серверный фолбэк: пробуем несколько URL до первого валидного ответа
     const fetchServerCount = async (genreId) => {
       const q = encodeURIComponent(genreId);
       const urls = [
@@ -327,15 +336,14 @@ async function loadGenres() {
 
       const cntEl = el.querySelector('.count');
 
-      // сначала локально
-      let cnt = extractLocalCount(genre);
-      if (Number.isFinite(cnt) && cnt >= 0) {
-        cntEl.textContent = cnt > 99 ? '99+' : String(cnt);
+      // локальное число используем ТОЛЬКО если > 0, иначе — фолбэк
+      const localCnt = extractLocalCount(genre);
+      if (Number.isFinite(localCnt) && localCnt > 0) {
+        cntEl.textContent = localCnt > 99 ? '99+' : String(localCnt);
       } else {
-        // потом — фолбэк к серверу
         fetchServerCount(genreId)
           .then(n => { cntEl.textContent = n > 99 ? '99+' : String(n); })
-          .catch(() => { cntEl.textContent = '0'; });
+          .catch(() => { /* оставим 0 */ });
       }
 
       el.addEventListener("click", () => {
