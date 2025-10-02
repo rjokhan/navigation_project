@@ -15,24 +15,24 @@ from .views import (
 
 urlpatterns = [
     # Новости
-    path("news/", news_list, name="news_list"),
+    path('news/', views.news_list, name='news_list'),
 
     # Жанры
-    path("genres/", genre_list, name="genre_list"),
-    path("genres/<int:genre_id>/type/", genre_type, name="genre_type"),
+    path('genres/', views.genre_list, name='genre_list'),
+    path('genre/<int:genre_id>/type/', views.genre_type, name='genre_type'),
 
-    # Контент жанра (с пагинацией и фильтром)
-    path("genres/<int:genre_id>/content/", content_list, name="content_list"),
+    # Контент жанра (ЭТО НУЖНО ФРОНТУ)
+    path('content/<int:genre_id>/', views.content_list, name='content_list'),
 
-    # Группы (только для спецжанров)
-    path("genres/<int:genre_id>/groups/", group_list, name="group_list"),
-    path("groups/<int:group_id>/content/", group_content_list, name="group_content_list"),
+    # Группы и контент групп
+    path('groups/<int:genre_id>/', views.group_list, name='group_list'),
+    path('group/<int:group_id>/', views.group_content_list, name='group_content_list'),
 
     # Избранное
-    path("favourites/", get_favourites, name="get_favourites"),
-    path("favourites/add/<int:content_id>/", add_to_favourites, name="add_favourite"),
-    path("favourites/remove/<int:content_id>/", remove_from_favourites, name="remove_favourite"),
+    path('favourites/', views.get_favourites, name='get_favourites'),
+    path('favourites/add/<int:content_id>/', views.add_to_favourites, name='add_to_favourites'),
+    path('favourites/remove/<int:content_id>/', views.remove_from_favourites, name='remove_from_favourites'),
 
-    # Поиск
-    path("searched/", searched_view, name="searched"),
+    # Страница поиска (если нужна по API)
+    path('searched/', views.searched_view, name='searched_view'),
 ]
