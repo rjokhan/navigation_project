@@ -34,13 +34,66 @@
     html,body{margin:0 !important; padding-bottom:100px !important;}
 
     /* FILTER BAR */
-    .filter_bar{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:8px 12px 0 12px;}
-    .filter_btn{background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:8px 4px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:all .25s; user-select:none; -webkit-tap-highlight-color:transparent;}
-    .filter_btn img{width:26px; height:26px; filter:brightness(0) invert(1); transition:filter .25s, transform .15s;}
-    .filter_btn span{font-size:12px; color:#fff; margin-top:4px;}
-    .filter_btn.active img{filter:none;}
-    .filter_btn:active img{transform:scale(.96);}
-    .filter_btn.fake{cursor:default;}
+    .filter_bar{
+    display:flex;
+    gap:12px;
+    padding:10px 12px 0 12px;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .filter_bar::-webkit-scrollbar{ display:none; }
+
+  .filter_btn{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 14px;
+    border-radius:999px;
+    border:2px solid #ff155d;
+    background:#ff155d;            /* розовый фон как на макете */
+    color:#fff;
+    font:600 14px/1 Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+    white-space:nowrap;
+    cursor:pointer;
+    user-select:none;
+    -webkit-tap-highlight-color:transparent;
+    transition:transform .12s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
+    box-shadow:0 4px 14px rgba(255,21,93,.25);
+  }
+  .filter_btn:active{ transform:translateY(1px) scale(.98); }
+
+  /* иконка в кружке слева */
+  .filter_btn .ico{
+    width:22px; height:22px;
+    border-radius:999px;
+    background:rgba(255,255,255,.18);
+    display:inline-flex; align-items:center; justify-content:center;
+    flex:0 0 22px;
+  }
+  .filter_btn .ico img{
+    width:12px; height:12px; display:block;
+    filter:brightness(0) invert(1); /* делаем PNG белым */
+  }
+  .filter_btn .lbl{ letter-spacing:.2px; }
+
+  /* неактивную сделаем полупрозрачной/обведённой */
+  .filter_btn.ghost{
+    background:transparent;
+    color:#ff155d;
+    box-shadow:none;
+  }
+  .filter_btn.ghost .ico{ background:#ff155d; }
+  .filter_btn.ghost .ico img{ filter:brightness(0) invert(1); }
+
+  /* «фейковая» (фильтр) — круглая как в референсе */
+  .filter_btn.fake{
+    padding:8px;
+    width:42px; height:42px;
+    border-radius:999px;
+    justify-content:center;
+  }
+  .filter_btn.fake .lbl{ display:none; }
 
     /* Toast */
     #toast{position:fixed; top:-56px; left:50%; transform:translateX(-50%); background:#38b000; color:#fff; font-size:14px; font-weight:600; padding:10px 16px; border-radius:999px; box-shadow:0 6px 20px rgba(0,0,0,.25); z-index:10000; transition:top .35s;}
@@ -83,21 +136,26 @@
   </form>
 </div>
 
-<!-- FILTER BAR -->
+<!-- FILTER BAR (ref-style) -->
 <div class="filter_bar">
-  <button class="filter_btn" data-type="audio">
-    <img src="{% static 'images/audio_icon.png' %}" alt="Audio"><span>Audio</span>
+  <button class="filter_btn ghost" data-type="audio">
+    <span class="ico"><img src="{% static 'images/audio_icon.png' %}" alt=""></span>
+    <span class="lbl">Audio</span>
   </button>
   <button class="filter_btn" data-type="video">
-    <img src="{% static 'images/video_icon.png' %}" alt="Video"><span>Video</span>
+    <span class="ico"><img src="{% static 'images/video_icon.png' %}" alt=""></span>
+    <span class="lbl">Video</span>
   </button>
-  <button class="filter_btn" data-type="file">
-    <img src="{% static 'images/file_icon.png' %}" alt="File"><span>File</span>
+  <button class="filter_btn ghost" data-type="file">
+    <span class="ico"><img src="{% static 'images/file_icon.png' %}" alt=""></span>
+    <span class="lbl">File</span>
   </button>
-  <button class="filter_btn fake" aria-label="Fake filter">
-    <img src="{% static 'images/filter_icon.png' %}" alt="Filter">
+  <button class="filter_btn fake" aria-label="Filter">
+    <span class="ico"><img src="{% static 'images/filter_icon.png' %}" alt=""></span>
+    <span class="lbl">Filter</span>
   </button>
 </div>
+
 
 <div id="toast">Выберите формат фильтра</div>
 
@@ -351,6 +409,34 @@ function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
   setTimeout(() => { try { Telegram.WebApp.close(); } catch(e) {} }, 500);
 }
 </script>
+
+<script>
+  // ...после определения fetchAndRender(...)
+  const toast = document.getElementById('toast');
+  const btns = document.querySelectorAll('.filter_btn');
+
+  function setActive(btn){
+    btns.forEach(b=>{
+      if(b.classList.contains('fake')) return;
+      b.classList.add('ghost');     // все в неактив
+    });
+    btn.classList.remove('ghost');   // текущий актив
+  }
+
+  btns.forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      if(btn.classList.contains('fake')){
+        toast.classList.add('show');
+        setTimeout(()=>toast.classList.remove('show'), 2000);
+        return;
+      }
+      setActive(btn);
+      const type = btn.dataset.type; // audio | video | file
+      await fetchAndRender(type);
+    });
+  });
+</script>
+
 
 </body>
 </html>
