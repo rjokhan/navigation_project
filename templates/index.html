@@ -11,7 +11,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
-/* === NAVBAR FULL CSS — FINAL VERSION === */
+/* NAVBAR */
 .header, .header * { box-sizing: border-box !important; }
 .header {
   position: fixed !important;
@@ -25,44 +25,37 @@
   border: 1px solid #ffffff44 !important; -webkit-backdrop-filter: blur(5px) !important; backdrop-filter: blur(5px) !important;
   z-index: 9999 !important;
 }
-.header > a { display: block !important; min-width: 0 !important; height: 100% !important; }
-.header_icon {
-  width: 100% !important; height: 100% !important; border-radius: 32px !important;
-  display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;
-  padding: 8px 0 !important; gap: 6px !important; min-width: 0 !important;
-}
+.header > a { display: block !important; height: 100% !important; }
+.header_icon { width: 100% !important; height: 100% !important; border-radius: 32px !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; gap: 6px !important; }
 .header_icon img { width: 34px !important; height: 34px !important; object-fit: contain !important; }
-.header_icon p { margin: 0 !important; font-size: 10px !important; line-height: 1.2 !important; color: #fff !important; text-align: center !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+.header_icon p { margin: 0 !important; font-size: 10px !important; color: #fff !important; }
 .header_icon.active { background-color: #00000066 !important; }
 
 /* узкие экраны */
 @media (max-width: 360px) {
-  .header { height: 80px !important; padding: 4px !important; gap: 4px !important; max-width: none !important; }
-  .header_icon { padding: 6px 0 !important; gap: 4px !important; }
+  .header { height: 80px !important; gap: 4px !important; }
   .header_icon img { width: 30px !important; height: 30px !important; }
   .header_icon p { font-size: 9px !important; }
 }
 
-/* сброс внешних отступов */
 html, body { margin: 0 !important; }
 
-/* === WHAT'S NEW slider === */
+/* WHAT'S NEW */
 .whats-new { margin: 10px 0 14px; }
 .whats-new .wn-track {
   position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 100%;
   overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
-  gap: 0; border-radius: 14px; background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08); min-height: 140px;
+  border-radius: 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); min-height: 140px;
 }
 .whats-new .wn-track::-webkit-scrollbar { display: none; }
 .wn-slide { display: block; position: relative; scroll-snap-align: start; border-radius: 14px; overflow: hidden; height: 0; padding-top: 56.25%; background: #1a1a1a; }
 .wn-slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.wn-dots { display: flex; justify-content: center; align-items: center; gap: 10px; padding-top: 8px; }
+.wn-dots { display: flex; justify-content: center; gap: 10px; padding-top: 8px; }
 .wn-dot { width: 36px; height: 4px; border-radius: 999px; background: #949494; opacity: .9; transition: background .2s, transform .2s, opacity .2s; }
 .wn-dot.active { background: #ff155d; transform: translateY(-1px); opacity: 1; }
 @media (max-width: 360px) { .wn-dot { width: 28px; } }
 
-/* === GENRE COUNT BADGE — PERFECT ROUND === */
+/* COUNT BADGE */
 .genre { position: relative !important; }
 .genre .count{
   position: absolute !important; top: 6px !important; right: 6px !important; z-index: 10 !important;
@@ -74,7 +67,7 @@ html, body { margin: 0 !important; }
 }
 @media (min-width: 420px){ .genre .count{ width: 24px !important; height: 24px !important; font-size: 13px !important; } }
 
-/* === DEBUG (вкл. ?debug=1) === */
+/* DEBUG (?debug=1) */
 #debug-panel{
   position: fixed; left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom) + 110px);
   max-height: 40vh; overflow: auto; font: 12px/1.35 Inter, sans-serif; color: #fff;
@@ -133,7 +126,7 @@ html, body { margin: 0 !important; }
 <div id="debug-panel"></div>
 
 <script>
-/* === WHAT'S NEW logic === */
+/* WHAT'S NEW */
 async function loadWhatsNew() {
   const track = document.getElementById('wnTrack');
   const dots  = document.getElementById('wnDots');
@@ -182,31 +175,22 @@ async function loadWhatsNew() {
 </script>
 
 <script>
-/* === helpers === */
+/* helpers + debug */
 const DEBUG = new URLSearchParams(location.search).get('debug') === '1';
 const dbg = () => document.getElementById('debug-panel');
 function dlog(msg, cls='ok'){ if(!DEBUG) return; const p=dbg(); p.style.display='block'; const d=document.createElement('div'); d.className=cls; d.textContent=msg; p.appendChild(d); }
-async function tryJson(url){
+async function getJson(url){
   try{
     const r = await fetch(url, { credentials: 'same-origin' });
     if(!r.ok){ dlog(`HTTP ${r.status} ${url}`,'warn'); return null; }
     const j = await r.json(); dlog(`OK ${url}`,'ok'); return j;
   }catch(e){ dlog(`ERR ${url}: ${e.message}`,'err'); return null; }
 }
-function pickContentCount(j){
-  if(typeof j?.total === 'number') return j.total;
-  if(typeof j?.count === 'number') return j.count;
-  if(Array.isArray(j?.items)) return j.items.length;
-  if(Array.isArray(j?.results)) return j.results.length;
-  return 0;
-}
-function pickGroupsCount(j){
-  if(Array.isArray(j?.groups)) return j.groups.length;
-  if(typeof j?.count === 'number') return j.count;
-  return 0;
-}
+const num = v => Number.isFinite(v) ? v : 0;
+</script>
 
-/* === GENRES loader — считает по вашим API === */
+<script>
+/* GENRES with correct counters */
 async function loadGenres() {
   const container = document.querySelector('.container_genre');
   container.innerHTML = '<div class="loading">Рубрикалар рўйхати юкланяпти...</div>';
@@ -224,43 +208,39 @@ async function loadGenres() {
       el.className = "genre";
       el.style.cursor = "pointer";
       el.innerHTML = `
-        <div class="count">…</div>
+        <div class="count" title="считаю">…</div>
         <div class="genre_name"><span class="red">A </span>${g.title || "Без названия"}</div>
       `;
       const cntEl = el.querySelector('.count');
 
-      (async () => {
-        if (g.kind === "special") {
-          // пробуем несколько вариантов пути для групп
-          const urls = [
-            `/api/groups/${g.id}/`,
-            `/api/group/${g.id}/`,
-            `/api/genre/${g.id}/groups/`,
-          ];
-          let n = null;
-          for (const u of urls) {
-            const j = await tryJson(u);
-            if (j) { n = pickGroupsCount(j); break; }
+      // считаем в фоне, сразу показываем скелет
+      if (g.kind === "special") {
+        // groups -> sum of totals across all groups
+        (async () => {
+          const groupsResp = await getJson(`/api/groups/${g.id}/`);
+          const groups = Array.isArray(groupsResp?.groups) ? groupsResp.groups : [];
+          if (!groups.length) {
+            cntEl.textContent = '0';
+            cntEl.title = 'groups=0';
+            return;
           }
-          if (n == null) n = 0;
-          cntEl.textContent = n > 99 ? '99+' : String(n);
-        } else {
-          // обычный контент жанра — по ID в пути
-          const urls = [
-            `/api/content/${g.id}/?page=1`,
-            `/api/content/${g.id}/`,
-            `/api/content-list/${g.id}/?page=1`,
-            `/api/content-list/${g.id}/`,
-          ];
-          let n = null;
-          for (const u of urls) {
-            const j = await tryJson(u);
-            if (j) { n = pickContentCount(j); break; }
-          }
-          if (n == null) n = 0;
-          cntEl.textContent = n > 99 ? '99+' : String(n);
-        }
-      })();
+          // параллельно тянем каждый /api/group/<group_id>/ и берём total
+          const promises = groups.map(gr => getJson(`/api/group/${gr.id}/`));
+          const results = await Promise.all(promises);
+          const total = results.reduce((acc, j) => acc + num(j?.total ?? j?.count ?? (Array.isArray(j?.items) ? j.items.length : 0)), 0);
+          cntEl.textContent = total > 99 ? '99+' : String(total);
+          cntEl.title = `sum of ${groups.length} groups`;
+        })();
+      } else {
+        // default: content for genre
+        (async () => {
+          // ваш вью: /api/content/<genre_id>/ → { total, items:[...] }
+          const j = await getJson(`/api/content/${g.id}/?page=1`);
+          const total = num(j?.total ?? j?.count ?? (Array.isArray(j?.items) ? j.items.length : 0));
+          cntEl.textContent = total > 99 ? '99+' : String(total);
+          cntEl.title = 'content total';
+        })();
+      }
 
       el.addEventListener("click", () => {
         overlay.classList.add("active");
@@ -283,7 +263,7 @@ async function loadGenres() {
 </script>
 
 <script>
-/* === ACCESS GATE + init === */
+/* init */
 document.addEventListener("DOMContentLoaded", async function () {
   const tg = window.Telegram.WebApp;
   const user = tg.initDataUnsafe?.user;
@@ -297,7 +277,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     return;
   }
 
-  // ВРЕМЕННО: пропускаем только один Telegram ID
   if (user.id === 5790925357) {
     overlay.classList.remove("active");
     popup.style.display = "none";
@@ -311,7 +290,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 </script>
 
 <script>
-/* Общие UX-мелочи */
+/* UX bits */
 document.addEventListener("DOMContentLoaded", () => {
   const overlay = document.querySelector(".blur_overlay");
   requestAnimationFrame(() => { overlay.classList.remove('active'); });
@@ -325,7 +304,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // сохранить user в localStorage
   const tg = window.Telegram.WebApp;
   const user = tg.initDataUnsafe?.user;
   if (user?.id) {
@@ -333,24 +311,20 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("name", user.first_name || "");
   }
 
-  // поиск
   const form = document.querySelector(".searcher");
   const input = document.querySelector(".searcher_block");
   if (form && input) {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const query = input.value.trim();
-      if (query) {
-        const encoded = encodeURIComponent(query);
-        window.location.href = `/searched/?query=${encoded}`;
-      }
+      if (query) window.location.href = `/searched/?query=${encodeURIComponent(query)}`;
     });
   }
 });
 </script>
 
 <script>
-/* Resume last session popup */
+/* Resume popup */
 document.addEventListener('DOMContentLoaded', () => {
   const session = localStorage.getItem('last_session');
   if (!session) return;
@@ -378,10 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
       popup.classList.remove('show');
       localStorage.removeItem('last_session');
     };
-
-  } catch (e) {
-    localStorage.removeItem('last_session');
-  }
+  } catch { localStorage.removeItem('last_session'); }
 });
 </script>
 
