@@ -54,7 +54,6 @@
   .header_icon p { font-size: 9px !important; }
 }
 
-
 /* === WHAT'S NEW slider (ADD-ONLY) === */
 .whats-new { margin: 10px 0 14px; }
 .whats-new .wn-track {
@@ -83,12 +82,11 @@
 .wn-dot.active { background: #ff155d; transform: translateY(-1px); opacity: 1; }
 @media (max-width: 360px) { .wn-dot { width: 28px; } }
 
-/* === GENRE COUNT BADGE (override any old styles) === */
-/* === GENRE COUNT BADGE — FIXED ROUND === */
+/* === GENRE COUNT BADGE — PERFECT ROUND === */
 .genre { position: relative !important; }
-.genre .count {
+.genre .count{
   position: absolute !important;
-  top: 6px !important; right: 6px !important;
+  top: 6px !important; right: 6px !important;   /* меньше отступ от краёв */
   z-index: 10 !important;
 
   width: 22px !important;
@@ -101,17 +99,14 @@
 
   background: #ff155d !important;
   color: #fff !important;
-  font: 700 12px/1 Inter, sans-serif !important;
-  text-align: center !important;
-
+  font: 700 12px/1 Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif !important;
   box-shadow: 0 3px 6px rgba(255,21,93,.45) !important;
   user-select: none !important;
   pointer-events: none !important;
 }
 @media (min-width: 420px){
-  .genre .count { width: 24px !important; height: 24px !important; font-size: 13px !important; }
+  .genre .count{ width: 24px !important; height: 24px !important; font-size: 13px !important; }
 }
-
   </style>
 </head>
 
@@ -260,7 +255,7 @@ async function loadWhatsNew() {
   window.addEventListener('resize', syncDots, { passive: true });
 }
 
-/* === GENRES loader (with counters + server fallback) === */
+/* === GENRES loader (counters with multi-endpoint fallback) === */
 async function loadGenres() {
   const container = document.querySelector('.container_genre');
   container.innerHTML = '<div class="loading">Рубрикалар рўйхати юкланяпти...</div>';
@@ -277,27 +272,43 @@ async function loadGenres() {
     container.innerHTML = "";
     const overlay = document.querySelector(".blur_overlay");
 
-    // helper: достать число из любых *count* полей или из items[]
+    // 1) локально: взять любое числовое поле со словом "count" или длину items[]
     const extractLocalCount = (g) => {
-      const direct = g.items_count ?? g.events_count ?? g.content_count ?? g.count ?? null;
+      const direct =
+        g.items_count ?? g.events_count ?? g.content_count ?? g.contents_count ??
+        g.count ?? g.total_count ?? g.items_total ?? null;
+
       let scanned = null;
       for (const [k, v] of Object.entries(g)) {
-        if (typeof v === "number" && /count/i.test(k)) scanned = scanned == null ? v : Math.max(scanned, v);
+        if (typeof v === "number" && /count/i.test(k)) {
+          scanned = scanned == null ? v : Math.max(scanned, v);
+        }
       }
       const byItems = Array.isArray(g.items) ? g.items.length : null;
+
       const candidates = [direct, scanned, byItems].filter(v => Number.isFinite(+v));
       return candidates.length ? Number(candidates[0]) : null;
     };
 
-    // server fallback: /api/content/?genre_id=...&limit=1 -> json.count
+    // 2) серверный фолбэк: пробуем несколько URL до первого валидного ответа
     const fetchServerCount = async (genreId) => {
-      try {
-        const r = await fetch(`/api/content/?genre_id=${encodeURIComponent(genreId)}&limit=1`, { credentials: 'same-origin' });
-        const j = await r.json();
-        if (typeof j?.count === 'number') return j.count;
-        if (Array.isArray(j)) return j.length;             // на крайний случай
-        if (Array.isArray(j?.results)) return j.results.length; // если нет count
-      } catch(e){ console.warn('count fallback error', e); }
+      const urls = [
+        `/api/content/?genre_id=${encodeURIComponent(genreId)}`,
+        `/api/contents/?genre_id=${encodeURIComponent(genreId)}`,
+        `/api/content/?genre=${encodeURIComponent(genreId)}`,
+        `/api/items/?genre_id=${encodeURIComponent(genreId)}`,
+        `/api/items/?genre=${encodeURIComponent(genreId)}`
+      ];
+      for (const u of urls) {
+        try {
+          const r = await fetch(u, { credentials: 'same-origin' });
+          if (!r.ok) continue;
+          const j = await r.json();
+          if (typeof j?.count === 'number') return j.count;
+          if (Array.isArray(j?.results)) return j.results.length;
+          if (Array.isArray(j)) return j.length;
+        } catch(e) { /* пробуем следующий */ }
+      }
       return 0;
     };
 
@@ -314,23 +325,17 @@ async function loadGenres() {
         <div class="genre_name"><span class="red">A </span>${titleRaw}</div>
       `;
 
-      // число внутри бейджа
-const cntEl = el.querySelector('.count');
-let cnt = extractLocalCount(genre);
+      const cntEl = el.querySelector('.count');
 
-if (Number.isFinite(cnt) && cnt > 0) {
-  cntEl.textContent = cnt > 99 ? '99+' : String(cnt);
-} else {
-  // запрос к контенту этого жанра
-  fetch(`/api/content/?genre_id=${encodeURIComponent(genreId)}`, {credentials:"same-origin"})
-    .then(r => r.json())
-    .then(j => {
-      const n = typeof j?.count === "number" ? j.count : (Array.isArray(j?.results) ? j.results.length : 0);
-      cntEl.textContent = n > 99 ? '99+' : String(n);
-    })
-    .catch(()=>{ cntEl.textContent="0"; });
-}
-
+      // сначала локально, потом фолбэк
+      let cnt = extractLocalCount(genre);
+      if (Number.isFinite(cnt) && cnt >= 0) {
+        cntEl.textContent = cnt > 99 ? '99+' : String(cnt);
+      } else {
+        fetchServerCount(genreId).then(n => {
+          cntEl.textContent = n > 99 ? '99+' : String(n);
+        }).catch(()=>{ cntEl.textContent = '0'; });
+      }
 
       el.addEventListener("click", () => {
         overlay.classList.add("active");
