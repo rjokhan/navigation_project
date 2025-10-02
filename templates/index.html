@@ -13,38 +13,27 @@
   <style>
 /* === NAVBAR FULL CSS — FINAL VERSION === */
 .header, .header * { box-sizing: border-box !important; }
-
 .header {
   position: fixed !important;
   bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: calc(100vw - 16px) !important;
-  max-width: 640px !important;
-  height: 88px !important;
-  padding: 4px !important;
-  display: grid !important;
-  grid-template-columns: repeat(5, 1fr) !important;
-  gap: 6px !important;
-  overflow: hidden !important;
-  border-radius: 40px !important;
+  left: 50% !important; transform: translateX(-50%) !important;
+  width: calc(100vw - 16px) !important; max-width: 640px !important;
+  height: 88px !important; padding: 4px !important;
+  display: grid !important; grid-template-columns: repeat(5, 1fr) !important; gap: 6px !important;
+  overflow: hidden !important; border-radius: 40px !important;
   background: linear-gradient(45deg, rgba(128,26,48,.16), rgba(78,5,21,.28)) !important;
-  border: 1px solid #ffffff44 !important;
-  -webkit-backdrop-filter: blur(5px) !important;
-  backdrop-filter: blur(5px) !important;
+  border: 1px solid #ffffff44 !important; -webkit-backdrop-filter: blur(5px) !important; backdrop-filter: blur(5px) !important;
   z-index: 9999 !important;
 }
 .header > a { display: block !important; min-width: 0 !important; height: 100% !important; }
 .header_icon {
-  width: 100% !important; height: 100% !important;
-  border-radius: 32px !important;
-  display: flex !important; flex-direction: column !important;
-  align-items: center !important; justify-content: center !important;
-  padding: 8px 0 !important; gap: 6px !important; min-width: 0 !important; box-sizing: border-box !important;
+  width: 100% !important; height: 100% !important; border-radius: 32px !important;
+  display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;
+  padding: 8px 0 !important; gap: 6px !important; min-width: 0 !important;
 }
-.header_icon img { display: block !important; width: 34px !important; height: 34px !important; margin: 0 !important; object-fit: contain !important; }
+.header_icon img { width: 34px !important; height: 34px !important; object-fit: contain !important; }
 .header_icon p { margin: 0 !important; font-size: 10px !important; line-height: 1.2 !important; color: #fff !important; text-align: center !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
-.header_icon.active { background-color: #00000066 !important; opacity: 1 !important; transform: none !important; animation: none !important; }
+.header_icon.active { background-color: #00000066 !important; }
 
 /* узкие экраны */
 @media (max-width: 360px) {
@@ -54,7 +43,7 @@
   .header_icon p { font-size: 9px !important; }
 }
 
-/* сброс внешних отступов у body/html */
+/* сброс внешних отступов */
 html, body { margin: 0 !important; }
 
 /* === WHAT'S NEW slider === */
@@ -85,13 +74,12 @@ html, body { margin: 0 !important; }
 }
 @media (min-width: 420px){ .genre .count{ width: 24px !important; height: 24px !important; font-size: 13px !important; } }
 
-/* === DEBUG PANEL (вкл. через ?debug=1) === */
+/* === DEBUG (вкл. ?debug=1) === */
 #debug-panel{
   position: fixed; left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom) + 110px);
   max-height: 40vh; overflow: auto; font: 12px/1.35 Inter, sans-serif; color: #fff;
   background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.15); border-radius: 12px; padding: 8px; display:none;
 }
-#debug-panel .line{ margin: 3px 0; opacity: .95; }
 #debug-panel .ok{ color: #7CFC9A; } .warn{ color: #FFD166; } .err{ color: #FF6B6B; }
   </style>
 </head>
@@ -141,7 +129,7 @@ html, body { margin: 0 !important; }
   <div style="width: 60vw; margin: 0 auto;">Навигация платформасини сиз учун янада қулай қилиш мақсадида янгилаяпмиз.</div>
 </div>
 
-<!-- DEBUG (вкл. ?debug=1) -->
+<!-- DEBUG -->
 <div id="debug-panel"></div>
 
 <script>
@@ -162,7 +150,7 @@ async function loadWhatsNew() {
       try { if (img && img.startsWith('/')) img = new URL(img, location.origin).href; } catch(e){}
       return { img, url: it.url || "#" };
     }).filter(x => x.img).slice(0, 5);
-  } catch (e) { /* ignore */ }
+  } catch (e) {}
 
   if (!items.length) { section.remove(); return; }
 
@@ -194,135 +182,73 @@ async function loadWhatsNew() {
 </script>
 
 <script>
-/* === GENRES loader with robust counters + on-screen debug === */
+/* === GENRES loader — правильные счётчики ===
+   default: GET /api/content/<id>/?page=1  -> json.total
+   special: GET /api/groups/<id>/         -> json.groups.length
+*/
 async function loadGenres() {
-  const qs = new URLSearchParams(location.search);
-  const DEBUG = qs.get('debug') === '1';
   const dbg = document.getElementById('debug-panel');
-  const log = (html, cls='line') => {
+  const DEBUG = new URLSearchParams(location.search).get('debug') === '1';
+  const log = (msg, cls='ok') => {
     if (!DEBUG) return;
     dbg.style.display = 'block';
-    const d = document.createElement('div');
-    d.className = cls + ' line';
-    d.innerHTML = html;
-    dbg.appendChild(d);
+    const d = document.createElement('div'); d.className = cls; d.textContent = msg; dbg.appendChild(d);
   };
 
   const container = document.querySelector('.container_genre');
   container.innerHTML = '<div class="loading">Рубрикалар рўйхати юкланяпти...</div>';
 
-  const cred = { credentials: 'same-origin' };
-
   try {
-    const res = await fetch("/api/genres/", cred);
-    if (!res.ok) throw new Error('genres http ' + res.status);
-    const genresJson = await res.json();
-    const genres = Array.isArray(genresJson) ? genresJson : (genresJson?.results || []);
-    if (!Array.isArray(genres)) {
-      container.innerHTML = "<div class='error'>Нотоғри формат</div>";
-      return;
-    }
+    const res = await fetch("/api/genres/", { credentials: 'same-origin' });
+    const genres = await res.json(); // формат: [{id,title,kind}]
+    if (!Array.isArray(genres)) { container.innerHTML = "<div class='error'>Нотоғри формат</div>"; return; }
 
     container.innerHTML = "";
     const overlay = document.querySelector(".blur_overlay");
 
-    // локально берём только положительные значения
-    const extractLocalCount = (g) => {
-      let bestPos = null;
-      for (const [k, v] of Object.entries(g)) {
-        if (typeof v === "number" && /(count|total)/i.test(k) && v > 0) {
-          bestPos = bestPos == null ? v : Math.max(bestPos, v);
-        }
-      }
-      if (bestPos != null) return Number(bestPos);
-
-      const arrayKeys = ["items","contents","content","events","list","data","results"];
-      for (const key of arrayKeys) {
-        const val = g[key];
-        if (Array.isArray(val) && val.length > 0) return val.length;
-      }
-      return null;
-    };
-
-    // общий парсер количества из разных форматов ответа
-    const pickCount = (j) => {
-      if (typeof j?.count === 'number') return j.count;
-      if (Array.isArray(j?.results)) return j.results.length;
-      if (Array.isArray(j)) return j.length;
-      if (typeof j?.meta?.total === 'number') return j.meta.total;
-      if (typeof j?.pagination?.total === 'number') return j.pagination.total;
-      return 0;
-    };
-
-    // перебор вариантов эндпоинтов/параметров
-    const buildProbeUrls = (genre) => {
-      const id   = genre.id;
-      const slug = genre.slug || genre.code || genre.key || genre.uuid || '';
-      const bases = ['content','contents','items','events','materials','lessons','posts'];
-      const params = [
-        ['genre_id', id], ['genre', id], ['genre', slug], ['genre_slug', slug],
-        ['slug', slug], ['category', id], ['category_id', id]
-      ].filter(([k,v]) => v !== undefined && v !== null && v !== '');
-      const urls = [];
-      for (const b of bases) for (const [k,v] of params) {
-        urls.push(`/api/${b}/?${k}=${encodeURIComponent(v)}&limit=1`);
-      }
-      return urls;
-    };
-
-    // основной цикл
-    for (const genre of genres) {
-      const genreId   = genre.id;
-      const titleRaw  = genre.title || "Без названия";
-      const encodedTitle = encodeURIComponent(titleRaw);
-
+    for (const g of genres) {
       const el = document.createElement("div");
       el.className = "genre";
       el.style.cursor = "pointer";
       el.innerHTML = `
-        <div class="count" title="...">0</div>
-        <div class="genre_name"><span class="red">A </span>${titleRaw}</div>
+        <div class="count">…</div>
+        <div class="genre_name"><span class="red">A </span>${g.title || "Без названия"}</div>
       `;
       const cntEl = el.querySelector('.count');
 
-      // 1) локально
-      const localCnt = extractLocalCount(genre);
-      if (Number.isFinite(localCnt) && localCnt > 0) {
-        cntEl.textContent = localCnt > 99 ? '99+' : String(localCnt);
-        cntEl.title = `local >0`;
-        log(`✅ <b>${titleRaw}</b> — local=${localCnt}`, 'ok');
+      // ставим сразу, потом обновим
+      cntEl.textContent = '…';
+
+      // правильный эндпоинт под тип жанра
+      if (g.kind === "special") {
+        // группы поджанров
+        fetch(`/api/groups/${g.id}/`, { credentials: 'same-origin' })
+          .then(r => r.ok ? r.json() : Promise.reject(r.status))
+          .then(j => {
+            const n = Array.isArray(j?.groups) ? j.groups.length : 0;
+            cntEl.textContent = n > 99 ? '99+' : String(n);
+            log(`special #${g.id} ${g.title}: groups=${n}`);
+          })
+          .catch(e => { cntEl.textContent = '0'; log(`special #${g.id} fail: ${e}`, 'err'); });
       } else {
-        // 2) фолбэк: перебор
-        let found = 0, usedUrl = '';
-        const probes = buildProbeUrls(genre);
-
-        for (const u of probes) {
-          try {
-            const r = await fetch(u, cred);
-            if (!r.ok) { log(`⚠️ ${titleRaw}: ${u} — http ${r.status}`, 'warn'); continue; }
-            const j = await r.json();
-            const n = pickCount(j);
-            if (Number.isFinite(n) && n >= 0) {
-              found = n; usedUrl = u;
-              break;
-            }
-          } catch (e) {
-            log(`❌ ${titleRaw}: ${u} — ${e.message}`, 'err');
-          }
-        }
-
-        cntEl.textContent = found > 99 ? '99+' : String(found);
-        cntEl.title = usedUrl ? `fallback: ${usedUrl}` : `fallback: none`;
-        log(`${usedUrl ? '✅' : '⚠️'} <b>${titleRaw}</b> — fallback=${found} ${usedUrl ? '('+usedUrl+')' : ''}`, usedUrl ? 'ok':'warn');
+        // обычный жанр — контент по жанру
+        fetch(`/api/content/${g.id}/?page=1`, { credentials: 'same-origin' })
+          .then(r => r.ok ? r.json() : Promise.reject(r.status))
+          .then(j => {
+            const n = typeof j?.total === 'number' ? j.total : 0;
+            cntEl.textContent = n > 99 ? '99+' : String(n);
+            log(`default #${g.id} ${g.title}: total=${n}`);
+          })
+          .catch(e => { cntEl.textContent = '0'; log(`default #${g.id} fail: ${e}`, 'err'); });
       }
 
       el.addEventListener("click", () => {
         overlay.classList.add("active");
         setTimeout(() => {
-          if (genre.kind === "special") {
-            window.location.href = `/group/?genre_id=${genreId}&genre_title=${encodedTitle}`;
+          if (g.kind === "special") {
+            window.location.href = `/group/?genre_id=${g.id}&genre_title=${encodeURIComponent(g.title || '')}`;
           } else {
-            window.location.href = `/content/?genre_id=${genreId}&genre_title=${encodedTitle}`;
+            window.location.href = `/content/?genre_id=${g.id}&genre_title=${encodeURIComponent(g.title || '')}`;
           }
         }, 300);
       });
@@ -330,9 +256,8 @@ async function loadGenres() {
       container.appendChild(el);
     }
   } catch (error) {
-    const msg = "Рубрикаларни йўклашда хатолик бўлди";
-    document.querySelector('.container_genre').innerHTML = `<div class='error'>${msg}</div>`;
-    log(`❌ genres load error: ${error?.message || error}`, 'err');
+    container.innerHTML = "<div class='error'>Рубрикаларни йўклашда хатолик бўлди</div>";
+    log(`genres load error: ${error?.message || error}`, 'err');
   }
 }
 </script>
@@ -388,7 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("name", user.first_name || "");
   }
 
-  // обработка формы поиска
+  // поиск
   const form = document.querySelector(".searcher");
   const input = document.querySelector(".searcher_block");
   if (form && input) {
