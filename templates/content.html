@@ -85,7 +85,7 @@
     .filter_btn img {
       width: 26px;
       height: 26px;
-      filter: brightness(0) invert(1); /* пассивные — белые */
+      filter: brightness(0) invert(1);
       transition: filter .25s ease, transform .15s ease;
     }
     .filter_btn span {
@@ -93,11 +93,11 @@
       color: #fff;
       margin-top: 4px;
     }
-    .filter_btn.active img { filter: none; } /* активная — оригинальный цвет PNG (розовый) */
+    .filter_btn.active img { filter: none; }
     .filter_btn:active img { transform: scale(.96); }
     .filter_btn.fake { cursor: default; }
 
-    /* Toast («Выберите формат фильтра») */
+    /* Toast */
     #toast {
       position: fixed;
       top: -56px;
@@ -152,7 +152,7 @@
   </form>
 </div>
 
-<!-- FILTER BAR (добавлено) -->
+<!-- FILTER BAR -->
 <div class="filter_bar">
   <button class="filter_btn" data-type="audio">
     <img src="{% static 'images/audio_icon.png' %}" alt="Audio">
@@ -171,7 +171,6 @@
   </button>
 </div>
 
-<!-- Toast -->
 <div id="toast">Выберите формат фильтра</div>
 
 <div class="choosed_genre"><span class="red">A </span><span id="genre-title"></span></div>
@@ -242,7 +241,9 @@ function renderItems(container, items, favourites, genreId, genreTitle) {
         popup.classList.add('show');
         document.getElementById('popup_yes').onclick = async () => {
           await fetch(`/api/favourites/remove/${id}/`, {
-            method: 'POST', headers: {'Content-Type':'application/json'},
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            credentials: 'same-origin',
             body: JSON.stringify({ telegram_id: window.__uid })
           });
           favEl.classList.remove('favourited');
@@ -252,7 +253,9 @@ function renderItems(container, items, favourites, genreId, genreTitle) {
         document.getElementById('popup_no').onclick = () => popup.classList.remove('show');
       } else {
         await fetch(`/api/favourites/add/${id}/`, {
-          method: 'POST', headers: {'Content-Type':'application/json'},
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          credentials: 'same-origin',
           body: JSON.stringify({ telegram_id: window.__uid })
         });
         favEl.classList.remove('not_favourited');
@@ -268,7 +271,6 @@ function renderItems(container, items, favourites, genreId, genreTitle) {
     });
   });
 
-  // вернуть список (если где-то нужен)
   return allCards;
 }
 </script>
@@ -276,24 +278,21 @@ function renderItems(container, items, favourites, genreId, genreTitle) {
 <script>
 /* ---------- ОСНОВНАЯ ЛОГИКА СТРАНИЦЫ ---------- */
 document.addEventListener('DOMContentLoaded', async () => {
-  // last_session — для скролла к карточке
   const session = localStorage.getItem('last_session');
   const lastTitle = session ? JSON.parse(session).itemTitle : null;
 
-  // Telegram user
   const tg = window.Telegram.WebApp;
   const user = tg.initDataUnsafe?.user;
   if (!user || !user.id) {
     document.querySelector('.content_body').innerHTML = '<p>Ошибка авторизации</p>';
     return;
   }
-  window.__uid = user.id; // сохраняем для вложенных хендлеров
+  window.__uid = user.id;
 
-  // параметры жанра
   const qs = new URLSearchParams(window.location.search);
   const genreId = qs.get('genre_id');
   const genreTitleRaw = qs.get('genre_title');
-  const genreTitle = genreTitleRaw?.startsWith('A ') ? genreTitleRaw.slice(2).trim() : genreTitleRaw || '';
+  const genreTitle = genreTitleRaw?.startsWith('A ') ? genreTitleRaw.slice(2).trim() : (genreTitleRaw || '');
   document.getElementById('genre-title').textContent = decodeURIComponent(genreTitle || '');
 
   const contentBody = document.querySelector('.content_body');
@@ -303,40 +302,50 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // избранное
-  const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
-  const favData = await favRes.json();
-  const favourites = favData.favourites || [];
+  let favourites = [];
+  try {
+    const favRes = await fetch(`/api/favourites/?telegram_id=${encodeURIComponent(user.id)}`, { credentials: 'same-origin' });
+    const favData = await favRes.json();
+    favourites = favData?.favourites || [];
+  } catch {}
 
-  // функция загрузки + рендера c серверной фильтрацией
+  // загрузка и рендер (серверная фильтрация)
   async function fetchAndRender(type /* 'video'|'audio'|'file'|undefined */) {
-    const url = new URL(`/api/genres/${genreId}/content/`, window.location.origin);
-    if (type) url.searchParams.set('content_type', type);
-    const res = await fetch(url.toString());
-    const data = await res.json();
-    const items = data.items || [];
-    if (!items.length) {
-      contentBody.innerHTML = '<p>Ҳозирча контент юкланмади</p>';
-      return;
-    }
-    renderItems(contentBody, items, favourites, genreId, genreTitle);
+    contentBody.innerHTML = '<div class="loading">Юкланяпти...</div>';
 
-    // Скролл к последней карточке
-    if (lastTitle) {
-      setTimeout(() => {
-        const cards = document.querySelectorAll('.video, .audio, .file');
-        for (let card of cards) {
-          const titleEl = card.querySelector('.title');
-          if (titleEl && titleEl.textContent.trim() === lastTitle.trim()) {
-            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            localStorage.removeItem('last_session');
-            break;
+    let url = `/api/genres/${encodeURIComponent(genreId)}/content/?page=1`;
+    if (type) url += `&content_type=${encodeURIComponent(type)}`;
+
+    try {
+      const res = await fetch(url, { credentials: 'same-origin' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const items = Array.isArray(data?.items) ? data.items : [];
+      if (!items.length) {
+        contentBody.innerHTML = '<p>Ҳозирча контент юкланмади</p>';
+        return;
+      }
+      renderItems(contentBody, items, favourites, genreId, genreTitle);
+
+      if (lastTitle) {
+        setTimeout(() => {
+          const cards = document.querySelectorAll('.video, .audio, .file');
+          for (let card of cards) {
+            const titleEl = card.querySelector('.title');
+            if (titleEl && titleEl.textContent.trim() === lastTitle.trim()) {
+              card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              localStorage.removeItem('last_session');
+              break;
+            }
           }
-        }
-      }, 300);
+        }, 300);
+      }
+    } catch (e) {
+      contentBody.innerHTML = '<p>Хатолик юз берди</p>';
     }
   }
 
-  // первичная загрузка (без фильтра)
+  // первичная загрузка
   await fetchAndRender();
 
   // FILTER UI
