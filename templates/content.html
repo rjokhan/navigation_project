@@ -33,73 +33,56 @@
 
     html,body{margin:0 !important; padding-bottom:100px !important;}
 
-    /* FILTER BAR */
+    /* ===== FILTER CHIPS (как в референсе) ===== */
     .filter_bar{
-    display:flex;
-    gap:12px;
-    padding:10px 12px 0 12px;
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-    scrollbar-width:none;
-  }
-  .filter_bar::-webkit-scrollbar{ display:none; }
+      display:flex; gap:12px; padding:12px 12px 0; align-items:center;
+      overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    }
+    .filter_bar::-webkit-scrollbar{ display:none; }
 
-  .filter_btn{
-    display:inline-flex;
-    align-items:center;
-    gap:10px;
-    padding:8px 14px;
-    border-radius:999px;
-    border:2px solid #ff155d;
-    background:#ff155d;            /* розовый фон как на макете */
-    color:#fff;
-    font:600 14px/1 Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
-    white-space:nowrap;
-    cursor:pointer;
-    user-select:none;
-    -webkit-tap-highlight-color:transparent;
-    transition:transform .12s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
-    box-shadow:0 4px 14px rgba(255,21,93,.25);
-  }
-  .filter_btn:active{ transform:translateY(1px) scale(.98); }
+    .chip{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:10px 18px; border-radius:999px;
+      border:1px solid #fff;                 /* обводка всегда белая */
+      background:transparent;                 /* неактивная — прозрачная */
+      color:#fff;                             /* текст белый */
+      font:600 16px/1 Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+      white-space:nowrap; cursor:pointer; user-select:none; -webkit-tap-highlight-color:transparent;
+      transition:background .2s ease, color .2s ease, transform .1s ease;
+    }
+    .chip:active{ transform:translateY(1px) scale(.98); }
 
-  /* иконка в кружке слева */
-  .filter_btn .ico{
-    width:22px; height:22px;
-    border-radius:999px;
-    background:rgba(255,255,255,.18);
-    display:inline-flex; align-items:center; justify-content:center;
-    flex:0 0 22px;
-  }
-  .filter_btn .ico img{
-    width:12px; height:12px; display:block;
-    filter:brightness(0) invert(1); /* делаем PNG белым */
-  }
-  .filter_btn .lbl{ letter-spacing:.2px; }
+    .chip__dot{
+      width:26px; height:26px; border-radius:50%;
+      display:grid; place-items:center; background:#ff155d;   /* неактивная — розовый кружок */
+      flex:0 0 26px;
+    }
+    .chip__icon{ width:16px; height:16px; object-fit:contain; filter:invert(1) brightness(200%); } /* неактивная — иконка белая */
+    .chip span{ white-space:nowrap; }
 
-  /* неактивную сделаем полупрозрачной/обведённой */
-  .filter_btn.ghost{
-    background:transparent;
-    color:#ff155d;
-    box-shadow:none;
-  }
-  .filter_btn.ghost .ico{ background:#ff155d; }
-  .filter_btn.ghost .ico img{ filter:brightness(0) invert(1); }
+    /* активная — фон розовый, кружок белый, иконка «как есть» */
+    .chip.active{ background:#ff155d; }
+    .chip.active .chip__dot{ background:#fff; }
+    .chip.active .chip__icon{ filter:none; }
 
-  /* «фейковая» (фильтр) — круглая как в референсе */
-  .filter_btn.fake{
-    padding:8px;
-    width:42px; height:42px;
-    border-radius:999px;
-    justify-content:center;
-  }
-  .filter_btn.fake .lbl{ display:none; }
+    /* маленькая «Filter» — всегда розовая */
+    .chip--filter{
+      padding:10px; width:42px; height:42px; border-radius:999px; justify-content:center;
+      background:#ff155d; border:1px solid #fff;
+    }
+    .chip--filter .chip__dot{ background:transparent; }
+    .chip--filter .chip__icon{ filter:none; width:18px; height:18px; }
+
+    @media (max-width:360px){
+      .chip{ padding:9px 14px; gap:8px; font-size:14px; }
+      .chip__dot{ width:24px; height:24px; }
+    }
 
     /* Toast */
     #toast{position:fixed; top:-56px; left:50%; transform:translateX(-50%); background:#38b000; color:#fff; font-size:14px; font-weight:600; padding:10px 16px; border-radius:999px; box-shadow:0 6px 20px rgba(0,0,0,.25); z-index:10000; transition:top .35s;}
     #toast.show{top:18px;}
 
-    /* Debug footer */
+    /* Debug footer (можно скрыть) */
     #debugbar{position:fixed; left:8px; right:8px; bottom:calc(env(safe-area-inset-bottom) + 100px); font:12px/1.35 Inter,sans-serif; color:#fff; background:rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.15); border-radius:10px; padding:6px 8px; display:none; z-index:99999;}
     #debugbar .warn{color:#ffd166;} #debugbar .err{color:#ff6b6b;} #debugbar .ok{color:#a0ffb0;}
   </style>
@@ -136,26 +119,35 @@
   </form>
 </div>
 
-<!-- FILTER BAR (ref-style) -->
-<div class="filter_bar">
-  <button class="filter_btn ghost" data-type="audio">
-    <span class="ico"><img src="{% static 'images/audio_icon.png' %}" alt=""></span>
-    <span class="lbl">Audio</span>
+<!-- ===== FILTER BAR (новый) ===== -->
+<div class="filter_bar" id="filterBar">
+  <button class="chip" data-type="audio" aria-pressed="false">
+    <span class="chip__dot">
+      <img class="chip__icon" src="{% static 'images/ic_audio2.png' %}" alt="">
+    </span>
+    <span>Audio</span>
   </button>
-  <button class="filter_btn" data-type="video">
-    <span class="ico"><img src="{% static 'images/video_icon.png' %}" alt=""></span>
-    <span class="lbl">Video</span>
+
+  <button class="chip" data-type="video" aria-pressed="false">
+    <span class="chip__dot">
+      <img class="chip__icon" src="{% static 'images/ic_video2.png' %}" alt="">
+    </span>
+    <span>Video</span>
   </button>
-  <button class="filter_btn ghost" data-type="file">
-    <span class="ico"><img src="{% static 'images/file_icon.png' %}" alt=""></span>
-    <span class="lbl">File</span>
+
+  <button class="chip" data-type="file" aria-pressed="false">
+    <span class="chip__dot">
+      <img class="chip__icon" src="{% static 'images/ic_file2.png' %}" alt="">
+    </span>
+    <span>File</span>
   </button>
-  <button class="filter_btn fake" aria-label="Filter">
-    <span class="ico"><img src="{% static 'images/filter_icon.png' %}" alt=""></span>
-    <span class="lbl">Filter</span>
+
+  <button class="chip chip--filter" id="chipFilter" aria-label="Filter">
+    <span class="chip__dot">
+      <img class="chip__icon" src="{% static 'images/ic_filter2.png' %}" alt="">
+    </span>
   </button>
 </div>
-
 
 <div id="toast">Выберите формат фильтра</div>
 
@@ -173,8 +165,8 @@ function renderItems(container, items, favourites, genreId, genreTitle) {
   items.forEach(item => {
     const isFav = favourites.includes(item.id);
     const favClass = isFav ? 'favourited' : 'not_favourited';
-    const favIcon = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
-    const open = `openTelegramAndCollapse('${item.telegram_url}', '${genreId}', '${genreTitle}', '${(item.title||'').replace(/'/g,"&#39;")}', '${item.id}')`;
+    const safeTitle = String(item.title || '').replace(/'/g,"&#39;");
+    const open = `openTelegramAndCollapse('${item.telegram_url}', '${genreId}', '${genreTitle}', '${safeTitle}', '${item.id}')`;
 
     let block = '';
     if (item.content_type === 'video') {
@@ -183,7 +175,7 @@ function renderItems(container, items, favourites, genreId, genreTitle) {
           <img src="${item.thumbnail || ''}"/>
           <div class="video_duration">${item.duration || ''}</div>
         </div>
-        ${favIcon}
+        <div class="fav_icon ${favClass}" data-id="${item.id}"></div>
         <div class="video_info">
           <div class="title">${item.title || ''}</div>
           <div class="subtitle">${item.subtitle ? item.subtitle.replace(/\n/g,'<br>') : ''}</div>
@@ -192,10 +184,10 @@ function renderItems(container, items, favourites, genreId, genreTitle) {
     } else if (item.content_type === 'audio') {
       block = `<div class="audio" onclick="${open}">
         <div class="audio_menu">
-          <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}" /></div>
+          <div class="static_icon"><img src="{% static 'images/ic_audio2.png' %}" /></div>
           <div class="audio_duration">${item.duration || ''}</div>
         </div>
-        ${favIcon}
+        <div class="fav_icon ${favClass}" data-id="${item.id}"></div>
         <div class="audio_info">
           <div class="title">${item.title || ''}</div>
           <div class="subtitle">${item.subtitle ? item.subtitle.replace(/\n/g,'<br>') : ''}</div>
@@ -204,10 +196,10 @@ function renderItems(container, items, favourites, genreId, genreTitle) {
     } else {
       block = `<div class="file" onclick="${open}">
         <div class="file_menu">
-          <div class="static_icon"><img src="{% static 'images/file_icon.png' %}" /></div>
+          <div class="static_icon"><img src="{% static 'images/ic_file2.png' %}" /></div>
           <div class="file_duration">${item.duration || ''}</div>
         </div>
-        ${favIcon}
+        <div class="fav_icon ${favClass}" data-id="${item.id}"></div>
         <div class="file_info">
           <div class="title">${item.title || ''}</div>
           <div class="subtitle">${item.subtitle ? item.subtitle.replace(/\n/g,'<br>') : ''}</div>
@@ -250,13 +242,12 @@ function renderItems(container, items, favourites, genreId, genreTitle) {
   });
 }
 
-/* ---------- ВСПОМОГАТЕЛЬНОЕ: парсер ответов ---------- */
+/* универсальный «достань items из любого ответа» */
 function pickItems(json){
   if (!json) return [];
   if (Array.isArray(json)) return json;
   if (Array.isArray(json.items)) return json.items;
   if (Array.isArray(json.results)) return json.results;
-  // иногда прилетает {data:[...]}
   if (Array.isArray(json.data)) return json.data;
   return [];
 }
@@ -315,12 +306,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const id = encodeURIComponent(genreId);
     const t  = type ? `&content_type=${encodeURIComponent(type)}` : '';
 
-    // основной и фолбэки
     const urls = [
-      `/api/genres/${id}/content/?page=1${t}`,       // наш основной
-      `/api/content/${id}/?page=1${t}`,              // альтернативный
-      `/api/content/?genre_id=${id}&page=1${t}`,     // старый вариант
-      `/api/contents/?genre_id=${id}&page=1${t}`     // ещё один старый
+      `/api/genres/${id}/content/?page=1${t}`,       // основной
+      `/api/content/${id}/?page=1${t}`,              // альтернативный 1
+      `/api/content/?genre_id=${id}&page=1${t}`,     // альтернативный 2
+      `/api/contents/?genre_id=${id}&page=1${t}`     // альтернативный 3
     ];
 
     const {items, used} = await fetchItemsByAny(urls);
@@ -334,7 +324,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderItems(contentBody, items, favourites, genreId, genreTitle);
     if (DEBUG && used) dlog(`USED ${used}`, 'ok');
 
-    // скролл к последней карточке, если есть last_session
+    // скролл к последней карточке
     const session = localStorage.getItem('last_session');
     const lastTitle = session ? JSON.parse(session).itemTitle : null;
     if (lastTitle) {
@@ -352,23 +342,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // первая загрузка
+  // первая загрузка (без фильтра)
   await fetchAndRender();
 
-  // FILTER UI
+  /* ====== Обработчики фильтров ====== */
+  const bar = document.getElementById('filterBar');
+  const chips = [...bar.querySelectorAll('.chip:not(.chip--filter)')];
+  const filterBtn = document.getElementById('chipFilter');
   const toast = document.getElementById('toast');
-  const btns  = document.querySelectorAll('.filter_btn');
 
-  function setActive(btn){ btns.forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+  function setActiveChip(el){
+    chips.forEach(c => { c.classList.toggle('active', c===el); c.setAttribute('aria-pressed', c===el ? 'true' : 'false'); });
+  }
 
-  btns.forEach(btn => {
-    btn.addEventListener('click', async () => {
-      if (btn.classList.contains('fake')) {
-        toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'), 2000); return;
-      }
-      setActive(btn);
-      await fetchAndRender(btn.dataset.type); // audio | video | file
+  chips.forEach(chip => {
+    chip.addEventListener('click', async () => {
+      const t = chip.dataset.type;  // audio | video | file
+      setActiveChip(chip);
+      await fetchAndRender(t);
     });
+  });
+
+  filterBtn.addEventListener('click', () => {
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
   });
 });
 </script>
@@ -409,34 +406,6 @@ function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
   setTimeout(() => { try { Telegram.WebApp.close(); } catch(e) {} }, 500);
 }
 </script>
-
-<script>
-  // ...после определения fetchAndRender(...)
-  const toast = document.getElementById('toast');
-  const btns = document.querySelectorAll('.filter_btn');
-
-  function setActive(btn){
-    btns.forEach(b=>{
-      if(b.classList.contains('fake')) return;
-      b.classList.add('ghost');     // все в неактив
-    });
-    btn.classList.remove('ghost');   // текущий актив
-  }
-
-  btns.forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      if(btn.classList.contains('fake')){
-        toast.classList.add('show');
-        setTimeout(()=>toast.classList.remove('show'), 2000);
-        return;
-      }
-      setActive(btn);
-      const type = btn.dataset.type; // audio | video | file
-      await fetchAndRender(type);
-    });
-  });
-</script>
-
 
 </body>
 </html>
