@@ -46,7 +46,7 @@
 .header_icon p { margin: 0 !important; font-size: 10px !important; line-height: 1.2 !important; color: #fff !important; text-align: center !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
 .header_icon.active { background-color: #00000066 !important; opacity: 1 !important; transform: none !important; animation: none !important; }
 
-/* на очень узких экранах */
+/* узкие экраны */
 @media (max-width: 360px) {
   .header { height: 80px !important; padding: 4px !important; gap: 4px !important; max-width: none !important; }
   .header_icon { padding: 6px 0 !important; gap: 4px !important; }
@@ -57,58 +57,42 @@
 /* сброс внешних отступов у body/html */
 html, body { margin: 0 !important; }
 
-/* === WHAT'S NEW slider (ADD-ONLY) === */
+/* === WHAT'S NEW slider === */
 .whats-new { margin: 10px 0 14px; }
 .whats-new .wn-track {
-  position: relative;
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 100%;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  gap: 0;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
-  min-height: 140px;
+  position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 100%;
+  overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+  gap: 0; border-radius: 14px; background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08); min-height: 140px;
 }
 .whats-new .wn-track::-webkit-scrollbar { display: none; }
-.wn-slide {
-  display: block; position: relative; scroll-snap-align: start;
-  border-radius: 14px; overflow: hidden;
-  height: 0; padding-top: 56.25%; background: #1a1a1a;
-}
+.wn-slide { display: block; position: relative; scroll-snap-align: start; border-radius: 14px; overflow: hidden; height: 0; padding-top: 56.25%; background: #1a1a1a; }
 .wn-slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .wn-dots { display: flex; justify-content: center; align-items: center; gap: 10px; padding-top: 8px; }
-.wn-dot { width: 36px; height: 4px; border-radius: 999px; background: #949494; opacity: .9; transition: background .2s ease, transform .2s ease, opacity .2s ease; }
+.wn-dot { width: 36px; height: 4px; border-radius: 999px; background: #949494; opacity: .9; transition: background .2s, transform .2s, opacity .2s; }
 .wn-dot.active { background: #ff155d; transform: translateY(-1px); opacity: 1; }
 @media (max-width: 360px) { .wn-dot { width: 28px; } }
 
 /* === GENRE COUNT BADGE — PERFECT ROUND === */
 .genre { position: relative !important; }
 .genre .count{
-  position: absolute !important;
-  top: 6px !important; right: 6px !important;   /* ближе к краю */
-  z-index: 10 !important;
-
-  width: 22px !important; height: 22px !important;
-  border-radius: 50% !important;
-
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-
-  background: #ff155d !important;
-  color: #fff !important;
+  position: absolute !important; top: 6px !important; right: 6px !important; z-index: 10 !important;
+  width: 22px !important; height: 22px !important; border-radius: 50% !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  background: #ff155d !important; color: #fff !important;
   font: 700 12px/1 Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif !important;
-  box-shadow: 0 3px 6px rgba(255,21,93,.45) !important;
-  user-select: none !important;
-  pointer-events: none !important;
+  box-shadow: 0 3px 6px rgba(255,21,93,.45) !important; user-select: none !important; pointer-events: none !important;
 }
-@media (min-width: 420px){
-  .genre .count{ width: 24px !important; height: 24px !important; font-size: 13px !important; }
+@media (min-width: 420px){ .genre .count{ width: 24px !important; height: 24px !important; font-size: 13px !important; } }
+
+/* === DEBUG PANEL (вкл. через ?debug=1) === */
+#debug-panel{
+  position: fixed; left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom) + 110px);
+  max-height: 40vh; overflow: auto; font: 12px/1.35 Inter, sans-serif; color: #fff;
+  background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.15); border-radius: 12px; padding: 8px; display:none;
 }
+#debug-panel .line{ margin: 3px 0; opacity: .95; }
+#debug-panel .ok{ color: #7CFC9A; } .warn{ color: #FFD166; } .err{ color: #FF6B6B; }
   </style>
 </head>
 
@@ -126,44 +110,15 @@ html, body { margin: 0 !important; }
 </div>
 
 <!-- BACKGROUND -->
-<div class="vertical-waves">
-  <div class="wave"></div>
-  <div class="wave"></div>
-  <div class="wave"></div>
-</div>
+<div class="vertical-waves"><div class="wave"></div><div class="wave"></div><div class="wave"></div></div>
 
 <!-- NAVIGATION -->
 <div class="header">
-  <a href="{% url 'index' %}">
-    <div class="header_icon active">
-      <img src="{% static 'images/home_page.png' %}" alt="Home">
-      <p>A CLUB</p>
-    </div>
-  </a>
-  <a href="{% url 'favourited' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/fav.png' %}" alt="Fav">
-      <p>Севимли</p>
-    </div>
-  </a>
-  <a href="{% url 'profile' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/profile.png' %}" alt="Profile">
-      <p>Профиль</p>
-    </div>
-  </a>
-  <a href="{% url 'chat' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/chat.png' %}" alt="Chat">
-      <p>Чатлар</p>
-    </div>
-  </a>
-  <a href="{% url 'rules' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/rules.png' %}" alt="Rules">
-      <p>Қоидалар</p>
-    </div>
-  </a>
+  <a href="{% url 'index' %}"><div class="header_icon active"><img src="{% static 'images/home_page.png' %}" alt="Home"><p>A CLUB</p></div></a>
+  <a href="{% url 'favourited' %}"><div class="header_icon"><img src="{% static 'images/fav.png' %}" alt="Fav"><p>Севимли</p></div></a>
+  <a href="{% url 'profile' %}"><div class="header_icon"><img src="{% static 'images/profile.png' %}" alt="Profile"><p>Профиль</p></div></a>
+  <a href="{% url 'chat' %}"><div class="header_icon"><img src="{% static 'images/chat.png' %}" alt="Chat"><p>Чатлар</p></div></a>
+  <a href="{% url 'rules' %}"><div class="header_icon"><img src="{% static 'images/rules.png' %}" alt="Rules"><p>Қоидалар</p></div></a>
 </div>
 
 <!-- SEARCH -->
@@ -179,35 +134,21 @@ html, body { margin: 0 !important; }
 </section>
 
 <!-- GENRES -->
-<div class="container_genre">
-  <div class="loading">Юкланяпти...</div>
-</div>
+<div class="container_genre"><div class="loading">Юкланяпти...</div></div>
 
 <!-- POPUP for non-residents -->
-<div id="noAccessPopup" style="
-  display: none;
-  z-index: 99999;
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background-color: rgba(0, 0, 0, 0.9);
-  color: white;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  font-weight: 600;
-  font-family: 'Raleway', sans-serif;
-  text-align: center;">
-  <div style="width: 60vw; margin: 0 auto;">
-    Навигация платформасини сиз учун янада қулай қилиш мақсадида янгилаяпмиз.
-  </div>
+<div id="noAccessPopup" style="display:none;z-index:99999;position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.9);color:white;align-items:center;justify-content:center;font-size:24px;font-weight:600;font-family:'Raleway',sans-serif;text-align:center;">
+  <div style="width: 60vw; margin: 0 auto;">Навигация платформасини сиз учун янада қулай қилиш мақсадида янгилаяпмиз.</div>
 </div>
+
+<!-- DEBUG (вкл. ?debug=1) -->
+<div id="debug-panel"></div>
 
 <script>
 /* === WHAT'S NEW logic === */
 async function loadWhatsNew() {
-  const track   = document.getElementById('wnTrack');
-  const dots    = document.getElementById('wnDots');
+  const track = document.getElementById('wnTrack');
+  const dots  = document.getElementById('wnDots');
   const section = document.querySelector('.whats-new');
   if (!track || !dots || !section) return;
 
@@ -221,20 +162,14 @@ async function loadWhatsNew() {
       try { if (img && img.startsWith('/')) img = new URL(img, location.origin).href; } catch(e){}
       return { img, url: it.url || "#" };
     }).filter(x => x.img).slice(0, 5);
-  } catch (e) {
-    console.warn('[WN] fetch error', e);
-  }
+  } catch (e) { /* ignore */ }
 
-  if (!items.length) {
-    section.remove();
-    return;
-  }
+  if (!items.length) { section.remove(); return; }
 
   track.innerHTML = items.map((it,i) => `
     <a class="wn-slide" href="${it.url}" target="_blank" rel="noopener" aria-label="Новость ${i+1}">
       <img src="${it.img}" alt="">
-    </a>
-  `).join('');
+    </a>`).join('');
 
   dots.innerHTML = items.map((_,i) => `<div class="wn-dot${i===0?' active':''}" data-i="${i}" role="tab"></div>`).join('');
 
@@ -259,15 +194,30 @@ async function loadWhatsNew() {
 </script>
 
 <script>
-/* === GENRES loader (counters with deep local scan + multi-endpoint fallback) === */
+/* === GENRES loader with robust counters + on-screen debug === */
 async function loadGenres() {
+  const qs = new URLSearchParams(location.search);
+  const DEBUG = qs.get('debug') === '1';
+  const dbg = document.getElementById('debug-panel');
+  const log = (html, cls='line') => {
+    if (!DEBUG) return;
+    dbg.style.display = 'block';
+    const d = document.createElement('div');
+    d.className = cls + ' line';
+    d.innerHTML = html;
+    dbg.appendChild(d);
+  };
+
   const container = document.querySelector('.container_genre');
   container.innerHTML = '<div class="loading">Рубрикалар рўйхати юкланяпти...</div>';
 
-  try {
-    const res = await fetch("/api/genres/", { credentials: 'same-origin' });
-    const genres = await res.json();
+  const cred = { credentials: 'same-origin' };
 
+  try {
+    const res = await fetch("/api/genres/", cred);
+    if (!res.ok) throw new Error('genres http ' + res.status);
+    const genresJson = await res.json();
+    const genres = Array.isArray(genresJson) ? genresJson : (genresJson?.results || []);
     if (!Array.isArray(genres)) {
       container.innerHTML = "<div class='error'>Нотоғри формат</div>";
       return;
@@ -276,11 +226,9 @@ async function loadGenres() {
     container.innerHTML = "";
     const overlay = document.querySelector(".blur_overlay");
 
-    // === возвращаем только ПОЛОЖИТЕЛЬНЫЕ числа, иначе null
+    // локально берём только положительные значения
     const extractLocalCount = (g) => {
       let bestPos = null;
-
-      // 1) явные числовые поля со словами count|total
       for (const [k, v] of Object.entries(g)) {
         if (typeof v === "number" && /(count|total)/i.test(k) && v > 0) {
           bestPos = bestPos == null ? v : Math.max(bestPos, v);
@@ -288,39 +236,41 @@ async function loadGenres() {
       }
       if (bestPos != null) return Number(bestPos);
 
-      // 2) длина типовых массивов, но тоже только > 0
       const arrayKeys = ["items","contents","content","events","list","data","results"];
       for (const key of arrayKeys) {
         const val = g[key];
         if (Array.isArray(val) && val.length > 0) return val.length;
       }
-
       return null;
     };
 
-    // серверный фолбэк: пробуем несколько URL до первого валидного ответа
-    const fetchServerCount = async (genreId) => {
-      const q = encodeURIComponent(genreId);
-      const urls = [
-        `/api/content/?genre_id=${q}`,
-        `/api/contents/?genre_id=${q}`,
-        `/api/content/?genre=${q}`,
-        `/api/items/?genre_id=${q}`,
-        `/api/items/?genre=${q}`
-      ];
-      for (const u of urls) {
-        try {
-          const r = await fetch(u, { credentials: 'same-origin' });
-          if (!r.ok) continue;
-          const j = await r.json();
-          if (typeof j?.count === 'number') return j.count;
-          if (Array.isArray(j?.results)) return j.results.length;
-          if (Array.isArray(j)) return j.length;
-        } catch(e) { /* next url */ }
-      }
+    // общий парсер количества из разных форматов ответа
+    const pickCount = (j) => {
+      if (typeof j?.count === 'number') return j.count;
+      if (Array.isArray(j?.results)) return j.results.length;
+      if (Array.isArray(j)) return j.length;
+      if (typeof j?.meta?.total === 'number') return j.meta.total;
+      if (typeof j?.pagination?.total === 'number') return j.pagination.total;
       return 0;
     };
 
+    // перебор вариантов эндпоинтов/параметров
+    const buildProbeUrls = (genre) => {
+      const id   = genre.id;
+      const slug = genre.slug || genre.code || genre.key || genre.uuid || '';
+      const bases = ['content','contents','items','events','materials','lessons','posts'];
+      const params = [
+        ['genre_id', id], ['genre', id], ['genre', slug], ['genre_slug', slug],
+        ['slug', slug], ['category', id], ['category_id', id]
+      ].filter(([k,v]) => v !== undefined && v !== null && v !== '');
+      const urls = [];
+      for (const b of bases) for (const [k,v] of params) {
+        urls.push(`/api/${b}/?${k}=${encodeURIComponent(v)}&limit=1`);
+      }
+      return urls;
+    };
+
+    // основной цикл
     for (const genre of genres) {
       const genreId   = genre.id;
       const titleRaw  = genre.title || "Без названия";
@@ -330,20 +280,40 @@ async function loadGenres() {
       el.className = "genre";
       el.style.cursor = "pointer";
       el.innerHTML = `
-        <div class="count">0</div>
+        <div class="count" title="...">0</div>
         <div class="genre_name"><span class="red">A </span>${titleRaw}</div>
       `;
-
       const cntEl = el.querySelector('.count');
 
-      // локальное число используем ТОЛЬКО если > 0, иначе — фолбэк
+      // 1) локально
       const localCnt = extractLocalCount(genre);
       if (Number.isFinite(localCnt) && localCnt > 0) {
         cntEl.textContent = localCnt > 99 ? '99+' : String(localCnt);
+        cntEl.title = `local >0`;
+        log(`✅ <b>${titleRaw}</b> — local=${localCnt}`, 'ok');
       } else {
-        fetchServerCount(genreId)
-          .then(n => { cntEl.textContent = n > 99 ? '99+' : String(n); })
-          .catch(() => { /* оставим 0 */ });
+        // 2) фолбэк: перебор
+        let found = 0, usedUrl = '';
+        const probes = buildProbeUrls(genre);
+
+        for (const u of probes) {
+          try {
+            const r = await fetch(u, cred);
+            if (!r.ok) { log(`⚠️ ${titleRaw}: ${u} — http ${r.status}`, 'warn'); continue; }
+            const j = await r.json();
+            const n = pickCount(j);
+            if (Number.isFinite(n) && n >= 0) {
+              found = n; usedUrl = u;
+              break;
+            }
+          } catch (e) {
+            log(`❌ ${titleRaw}: ${u} — ${e.message}`, 'err');
+          }
+        }
+
+        cntEl.textContent = found > 99 ? '99+' : String(found);
+        cntEl.title = usedUrl ? `fallback: ${usedUrl}` : `fallback: none`;
+        log(`${usedUrl ? '✅' : '⚠️'} <b>${titleRaw}</b> — fallback=${found} ${usedUrl ? '('+usedUrl+')' : ''}`, usedUrl ? 'ok':'warn');
       }
 
       el.addEventListener("click", () => {
@@ -360,8 +330,9 @@ async function loadGenres() {
       container.appendChild(el);
     }
   } catch (error) {
-    console.error("Ошибка загрузки жанров:", error);
-    container.innerHTML = "<div class='error'>Рубрикаларни йўклашда хатолик бўлди</div>";
+    const msg = "Рубрикаларни йўклашда хатолик бўлди";
+    document.querySelector('.container_genre').innerHTML = `<div class='error'>${msg}</div>`;
+    log(`❌ genres load error: ${error?.message || error}`, 'err');
   }
 }
 </script>
@@ -464,7 +435,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
   } catch (e) {
-    console.warn("Ошибка разбора last_session", e);
     localStorage.removeItem('last_session');
   }
 });
