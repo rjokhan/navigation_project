@@ -9,174 +9,67 @@
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-/* === NAVBAR FULL CSS — FINAL VERSION === */
-.header, .header * { 
-  box-sizing: border-box !important; 
-}
 
-.header {
-  position: fixed !important;
-  bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: calc(100vw - 16px) !important;   /* поля по 8px слева/справа */
-  max-width: 640px !important;            /* ограничение ширины на больших экранах */
-  height: 88px !important;                /* общая высота бара */
-  padding: 4px !important;
-  display: grid !important;
-  grid-template-columns: repeat(5, 1fr) !important;
-  gap: 6px !important;
-  overflow: hidden !important;
-  border-radius: 40px !important;
-  background: linear-gradient(45deg, rgba(128,26,48,.16), rgba(78,5,21,.28)) !important;
-  border: 1px solid #ffffff44 !important;
-  -webkit-backdrop-filter: blur(5px) !important;
-  backdrop-filter: blur(5px) !important;
-  z-index: 9999 !important;
-}
+  <!-- NAVBAR -->
+  <style>
+    .header, .header * { box-sizing: border-box !important; }
+    .header {
+      position: fixed !important;
+      bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
+      left: 50% !important; transform: translateX(-50%) !important;
+      width: calc(100vw - 16px) !important; max-width: 640px !important;
+      height: 88px !important; padding: 4px !important;
+      display: grid !important; grid-template-columns: repeat(5, 1fr) !important; gap: 6px !important;
+      overflow: hidden !important; border-radius: 40px !important;
+      background: linear-gradient(45deg, rgba(128,26,48,.16), rgba(78,5,21,.28)) !important;
+      border: 1px solid #ffffff44 !important; -webkit-backdrop-filter: blur(5px) !important; backdrop-filter: blur(5px) !important;
+      z-index: 9999 !important;
+    }
+    .header > a { display: block !important; min-width: 0 !important; height: 100% !important; }
+    .header_icon {
+      width: 100% !important; height: 100% !important; border-radius: 32px !important;
+      display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;
+      padding: 8px 0 !important; gap: 6px !important; min-width: 0 !important;
+    }
+    .header_icon img { display:block !important; width:34px !important; height:34px !important; object-fit:contain !important; margin:0 !important; }
+    .header_icon p { margin:0 !important; font-size:10px !important; line-height:1.2 !important; color:#fff !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; }
+    .header_icon.active { background-color:#00000066 !important; }
+    @media (max-width: 360px){
+      .header { height:80px !important; gap:4px !important; }
+      .header_icon { padding:6px 0 !important; gap:4px !important; }
+      .header_icon img { width:30px !important; height:30px !important; }
+      .header_icon p { font-size:9px !important; }
+    }
+    html, body { margin:0 !important; }
+  </style>
 
-.header > a {
-  display: block !important;
-  min-width: 0 !important;
-  height: 100% !important;                /* ссылка тянется на весь рост */
-}
-
-.header_icon {
-  width: 100% !important;
-  height: 100% !important;                /* капсула на весь рост */
-  border-radius: 32px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 8px 0 !important;              /* внутренние отступы сверху/снизу */
-  gap: 6px !important;                    /* расстояние между иконкой и текстом */
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-}
-
-.header_icon img {
-  display: block !important;
-  width: 34px !important;
-  height: 34px !important;
-  margin: 0 !important;
-  object-fit: contain !important;
-}
-
-.header_icon p {
-  margin: 0 !important;
-  font-size: 10px !important;
-  line-height: 1.2 !important;
-  color: #fff !important;
-  text-align: center !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-.header_icon.active {
-  background-color: #00000066 !important;
-  opacity: 1 !important;
-  transform: none !important;
-  animation: none !important;
-}
-
-/* на очень узких экранах */
-@media (max-width: 360px) {
-  .header {
-    height: 80px !important;
-    padding: 4px !important;
-    gap: 4px !important;
-    max-width: none !important;
-  }
-  .header_icon {
-    padding: 6px 0 !important;
-    gap: 4px !important;
-  }
-  .header_icon img {
-    width: 30px !important;
-    height: 30px !important;
-  }
-  .header_icon p {
-    font-size: 9px !important;
-  }
-}
-
-/* сброс внешних отступов у body/html */
-html, body {
-  margin: 0 !important;
-}
-
-</style>
-
-
+  <!-- Page UI bits -->
   <style>
     .fav_icon {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      width: 35px;
-      height: 35px;
-      cursor: pointer;
-      border-radius: 50%;
-      background-size: contain;
-      background-repeat: no-repeat;
-      z-index: 10;
-      background-color: white;
+      position: absolute; top: 15px; right: 15px;
+      width: 35px; height: 35px; cursor: pointer; border-radius: 50%;
+      background-size: contain; background-repeat: no-repeat; z-index: 10; background-color: #fff;
     }
-    .favourited {
-      background-image: url('{% static "images/fav_icon_active.png" %}');
-      background-color: #ff0049;
-    }
-    .video, .audio, .file {
-      position: relative;
-      cursor: pointer;
-    }
-    .no-results {
-      text-align: center;
-      padding: 50px;
-      font-size: 18px;
-      color: #aaa;
-    }
-    .confirm_popup {
-      display: none;
-      position: fixed;
-      z-index: 9999;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-      justify-content: center;
-      align-items: center;
-    }
-    .confirm_popup.show {
-      display: flex;
-    }
-    .popup_box {
-      background: #fff;
-      border-radius: 8px;
-      padding: 20px 30px;
-      text-align: center;
-    }
-    .popup_buttons {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 15px;
-    }
-    .popup_buttons button {
-      padding: 8px 20px;
-      border: none;
-      background: #ff0049;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-    }
+    .favourited { background-image: url('{% static "images/fav_icon_active.png" %}'); background-color:#ff0049; }
+    .not_favourited { background-image: url('{% static "images/fav_icon.png" %}'); }
+    .video, .audio, .file { position: relative; cursor: pointer; }
+    .no-results { text-align: center; padding: 50px; font-size: 18px; color: #aaa; }
+
+    .confirm_popup { display:none; position:fixed; z-index:9999; inset:0; background:rgba(0,0,0,.6); justify-content:center; align-items:center; }
+    .confirm_popup.show { display:flex; }
+    .popup_box { background:#fff; border-radius:8px; padding:20px 30px; text-align:center; }
+    .popup_buttons { display:flex; justify-content:space-around; margin-top:15px; }
+    .popup_buttons button { padding:8px 20px; border:none; background:#ff0049; color:#fff; border-radius:5px; cursor:pointer; }
+
+    /* skeletons */
+    .skeleton { position: relative; overflow: hidden; background: #1b1b1b; border-radius: 12px; min-height: 84px; margin:10px 16px; }
+    .skeleton::after { content:""; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent); animation: sh 1.2s infinite; }
+    @keyframes sh { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
   </style>
 </head>
 <body>
 
+<!-- confirm -->
 <div id="popup" class="confirm_popup">
   <div class="popup_box">
     <p>Севимлилардан олиб ташлашни хоҳлайсизми?</p>
@@ -187,219 +80,272 @@ html, body {
   </div>
 </div>
 
+<!-- overlay + background -->
 <div class="blur_overlay active"></div>
-<div class="vertical-waves">
-  <div class="wave"></div>
-  <div class="wave"></div>
-  <div class="wave"></div>
-</div>
+<div class="vertical-waves"><div class="wave"></div><div class="wave"></div><div class="wave"></div></div>
 
+<!-- NAVBAR -->
 <div class="header">
   <a href="{% url 'index' %}">
     <div class="header_icon">
-      <img src="{% static 'images/home_page.png' %}" alt="Home">
-      <p>A CLUB</p>
+      <img src="{% static 'images/home_page.png' %}" alt="Home"><p>A CLUB</p>
     </div>
   </a>
   <a href="{% url 'favourited' %}">
     <div class="header_icon active">
-      <img src="{% static 'images/fav.png' %}" alt="Fav">
-      <p>Севимли</p>
+      <img src="{% static 'images/fav.png' %}" alt="Fav"><p>Севимли</p>
     </div>
   </a>
   <a href="{% url 'profile' %}">
     <div class="header_icon">
-      <img src="{% static 'images/profile.png' %}" alt="Profile">
-      <p>Профиль</p>
+      <img src="{% static 'images/profile.png' %}" alt="Profile"><p>Профиль</p>
     </div>
   </a>
   <a href="{% url 'chat' %}">
     <div class="header_icon">
-      <img src="{% static 'images/chat.png' %}" alt="Chat">
-      <p>Чатлар</p>
+      <img src="{% static 'images/chat.png' %}" alt="Chat"><p>Чатлар</p>
     </div>
   </a>
   <a href="{% url 'rules' %}">
     <div class="header_icon">
-      <img src="{% static 'images/rules.png' %}" alt="Rules">
-      <p>Қоидалар</p>
+      <img src="{% static 'images/rules.png' %}" alt="Rules"><p>Қоидалар</p>
     </div>
   </a>
 </div>
 
+<!-- Search -->
 <div class="search_block">
   <a href="{% url 'index' %}"><div class="back_button"></div></a>
   <form class="searcher">
     <img class="search_icon" src="{% static 'images/search icon.png' %}">
-    <input class="searcher_block" placeholder="Севимлилардан қидириш...">
+    <input class="searcher_block" placeholder="Севимлилардан қидириш..." autocomplete="off">
   </form>
 </div>
 
 <div class="choosed_genre">СЕВИМЛИ:</div>
 
-<div class="content_body"></div>
+<!-- Content -->
+<div class="content_body">
+  <div class="skeleton"></div>
+  <div class="skeleton"></div>
+  <div class="skeleton"></div>
+</div>
 
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
+  const blur = document.querySelector('.blur_overlay');
+  const container = document.querySelector('.content_body');
+  const searchInput = document.querySelector('.searcher_block');
+
+  // helpers
+  const getCSRF = () => {
+    const name = "csrftoken=";
+    const parts = document.cookie ? document.cookie.split(";") : [];
+    for (let c of parts) { c = c.trim(); if (c.startsWith(name)) return decodeURIComponent(c.slice(name.length)); }
+    return "";
+  };
+  const getJson = async (url) => {
+    try {
+      const r = await fetch(url, { credentials: "same-origin" });
+      if (!r.ok) return null;
+      return await r.json();
+    } catch { return null; }
+  };
+  const toNum = v => Number.isFinite(v) ? v : 0;
+
+  // Telegram user
   const tg = window.Telegram.WebApp;
-  const user = tg.initDataUnsafe?.user;
+  const user = tg?.initDataUnsafe?.user;
   if (!user || !user.id) {
-    document.querySelector('.content_body').innerHTML = '<div class="no-results">Ошибка авторизации</div>';
+    container.innerHTML = '<div class="no-results">Ошибка авторизации</div>';
+    blur?.classList.remove('active');
     return;
   }
 
-  const container = document.querySelector('.content_body');
-  const searchInput = document.querySelector('.searcher_block');
-  const popup = document.getElementById("popup");
-  const popupYes = document.getElementById("popup_yes");
-  const popupNo = document.getElementById("popup_no");
-  let targetToRemove = null;
-  let allFavourites = [];
+  // disable submit navigation (поиск — live)
+  document.querySelector('.searcher')?.addEventListener('submit', e => e.preventDefault());
 
-  // 🛠️ Отключаем отправку формы по Enter
-  document.querySelector('.searcher').addEventListener('submit', e => {
-    e.preventDefault();
-  });
+  // 1) Получаем fav IDs
+  const favJ = await getJson(`/api/favourites/?telegram_id=${user.id}`);
+  const favIds = Array.isArray(favJ?.favourites) ? favJ.favourites : [];
 
-  const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
-  const favIds = (await favRes.json()).favourites || [];
+  // Если пусто — сразу показать
+  if (!favIds.length) {
+    container.innerHTML = '<div class="no-results">Ҳозирча ҳеч нарса қўшмадингиз</div>';
+    requestAnimationFrame(() => blur?.classList.remove('active'));
+    wireNavbarOverlay();
+    return;
+  }
 
-  const genresRes = await fetch('/api/genres/');
-  const genres = await genresRes.json();
+  // 2) Собираем контент по всем жанрам (первая страница)
+  const genres = await getJson('/api/genres/');
+  let allItems = [];
+  if (Array.isArray(genres) && genres.length) {
+    const tasks = genres.map(g => getJson(`/api/content/${g.id}/?page=1`));
+    const results = await Promise.all(tasks);
+    results.forEach((j) => {
+      if (!j) return;
+      const items = Array.isArray(j.items) ? j.items : [];
+      items.forEach(it => {
+        allItems.push({
+          id: toNum(it.id),
+          content_type: it.content_type || it.type || 'file',
+          title: it.title || '',
+          subtitle: it.subtitle || '',
+          duration: it.duration || '',
+          telegram_url: it.telegram_url || it.url || '',
+          thumbnail: it.thumbnail || it.image || ''
+        });
+      });
+    });
+  }
 
-  const allItems = genres.flatMap(g => g.items);
-  allFavourites = allItems.filter(item => favIds.includes(item.id));
+  // 3) Фильтруем только избранные
+  let allFavourites = allItems.filter(it => favIds.includes(it.id));
   let favourites = [...allFavourites];
 
-  function renderFavourites(filteredItems) {
+  // РЕНДЕР
+  function render(list) {
     container.innerHTML = '';
-    favourites = filteredItems;
 
-    if (filteredItems.length === 0) {
+    if (!list.length) {
       container.innerHTML = '<div class="no-results">Ҳозирча ҳеч нарса қўшмадингиз</div>';
       return;
     }
 
-    filteredItems.forEach(item => {
-      const wrapper = document.createElement('div');
-      wrapper.className = item.content_type;
-      wrapper.style.cursor = "pointer";
-      wrapper.setAttribute('data-url', item.telegram_url);
+    list.forEach(item => {
+      const wrap = document.createElement('div');
+      wrap.className = item.content_type; // video|audio|file
+      wrap.style.cursor = 'pointer';
+      wrap.setAttribute('data-url', item.telegram_url);
 
       const favIconHTML = `<div class="fav_icon favourited" data-id="${item.id}"></div>`;
-      let innerHTML = '';
+      let inner = '';
 
       if (item.content_type === 'video') {
-        innerHTML = `
+        inner = `
           <div class="video_thumbnail">
-            <img src="${item.thumbnail}" alt="video_thumbnail">
-            <div class="video_duration">${item.duration}</div>
+            <img src="${item.thumbnail || ''}" alt="video_thumbnail">
+            <div class="video_duration">${item.duration || ''}</div>
           </div>
           ${favIconHTML}
-          <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
-        `;
+          <div class="video_info">
+            <div class="title">${item.title || ''}</div>
+            <div class="subtitle">${item.subtitle || ''}</div>
+          </div>`;
       } else if (item.content_type === 'audio') {
-        innerHTML = `
+        inner = `
           <div class="audio_menu">
             <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}"></div>
-            <div class="audio_duration">${item.duration}</div>
+            <div class="audio_duration">${item.duration || ''}</div>
           </div>
           ${favIconHTML}
-          <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
-        `;
-      } else if (item.content_type === 'file') {
-        innerHTML = `
+          <div class="audio_info">
+            <div class="title">${item.title || ''}</div>
+            <div class="subtitle">${item.subtitle || ''}</div>
+          </div>`;
+      } else {
+        inner = `
           <div class="file_menu">
             <div class="static_icon"><img src="{% static 'images/file_icon.png' %}"></div>
-            <div class="file_duration">${item.duration}</div>
+            <div class="file_duration">${item.duration || ''}</div>
           </div>
           ${favIconHTML}
-          <div class="file_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
-        `;
+          <div class="file_info">
+            <div class="title">${item.title || ''}</div>
+            <div class="subtitle">${item.subtitle || ''}</div>
+          </div>`;
       }
 
-      wrapper.innerHTML = innerHTML;
-      container.appendChild(wrapper);
+      wrap.innerHTML = inner;
+      container.appendChild(wrap);
 
-      const favIcon = wrapper.querySelector('.fav_icon');
-      favIcon.addEventListener('click', (e) => {
+      // remove from favourites
+      const favIcon = wrap.querySelector('.fav_icon');
+      favIcon.addEventListener('click', async (e) => {
         e.stopPropagation();
         const id = parseInt(favIcon.dataset.id);
-        targetToRemove = { favIcon, id, wrapper };
-        popup.classList.add("show");
+
+        try {
+          await fetch(`/api/favourites/remove/${id}/`, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
+            body: JSON.stringify({ telegram_id: user.id })
+          });
+        } catch (err) {
+          console.error('fav remove error', err);
+          return;
+        }
+
+        // анимация удаления
+        wrap.style.transition = "transform .25s ease, opacity .25s ease";
+        wrap.style.transform = "scale(.97)";
+        wrap.style.opacity = "0";
+        setTimeout(() => {
+          wrap.remove();
+          allFavourites = allFavourites.filter(x => x.id !== id);
+          favourites = favourites.filter(x => x.id !== id);
+          if (!favourites.length) render(favourites);
+        }, 280);
       });
 
-      wrapper.addEventListener('click', (e) => {
+      // open content
+      wrap.addEventListener('click', (e) => {
         if (e.target.classList.contains('fav_icon')) return;
-        const url = wrapper.getAttribute('data-url');
+        const url = wrap.getAttribute('data-url');
         if (url) {
-          window.location.href = url;
+          blur?.classList.add('active');
           setTimeout(() => {
-            try { Telegram.WebApp.close(); } catch(e) {}
-          }, 400);
+            window.location.href = url;
+            setTimeout(() => { try { Telegram.WebApp.close(); } catch(e) {} }, 350);
+          }, 220);
         }
       });
     });
   }
 
-  popupNo.onclick = () => popup.classList.remove("show");
+  // live search
+  function applyFilter(q) {
+    const s = (q || '').toLowerCase().trim();
+    if (!s) { render(allFavourites); return; }
+    const filtered = allFavourites.filter(it => {
+      const t = (it.title || '').toLowerCase();
+      const sub = (it.subtitle || '').toLowerCase();
+      return t.includes(s) || sub.includes(s);
+    });
+    render(filtered);
+  }
+  searchInput?.addEventListener('input', () => applyFilter(searchInput.value));
 
-  popupYes.onclick = async () => {
-    if (targetToRemove) {
-      const { favIcon, id, wrapper } = targetToRemove;
-      await fetch(`/api/favourites/remove/${id}/`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ telegram_id: user.id })
+  // первичный рендер
+  render(favourites);
+
+  // снять блюр после рендера
+  requestAnimationFrame(() => blur?.classList.remove('active'));
+
+  // overlay-переходы для навбара
+  function wireNavbarOverlay() {
+    document.querySelectorAll('.header a').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const href = link.getAttribute('href');
+        blur?.classList.add('active');
+        setTimeout(() => window.location.href = href, 280);
       });
-
-      wrapper.style.transition = "transform 0.3s ease, opacity 0.3s ease";
-      wrapper.style.transform = "scale(0.95)";
-      wrapper.style.opacity = "0";
-
-      setTimeout(() => {
-        wrapper.style.transition = "height 0.4s ease, margin 0.4s ease, padding 0.4s ease";
-        wrapper.style.height = "0";
-        wrapper.style.margin = "0";
-        wrapper.style.padding = "0";
-      }, 300);
-
-      setTimeout(() => {
-        wrapper.remove();
-        allFavourites = allFavourites.filter(item => item.id !== id);
-        favourites = favourites.filter(item => item.id !== id);
-        renderFavourites(favourites);
-      }, 800);
-
-      popup.classList.remove("show");
-      targetToRemove = null;
-    }
-  };
-
-  searchInput.addEventListener('input', () => {
-    const query = searchInput.value.toLowerCase().trim();
-    const filtered = allFavourites.filter(item => {
-      const title = (item.title || '').toLowerCase();
-      const subtitle = (item.subtitle || '').toLowerCase();
-      return title.includes(query) || subtitle.includes(query);
     });
-    renderFavourites(filtered);
-  });
-
-  renderFavourites(allFavourites);
-
-  requestAnimationFrame(() => {
-    document.querySelector('.blur_overlay').classList.remove("active");
-  });
-
-  document.querySelectorAll('.header a').forEach(link => {
-    link.addEventListener('click', e => {
-      e.preventDefault();
-      const href = link.getAttribute('href');
-      document.querySelector('.blur_overlay').classList.add("active");
-      setTimeout(() => window.location.href = href, 300);
+  }
+  function wireNavbarOverlay(){} // объявлено выше в условной ветке — переопределим пустышку
+  (function initNavbarOverlay(){
+    document.querySelectorAll('.header a').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const href = link.getAttribute('href');
+        blur?.classList.add('active');
+        setTimeout(() => window.location.href = href, 280);
+      });
     });
-  });
+  })();
 });
 </script>
 
