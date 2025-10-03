@@ -13,9 +13,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
-  .audio_menu, .file_menu {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-  }
+  .audio_menu, .file_menu { display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
   /* NAVBAR (grid, как на главной) */
   .header, .header * { box-sizing: border-box !important; }
@@ -37,9 +35,7 @@
     display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;
     padding: 8px 0 !important; gap: 6px !important; min-width: 0 !important;
   }
-  .header_icon img {
-    display: block !important; width: 34px !important; height: 34px !important; object-fit: contain !important; margin: 0 !important;
-  }
+  .header_icon img { display: block !important; width: 34px !important; height: 34px !important; object-fit: contain !important; margin: 0 !important; }
   .header_icon p {
     margin: 0 !important; font-size: 10px !important; line-height: 1.2 !important; color: #fff !important;
     text-align: center !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
@@ -160,7 +156,6 @@
 <div class="filter_bar" id="filterBar">
   <button class="chip" data-type="audio" aria-pressed="false">
     <span class="chip__dot">
-      <!-- Иконка ТОЛЬКО для фильтра (новая) -->
       <img class="chip__icon" src="{% static 'images/ic_audio2.png' %}" alt="">
     </span>
     <span>Audio</span>
@@ -182,7 +177,7 @@
 
   <button class="chip chip--filter" id="chipFilter" aria-label="Filter">
     <span class="chip__dot">
-      <img class="chip__icon" src="{% static 'images/ic_filter2.png' %}" alt="">
+      <img class="chip__icon" id="chipFilterIcon" src="{% static 'images/ic_filter2.png' %}" alt="">
     </span>
     <span class="label">Filter</span>
   </button>
@@ -223,7 +218,6 @@ function renderItems(container, items, favourites, genreId, genreTitle) {
     } else if (item.content_type === 'audio') {
       block = `<div class="audio" onclick="${open}">
         <div class="audio_menu">
-          <!-- СТАРАЯ иконка аудио, как просил -->
           <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}" /></div>
           <div class="audio_duration">${item.duration || ''}</div>
         </div>
@@ -236,7 +230,6 @@ function renderItems(container, items, favourites, genreId, genreTitle) {
     } else {
       block = `<div class="file" onclick="${open}">
         <div class="file_menu">
-          <!-- СТАРАЯ иконка файла, как просил -->
           <div class="static_icon"><img src="{% static 'images/file_icon.png' %}" /></div>
           <div class="file_duration">${item.duration || ''}</div>
         </div>
@@ -295,7 +288,7 @@ function pickItems(json){
 </script>
 
 <script>
-/* ---------- ОСНОВНАЯ ЛОГИКА ---------- */
+/* ---------- ОСНОВНАЯ ЛОГИКА + улучшенный фильтр ---------- */
 document.addEventListener('DOMContentLoaded', async () => {
   const DEBUG = true;
   const dbg = document.getElementById('debugbar');
@@ -340,7 +333,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return { items: [], used: null, raw: null };
   }
 
-  // загрузка и рендер (с фолбэками)
   async function fetchAndRender(type){
     contentBody.innerHTML = '<div class="loading">Юкланяпти...</div>';
 
@@ -348,10 +340,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const t  = type ? `&content_type=${encodeURIComponent(type)}` : '';
 
     const urls = [
-      `/api/genres/${id}/content/?page=1${t}`,       // основной
-      `/api/content/${id}/?page=1${t}`,              // альтернативный 1
-      `/api/content/?genre_id=${id}&page=1${t}`,     // альтернативный 2
-      `/api/contents/?genre_id=${id}&page=1${t}`     // альтернативный 3
+      `/api/genres/${id}/content/?page=1${t}`,
+      `/api/content/${id}/?page=1${t}`,
+      `/api/content/?genre_id=${id}&page=1${t}`,
+      `/api/contents/?genre_id=${id}&page=1${t}`
     ];
 
     const {items, used} = await fetchItemsByAny(urls);
@@ -386,14 +378,49 @@ document.addEventListener('DOMContentLoaded', async () => {
   // первая загрузка
   await fetchAndRender();
 
-  /* ====== Обработчики фильтров ====== */
+  /* ====== Обработчики фильтров (с Clear) ====== */
   const bar = document.getElementById('filterBar');
   const chips = [...bar.querySelectorAll('.chip:not(.chip--filter)')];
   const filterBtn = document.getElementById('chipFilter');
+  const filterIcon = document.getElementById('chipFilterIcon');
   const toast = document.getElementById('toast');
 
+  const ICON_FILTER = "{% static 'images/ic_filter2.png' %}";
+  const ICON_CLEAR  = "{% static 'images/clear_filters.png' %}";
+
+  function showToast(text, duration=2000){
+    const prev = toast.textContent;
+    toast.textContent = text;
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+      // возвращаем текст "по умолчанию"
+      setTimeout(() => { toast.textContent = prev; }, 350);
+    }, duration);
+  }
+
+  function anyActive(){
+    return chips.some(c => c.classList.contains('active'));
+  }
+
+  function updateFilterIcon(){
+    // цвета/размеры НЕ меняем, только src
+    filterIcon.setAttribute('src', anyActive() ? ICON_CLEAR : ICON_FILTER);
+  }
+
   function setActiveChip(el){
-    chips.forEach(c => { c.classList.toggle('active', c===el); c.setAttribute('aria-pressed', c===el ? 'true' : 'false'); });
+    chips.forEach(c => {
+      const active = (c === el);
+      c.classList.toggle('active', active);
+      c.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    updateFilterIcon();
+  }
+
+  async function clearFilters(){
+    chips.forEach(c => { c.classList.remove('active'); c.setAttribute('aria-pressed','false'); });
+    updateFilterIcon();
+    await fetchAndRender(undefined);
   }
 
   chips.forEach(chip => {
@@ -404,10 +431,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  filterBtn.addEventListener('click', () => {
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2000);
+  filterBtn.addEventListener('click', async () => {
+    if (!anyActive()) {
+      // ничего не выбрано — просто подсказка (как и было)
+      showToast('Выберите формат фильтра');
+      return;
+    }
+    // есть активный — это кнопка очистки
+    await clearFilters();
+    showToast('Фильтр очищен');
   });
+
+  // синхронизируем иконку на старте (вдруг что-то предустановлено)
+  updateFilterIcon();
 });
 </script>
 
