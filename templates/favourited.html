@@ -55,7 +55,8 @@
     .video, .audio, .file { position: relative; cursor: pointer; }
     .no-results { text-align: center; padding: 50px; font-size: 18px; color: #aaa; }
 
-    .confirm_popup { display:none; position:fixed; z-index:9999; inset:0; background:rgba(0,0,0,.6); justify-content:center; align-items:center; }
+    /* подняли z-index попапа выше навбара */
+    .confirm_popup { display:none; position:fixed; z-index:10010; inset:0; background:rgba(0,0,0,.6); justify-content:center; align-items:center; }
     .confirm_popup.show { display:flex; }
     .popup_box { background:#fff; border-radius:8px; padding:20px 30px; text-align:center; }
     .popup_buttons { display:flex; justify-content:space-around; margin-top:15px; }
@@ -204,6 +205,48 @@ document.addEventListener("DOMContentLoaded", async () => {
   let allFavourites = allItems.filter(it => favIds.includes(it.id));
   let favourites = [...allFavourites];
 
+  // ===== POPUP CONFIRM HANDLERS =====
+  const popup = document.getElementById('popup');
+  const btnYes = document.getElementById('popup_yes');
+  const btnNo  = document.getElementById('popup_no');
+  let pending = null; // { id, wrap }
+
+  function openConfirm(id, wrap){
+    pending = { id, wrap };
+    popup.classList.add('show');
+  }
+  btnNo.addEventListener('click', () => {
+    popup.classList.remove('show');
+    pending = null;
+  });
+  btnYes.addEventListener('click', async () => {
+    if (!pending) return;
+    const { id, wrap } = pending;
+    try {
+      await fetch(`/api/favourites/remove/${id}/`, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
+        body: JSON.stringify({ telegram_id: user.id })
+      });
+      // анимация удаления
+      wrap.style.transition = "transform .25s ease, opacity .25s ease";
+      wrap.style.transform = "scale(.97)";
+      wrap.style.opacity = "0";
+      setTimeout(() => {
+        wrap.remove();
+        allFavourites = allFavourites.filter(x => x.id !== id);
+        favourites    = favourites.filter(x => x.id !== id);
+        if (!favourites.length) container.innerHTML = '<div class="no-results">Ҳозирча ҳеч нарса қўшмадингиз</div>';
+      }, 280);
+    } catch (err) {
+      console.error('fav remove error', err);
+    } finally {
+      popup.classList.remove('show');
+      pending = null;
+    }
+  });
+
   // РЕНДЕР
   function render(list) {
     container.innerHTML = '';
@@ -260,34 +303,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       wrap.innerHTML = inner;
       container.appendChild(wrap);
 
-      // remove from favourites
+      // теперь не удаляем сразу — сначала попап
       const favIcon = wrap.querySelector('.fav_icon');
-      favIcon.addEventListener('click', async (e) => {
+      favIcon.addEventListener('click', (e) => {
         e.stopPropagation();
         const id = parseInt(favIcon.dataset.id);
-
-        try {
-          await fetch(`/api/favourites/remove/${id}/`, {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
-            body: JSON.stringify({ telegram_id: user.id })
-          });
-        } catch (err) {
-          console.error('fav remove error', err);
-          return;
-        }
-
-        // анимация удаления
-        wrap.style.transition = "transform .25s ease, opacity .25s ease";
-        wrap.style.transform = "scale(.97)";
-        wrap.style.opacity = "0";
-        setTimeout(() => {
-          wrap.remove();
-          allFavourites = allFavourites.filter(x => x.id !== id);
-          favourites = favourites.filter(x => x.id !== id);
-          if (!favourites.length) render(favourites);
-        }, 280);
+        openConfirm(id, wrap);
       });
 
       // open content
@@ -325,7 +346,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   requestAnimationFrame(() => blur?.classList.remove('active'));
 
   // overlay-переходы для навбара
-  function wireNavbarOverlay() {
+  function wireNavbarOverlay(){
     document.querySelectorAll('.header a').forEach(link => {
       link.addEventListener('click', e => {
         e.preventDefault();
@@ -335,17 +356,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     });
   }
-  function wireNavbarOverlay(){} // объявлено выше в условной ветке — переопределим пустышку
-  (function initNavbarOverlay(){
-    document.querySelectorAll('.header a').forEach(link => {
-      link.addEventListener('click', e => {
-        e.preventDefault();
-        const href = link.getAttribute('href');
-        blur?.classList.add('active');
-        setTimeout(() => window.location.href = href, 280);
-      });
-    });
-  })();
+  wireNavbarOverlay();
 });
 </script>
 
