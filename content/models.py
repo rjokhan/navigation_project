@@ -24,6 +24,17 @@ class Group(models.Model):
     genre = models.ForeignKey(Genre, on_delete=models.CASCADE, related_name="groups")
     title = models.CharField(max_length=150)
 
+    # ✅ Новые поля для страницы группы и админки
+    description = models.TextField(blank=True, help_text="Краткое описание группы")
+    expert = models.CharField(max_length=255, blank=True, help_text="Имя эксперта")
+    cover = models.ImageField(
+        upload_to="group_covers/",
+        blank=True,
+        null=True,
+        validators=[validate_file_size],
+        help_text="Обложка группы (до 2 МБ)",
+    )
+
     class Meta:
         verbose_name = "Группа"
         verbose_name_plural = "Группы"

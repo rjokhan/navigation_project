@@ -58,10 +58,19 @@ class GenreAdmin(admin.ModelAdmin):
 # === Группы внутри спецжанров ===
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
-    list_display = ["title", "genre"]
+    list_display = ["title", "genre", "expert", "cover_preview"]
     list_filter = ["genre"]
-    search_fields = ["title"]
+    search_fields = ["title", "expert"]
     autocomplete_fields = ["genre"]
+    readonly_fields = ["cover_preview"]
+
+    fields = ("title", "genre", "description", "expert", "cover", "cover_preview")
+
+    def cover_preview(self, obj):
+        if obj.cover:
+            return format_html('<img src="{}" style="max-height:100px;border-radius:8px;" />', obj.cover.url)
+        return "—"
+    cover_preview.short_description = "Обложка"
 
 
 # === Новости (What's New) ===

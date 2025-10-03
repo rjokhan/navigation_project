@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NAVIGATION</title>
+  <title>NAVIGATION — Group Content</title>
   <link rel="stylesheet" href="{% static 'css/content.css' %}" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,33 +13,20 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
-    .audio_menu, .file_menu {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
+    .audio_menu, .file_menu { display:flex; flex-direction:column; align-items:center; justify-content:center; }
 
-    /* === NAVBAR FULL CSS — FINAL VERSION === */
+    /* NAVBAR */
     .header, .header * { box-sizing: border-box !important; }
     .header {
       position: fixed !important;
       bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      width: calc(100vw - 16px) !important;
-      max-width: 640px !important;
-      height: 88px !important;
-      padding: 4px !important;
-      display: grid !important;
-      grid-template-columns: repeat(5, 1fr) !important;
-      gap: 6px !important;
-      overflow: hidden !important;
-      border-radius: 40px !important;
+      left: 50% !important; transform: translateX(-50%) !important;
+      width: calc(100vw - 16px) !important; max-width: 640px !important;
+      height: 88px !important; padding: 4px !important;
+      display: grid !important; grid-template-columns: repeat(5, 1fr) !important; gap: 6px !important;
+      overflow: hidden !important; border-radius: 40px !important;
       background: linear-gradient(45deg, rgba(128,26,48,.16), rgba(78,5,21,.28)) !important;
-      border: 1px solid #ffffff44 !important;
-      -webkit-backdrop-filter: blur(5px) !important;
-      backdrop-filter: blur(5px) !important;
+      border: 1px solid #ffffff44 !important; -webkit-backdrop-filter: blur(5px) !important; backdrop-filter: blur(5px) !important;
       z-index: 9999 !important;
     }
     .header > a { display: block !important; min-width: 0 !important; height: 100% !important; }
@@ -54,7 +41,6 @@
     .header_icon p { margin: 0 !important; font-size: 10px !important; line-height: 1.2 !important; color: #fff !important; text-align: center !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
     .header_icon.active { background-color: #00000066 !important; }
 
-    /* на очень узких экранах */
     @media (max-width: 360px) {
       .header { height: 80px !important; padding: 4px !important; gap: 4px !important; max-width: none !important; }
       .header_icon { padding: 6px 0 !important; gap: 4px !important; }
@@ -62,52 +48,34 @@
       .header_icon p { font-size: 9px !important; }
     }
 
-    /* сброс внешних отступов у body/html */
     html, body { margin: 0 !important; }
 
-    /* === Фильтры под строкой поиска === */
-    .filters_row {
-      display: flex; gap: 10px; align-items: center;
-      padding: 8px 14px 4px;
-    }
+    /* Фильтры под строкой поиска */
+    .filters_row { display:flex; gap:10px; align-items:center; padding:8px 14px 4px; }
     .chip {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 8px 12px; border-radius: 999px;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.12);
-      color: #fff; font-weight: 700; font-size: 14px;
-      cursor: pointer; user-select: none;
+      display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px;
+      background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12);
+      color:#fff; font-weight:700; font-size:14px; cursor:pointer; user-select:none;
       transition: transform .05s ease, background .15s ease, border-color .15s ease;
     }
-    .chip:active { transform: scale(.98); }
-    .chip.active {
-      background: #ff155d;
-      border-color: #ff155d;
-    }
-    .chip img {
-      width: 18px; height: 18px; object-fit: contain;
-      filter: invert(1); /* пассивные — белые */
-    }
-    .chip.active img { filter: none; } /* активные — цветные (как загружены) */
-    .chip.blind { margin-left: auto; }
+    .chip:active{ transform:scale(.98); }
+    .chip.active{ background:#ff155d; border-color:#ff155d; }
+    .chip img{ width:18px; height:18px; object-fit:contain; filter:invert(1); }
+    .chip.active img{ filter:none; }
+    .chip.blind{ margin-left:auto; }
 
-    /* Тост-плашка сверху */
-    .filter_toast {
-      position: fixed; top: 10px; left: 50%; transform: translate(-50%,-30px);
-      background: #28a745; color: #fff; font-weight: 800;
-      padding: 10px 16px; border-radius: 999px;
-      box-shadow: 0 6px 20px rgba(0,0,0,.25);
-      opacity: 0; pointer-events: none; z-index: 99999;
-      transition: transform .35s ease, opacity .35s ease;
+    /* Тост */
+    .filter_toast{
+      position:fixed; top:10px; left:50%; transform:translate(-50%,-30px);
+      background:#28a745; color:#fff; font-weight:800; padding:10px 16px;
+      border-radius:999px; box-shadow:0 6px 20px rgba(0,0,0,.25); opacity:0; pointer-events:none; z-index:99999;
+      transition:transform .35s ease, opacity .35s ease;
     }
-    .filter_toast.show { transform: translate(-50%,0); opacity: 1; }
+    .filter_toast.show{ transform:translate(-50%,0); opacity:1; }
 
-    /* Пагинация — кнопка */
-    .load_more_wrap { padding: 10px 14px 110px; }
-    .load_more {
-      width: 100%; height: 44px; border-radius: 12px; border: none;
-      font-weight: 800; color: #fff; background: #ff155d; cursor: pointer;
-    }
+    /* Пагинация */
+    .load_more_wrap{ padding:10px 14px 110px; }
+    .load_more{ width:100%; height:44px; border-radius:12px; border:none; font-weight:800; color:#fff; background:#ff155d; cursor:pointer; }
   </style>
 </head>
 <body>
@@ -129,44 +97,19 @@
 <div class="blur_overlay active"></div>
 
 <div class="vertical-waves">
-  <div class="wave"></div>
-  <div class="wave"></div>
-  <div class="wave"></div>
+  <div class="wave"></div><div class="wave"></div><div class="wave"></div>
 </div>
 
+<!-- NAVBAR -->
 <div class="header">
-  <a href="{% url 'index' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/home_page.png' %}" alt="Home">
-      <p>A CLUB</p>
-    </div>
-  </a>
-  <a href="{% url 'favourited' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/fav.png' %}" alt="Fav">
-      <p>Севимли</p>
-    </div>
-  </a>
-  <a href="{% url 'profile' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/profile.png' %}" alt="Profile">
-      <p>Профиль</p>
-    </div>
-  </a>
-  <a href="{% url 'chat' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/chat.png' %}" alt="Chat">
-      <p>Чатлар</p>
-    </div>
-  </a>
-  <a href="{% url 'rules' %}">
-    <div class="header_icon">
-      <img src="{% static 'images/rules.png' %}" alt="Rules">
-      <p>Қоидалар</p>
-    </div>
-  </a>
+  <a href="{% url 'index' %}"><div class="header_icon"><img src="{% static 'images/home_page.png' %}" alt="Home"><p>A CLUB</p></div></a>
+  <a href="{% url 'favourited' %}"><div class="header_icon"><img src="{% static 'images/fav.png' %}" alt="Fav"><p>Севимли</p></div></a>
+  <a href="{% url 'profile' %}"><div class="header_icon"><img src="{% static 'images/profile.png' %}" alt="Profile"><p>Профиль</p></div></a>
+  <a href="{% url 'chat' %}"><div class="header_icon"><img src="{% static 'images/chat.png' %}" alt="Chat"><p>Чатлар</p></div></a>
+  <a href="{% url 'rules' %}"><div class="header_icon"><img src="{% static 'images/rules.png' %}" alt="Rules"><p>Қоидалар</p></div></a>
 </div>
 
+<!-- Поиск -->
 <div class="search_block">
   <a href="{% url 'index' %}"><div class="back_button"></div></a>
   <form class="searcher" onsubmit="event.preventDefault();">
@@ -175,29 +118,26 @@
   </form>
 </div>
 
-<!-- ФИЛЬТРЫ -->
+<!-- Фильтры -->
 <div class="filters_row">
   <div class="chip" id="chip-audio" data-type="audio">
-    <img src="{% static 'images/filter_audio.png' %}" alt="">
-    <span>Audio</span>
+    <img src="{% static 'images/filter_audio.png' %}" alt=""><span>Audio</span>
   </div>
   <div class="chip" id="chip-video" data-type="video">
-    <img src="{% static 'images/filter_video.png' %}" alt="">
-    <span>Video</span>
+    <img src="{% static 'images/filter_video.png' %}" alt=""><span>Video</span>
   </div>
   <div class="chip" id="chip-file" data-type="file">
-    <img src="{% static 'images/filter_file.png' %}" alt="">
-    <span>File</span>
+    <img src="{% static 'images/filter_file.png' %}" alt=""><span>File</span>
   </div>
   <div class="chip blind" id="chip-blind">
     <img src="{% static 'images/filter_blind.png' %}" alt="">
   </div>
 </div>
 
-<div class="choosed_genre">
-  <span class="red">A </span><span id="genre-title"></span>
-</div>
+<!-- Заголовок группы -->
+<div class="choosed_genre"><span class="red">A </span><span id="group-title"></span></div>
 
+<!-- Контент группы -->
 <div class="content_body" id="contentBody"></div>
 
 <!-- LOAD MORE -->
@@ -211,9 +151,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const session = localStorage.getItem('last_session');
   const lastTitle = session ? JSON.parse(session).itemTitle : null;
 
-  // Telegram user
   const tg = window.Telegram.WebApp;
-  const user = tg.initDataUnsafe?.user;
+  const user = tg?.initDataUnsafe?.user;
   const contentBody = document.getElementById('contentBody');
   const loadWrap = document.getElementById('loadWrap');
   const loadMoreBtn = document.getElementById('loadMoreBtn');
@@ -223,15 +162,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  // genre params
+  // group params
   const params = new URLSearchParams(window.location.search);
-  const genreId = params.get('genre_id');
-  const genreTitleRaw = params.get('genre_title') || '';
-  const genreTitle = genreTitleRaw.startsWith('A ') ? genreTitleRaw.slice(2).trim() : genreTitleRaw;
-  document.getElementById('genre-title').textContent = decodeURIComponent(genreTitle || '');
+  const groupId = params.get('group_id');
+  const groupTitleRaw = params.get('group_title') || '';
+  const groupTitle = groupTitleRaw.trim();
+  document.getElementById('group-title').textContent = decodeURIComponent(groupTitle || '');
 
-  if (!genreId) {
-    contentBody.innerHTML = '<p style="padding:16px;color:#fff;opacity:.85;">Жанр не указан</p>';
+  if (!groupId) {
+    contentBody.innerHTML = '<p style="padding:16px;color:#fff;opacity:.85;">Группа не указана</p>';
     return;
   }
 
@@ -245,7 +184,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let total = 0;
   const perPage = 20;
   let currentType = null; // audio|video|file|null
-  let allLoadedItems = []; // для локального поиска
+  let allLoadedItems = []; // локальный поиск
 
   // filters
   const chips = document.querySelectorAll('.chip[data-type]');
@@ -253,11 +192,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const toast = document.getElementById('filterToast');
   const searchInput = document.getElementById('searchInput');
 
-  function showToast() {
+  function showToast(msg) {
+    if (msg) toast.textContent = msg;
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 1800);
+    setTimeout(() => {
+      toast.classList.remove('show');
+      toast.textContent = 'Выберите формат фильтра';
+    }, 1800);
   }
-  blind.addEventListener('click', showToast);
+  blind.addEventListener('click', () => showToast(currentType ? 'Фильтр очищен' : 'Выберите формат фильтра'));
 
   chips.forEach(chip => {
     chip.addEventListener('click', () => {
@@ -279,7 +222,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadMoreBtn.addEventListener('click', fetchAndRender);
 
   async function fetchAndRender() {
-    let url = `/api/genres/${genreId}/content/?page=${page}`;
+    let url = `/api/group/${groupId}/?page=${page}`;
     if (currentType) url += `&content_type=${currentType}`;
 
     const r = await fetch(url);
@@ -321,7 +264,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     items.forEach(item => {
       const isFavourited = favIds.includes(item.id);
       const favClass = isFavourited ? 'favourited' : 'not_favourited';
-      const open = `openTelegramAndCollapse('${item.telegram_url}', '${genreId}', '${genreTitle}', '${item.title}', '${item.id}')`;
+      const safeTitle = String(item.title || '').replace(/'/g, '&#39;');
+      const open = `openTelegramAndCollapse('${item.telegram_url}', '${groupId}', '${groupTitle}', '${safeTitle}', '${item.id}')`;
 
       let block = '';
       if (item.content_type === 'video') {
@@ -332,7 +276,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
           <div class="fav_icon ${favClass}" data-id="${item.id}"></div>
           <div class="video_info">
-            <div class="title">${item.title}</div>
+            <div class="title">${item.title || ''}</div>
             <div class="subtitle">${(item.subtitle || '').replace(/\n/g, '<br>')}</div>
           </div>
         </div>`;
@@ -344,7 +288,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
           <div class="fav_icon ${favClass}" data-id="${item.id}"></div>
           <div class="audio_info">
-            <div class="title">${item.title}</div>
+            <div class="title">${item.title || ''}</div>
             <div class="subtitle">${(item.subtitle || '').replace(/\n/g, '<br>')}</div>
           </div>
         </div>`;
@@ -356,7 +300,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
           <div class="fav_icon ${favClass}" data-id="${item.id}"></div>
           <div class="file_info">
-            <div class="title">${item.title}</div>
+            <div class="title">${item.title || ''}</div>
             <div class="subtitle">${(item.subtitle || '').replace(/\n/g, '<br>')}</div>
           </div>
         </div>`;
@@ -417,14 +361,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     targetToRemove = null;
   };
 
-  // локальный поиск по загруженным
+  // снять блюр после первого рендера
   const overlay = document.querySelector('.blur_overlay');
   requestAnimationFrame(() => overlay.classList.remove('active'));
 
+  // локальный поиск по загруженному
   searchInput.addEventListener('input', () => {
     const q = searchInput.value.trim().toLowerCase();
     if (!q) {
-      // показать уже загруженные
       contentBody.innerHTML = '';
       renderItems(allLoadedItems);
       loadWrap.style.display = (allLoadedItems.length < total) ? '' : 'none';
@@ -436,9 +380,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return t.includes(q) || s.includes(q);
     });
     contentBody.innerHTML = '';
-    // при локальном поиске «Ещё» скрываем
     loadWrap.style.display = 'none';
-    // отрисовка отфильтрованных
     filtered.forEach(i => renderItems([i]));
   });
 
@@ -457,14 +399,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // открыть Telegram и запомнить позицию
-function openTelegramAndCollapse(url, genreId, genreTitle, itemTitle, itemId) {
-  localStorage.setItem('last_session', JSON.stringify({
-    genreId, genreTitle, itemTitle, itemId
-  }));
+function openTelegramAndCollapse(url, groupId, groupTitle, itemTitle, itemId) {
+  localStorage.setItem('last_session', JSON.stringify({ groupId, groupTitle, itemTitle, itemId }));
   window.location.href = url;
-  setTimeout(() => {
-    try { Telegram.WebApp.close(); } catch(e) {}
-  }, 500);
+  setTimeout(() => { try { Telegram.WebApp.close(); } catch(e) {} }, 500);
 }
 </script>
 
