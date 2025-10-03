@@ -11,69 +11,29 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     .fav_icon {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      width: 35px;
-      height: 35px;
-      cursor: pointer;
-      border-radius: 50%;
-      background-size: contain;
-      background-repeat: no-repeat;
-      z-index: 10;
-      background-color: white;
+      position: absolute; top: 15px; right: 15px;
+      width: 35px; height: 35px; cursor: pointer; border-radius: 50%;
+      background-size: contain; background-repeat: no-repeat; z-index: 10; background-color: #fff;
     }
-    .favourited {
-      background-image: url('{% static "images/fav_icon_active.png" %}');
-      background-color: #ff0049;
-    }
-    .video, .audio, .file {
-      position: relative;
-      cursor: pointer;
-    }
-    .no-results {
-      text-align: center;
-      padding: 50px;
-      font-size: 18px;
-      color: #aaa;
-    }
-    .confirm_popup {
-      display: none;
-      position: fixed;
-      z-index: 9999;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-      justify-content: center;
-      align-items: center;
-    }
-    .confirm_popup.show {
-      display: flex;
-    }
-    .popup_box {
-      background: #fff;
-      border-radius: 8px;
-      padding: 20px 30px;
-      text-align: center;
-    }
-    .popup_buttons {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 15px;
-    }
-    .popup_buttons button {
-      padding: 8px 20px;
-      border: none;
-      background: #ff0049;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-    }
+    .favourited { background-image: url('{% static "images/fav_icon_active.png" %}'); background-color: #ff0049; }
+    .not_favourited { background-image: url('{% static "images/fav_icon.png" %}'); }
+    .video, .audio, .file { position: relative; cursor: pointer; }
+    .no-results { text-align: center; padding: 50px; font-size: 18px; color: #aaa; }
+    .confirm_popup { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,.6); justify-content: center; align-items: center; }
+    .confirm_popup.show { display: flex; }
+    .popup_box { background: #fff; border-radius: 8px; padding: 20px 30px; text-align: center; }
+    .popup_buttons { display: flex; justify-content: space-around; margin-top: 15px; }
+    .popup_buttons button { padding: 8px 20px; border: none; background: #ff0049; color: white; border-radius: 5px; cursor: pointer; }
+    /* маленький скелет-заглушка при первом рендере */
+    .skeleton { position: relative; overflow: hidden; background: #1b1b1b; border-radius: 12px; min-height: 84px; }
+    .skeleton::after { content:""; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent); animation: sh 1.2s infinite; }
+    @keyframes sh { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
   </style>
 </head>
 <body>
+
+<!-- плавное затемнение как на главной -->
+<div class="blur_overlay active"></div>
 
 <div id="popup" class="confirm_popup">
   <div class="popup_box">
@@ -99,46 +59,96 @@
   </form>
 </div>
 
-<div class="content_body"></div>
+<div class="content_body">
+  <!-- скелеты на момент загрузки -->
+  <div class="skeleton" style="margin:10px 16px;"></div>
+  <div class="skeleton" style="margin:10px 16px;"></div>
+  <div class="skeleton" style="margin:10px 16px;"></div>
+</div>
 
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
+  // ----- helpers -----
+  const getCSRF = () => {
+    const name = "csrftoken=";
+    const parts = document.cookie ? document.cookie.split(";") : [];
+    for (let c of parts) {
+      c = c.trim();
+      if (c.startsWith(name)) return decodeURIComponent(c.slice(name.length));
+    }
+    return "";
+  };
+  const getJson = async (url) => {
+    try {
+      const r = await fetch(url, { credentials: "same-origin" });
+      if (!r.ok) return null;
+      return await r.json();
+    } catch { return null; }
+  };
+  const toNum = v => Number.isFinite(v) ? v : 0;
+
   const tg = window.Telegram.WebApp;
-  const user = tg.initDataUnsafe?.user;
+  const user = tg?.initDataUnsafe?.user;
+  const container = document.querySelector('.content_body');
+  const searchInput = document.querySelector('.searcher_block');
+  const blur = document.querySelector('.blur_overlay');
+
   if (!user || !user.id) {
-    document.querySelector('.content_body').innerHTML = '<div class="no-results">Ошибка авторизации</div>';
+    container.innerHTML = '<div class="no-results">Ошибка авторизации</div>';
+    blur?.classList.remove('active');
     return;
   }
 
-  const container = document.querySelector('.content_body');
-  const searchInput = document.querySelector('.searcher_block');
-  const popup = document.getElementById("popup");
-  const popupYes = document.getElementById("popup_yes");
-  const popupNo = document.getElementById("popup_no");
-  let targetToRemove = null;
+  // ----- избранное -----
+  let favIds = [];
+  try {
+    const favJ = await getJson(`/api/favourites/?telegram_id=${user.id}`);
+    favIds = Array.isArray(favJ?.favourites) ? favJ.favourites : [];
+  } catch {}
 
-  // Загружаем избранное пользователя
-  const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
-  const favIds = (await favRes.json()).favourites || [];
+  // ----- собираем весь контент по всем жанрам -----
+  // /api/genres/ → далее для каждого: /api/content/<id>/?page=1
+  const genres = await getJson('/api/genres/');
+  let allItems = [];
+  if (Array.isArray(genres) && genres.length) {
+    // параллельно тянем первые страницы контента
+    const tasks = genres.map(g => getJson(`/api/content/${g.id}/?page=1`));
+    const results = await Promise.all(tasks);
+    results.forEach((j, idx) => {
+      if (!j) return;
+      const items = Array.isArray(j.items) ? j.items : [];
+      // нормализуем поля
+      items.forEach(it => {
+        allItems.push({
+          id: toNum(it.id),
+          content_type: it.content_type || it.type || 'file',
+          title: it.title || '',
+          subtitle: it.subtitle || '',
+          duration: it.duration || '',
+          telegram_url: it.telegram_url || it.url || '',
+          thumbnail: it.thumbnail || it.image || ''
+        });
+      });
+    });
+  }
 
-  // Загружаем ВСЕ жанры и контент
-  const genresRes = await fetch('/api/genres/');
-  const genres = await genresRes.json();
-  const allItems = genres.flatMap(g => g.items || []);
+  // fallback (если API жанров/контента недоступен)
+  if (!allItems.length) {
+    container.innerHTML = '<div class="no-results">Ничего не найдено</div>';
+  }
 
-  let searchResults = [...allItems];
-
-  function renderResults(filteredItems) {
+  // ----- рендер -----
+  function renderResults(items) {
     container.innerHTML = '';
 
-    if (filteredItems.length === 0) {
+    if (!items.length) {
       container.innerHTML = '<div class="no-results">Ничего не найдено</div>';
       return;
     }
 
-    filteredItems.forEach(item => {
+    for (const item of items) {
       const wrapper = document.createElement('div');
-      wrapper.className = item.content_type;
+      wrapper.className = item.content_type; // video | audio | file
       wrapper.style.cursor = "pointer";
       wrapper.setAttribute('data-url', item.telegram_url);
 
@@ -147,65 +157,85 @@ document.addEventListener("DOMContentLoaded", async () => {
       const favIconHTML = `<div class="fav_icon ${favClass}" data-id="${item.id}"></div>`;
 
       let innerHTML = '';
+
       if (item.content_type === 'video') {
         innerHTML = `
           <div class="video_thumbnail">
-            <img src="${item.thumbnail}" alt="video_thumbnail">
-            <div class="video_duration">${item.duration}</div>
+            <img src="${item.thumbnail || ''}" alt="video_thumbnail">
+            <div class="video_duration">${item.duration || ''}</div>
           </div>
           ${favIconHTML}
-          <div class="video_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+          <div class="video_info">
+            <div class="title">${item.title || ''}</div>
+            <div class="subtitle">${item.subtitle || ''}</div>
+          </div>
         `;
       } else if (item.content_type === 'audio') {
         innerHTML = `
           <div class="audio_menu">
             <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}"></div>
-            <div class="audio_duration">${item.duration}</div>
+            <div class="audio_duration">${item.duration || ''}</div>
           </div>
           ${favIconHTML}
-          <div class="audio_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+          <div class="audio_info">
+            <div class="title">${item.title || ''}</div>
+            <div class="subtitle">${item.subtitle || ''}</div>
+          </div>
         `;
-      } else if (item.content_type === 'file') {
+      } else {
         innerHTML = `
           <div class="file_menu">
             <div class="static_icon"><img src="{% static 'images/file_icon.png' %}"></div>
-            <div class="file_duration">${item.duration}</div>
+            <div class="file_duration">${item.duration || ''}</div>
           </div>
           ${favIconHTML}
-          <div class="file_info"><div class="title">${item.title}</div><div class="subtitle">${item.subtitle || ''}</div></div>
+          <div class="file_info">
+            <div class="title">${item.title || ''}</div>
+            <div class="subtitle">${item.subtitle || ''}</div>
+          </div>
         `;
       }
 
       wrapper.innerHTML = innerHTML;
       container.appendChild(wrapper);
 
-      // обработка избранного
+      // избранное
       const favIcon = wrapper.querySelector('.fav_icon');
       favIcon.addEventListener('click', async (e) => {
         e.stopPropagation();
         const id = parseInt(favIcon.dataset.id);
+        const isFav = favIds.includes(id);
 
-        if (favIds.includes(id)) {
-          targetToRemove = { favIcon, id };
-          popup.classList.add("show");
-        } else {
-          await fetch(`/api/favourites/add/${id}/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ telegram_id: user.id })
-          });
-          favIcon.classList.remove("not_favourited");
-          favIcon.classList.add("favourited");
-          favIds.push(id);
-
-          favIcon.classList.add("animate-pulse");
-          const boom = document.createElement("div");
-          boom.className = "fav_explosion";
-          favIcon.parentElement.appendChild(boom);
-          setTimeout(() => {
-            boom.remove();
-            favIcon.classList.remove("animate-pulse");
-          }, 600);
+        try {
+          if (isFav) {
+            await fetch(`/api/favourites/remove/${id}/`, {
+              method: 'POST',
+              credentials: 'same-origin',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRF()
+              },
+              body: JSON.stringify({ telegram_id: user.id })
+            });
+            favIds = favIds.filter(x => x !== id);
+            favIcon.classList.remove('favourited');
+            favIcon.classList.add('not_favourited');
+          } else {
+            await fetch(`/api/favourites/add/${id}/`, {
+              method: 'POST',
+              credentials: 'same-origin',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRF()
+              },
+              body: JSON.stringify({ telegram_id: user.id })
+            });
+            favIds.push(id);
+            favIcon.classList.remove('not_favourited');
+            favIcon.classList.add('favourited');
+          }
+        } catch (err) {
+          console.error('fav error', err);
         }
       });
 
@@ -214,52 +244,35 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (e.target.classList.contains('fav_icon')) return;
         const url = wrapper.getAttribute('data-url');
         if (url) {
-          window.location.href = url;
+          blur?.classList.add('active');
           setTimeout(() => {
-            try { Telegram.WebApp.close(); } catch(e) {}
-          }, 400);
+            window.location.href = url;
+            setTimeout(() => { try { Telegram.WebApp.close(); } catch(e) {} }, 350);
+          }, 250);
         }
       });
-    });
+    }
   }
 
-  popupNo.onclick = () => popup.classList.remove("show");
-  popupYes.onclick = async () => {
-    if (targetToRemove) {
-      const { favIcon, id } = targetToRemove;
-      await fetch(`/api/favourites/remove/${id}/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegram_id: user.id })
-      });
-      const index = favIds.indexOf(id);
-      if (index !== -1) favIds.splice(index, 1);
-      favIcon.classList.remove("favourited");
-      favIcon.classList.add("not_favourited");
-      popup.classList.remove("show");
-      targetToRemove = null;
-    }
-  };
-
-  // поиск
+  // ----- поиск -----
   const urlParams = new URLSearchParams(window.location.search);
   const initialQuery = urlParams.get("query") || "";
   searchInput.value = initialQuery;
 
+  // отправка формы: всегда на /searched/?query=...
   document.querySelector(".searcher").addEventListener("submit", (e) => {
     e.preventDefault();
-    const newQuery = searchInput.value.trim();
-    if (newQuery) {
-      const encoded = encodeURIComponent(newQuery);
-      document.querySelector('.blur_overlay')?.classList.add("active");
-      setTimeout(() => {
-        window.location.href = `/searched/?query=${encoded}`;
-      }, 300);
-    }
+    const q = searchInput.value.trim();
+    if (!q) return;
+    blur?.classList.add("active");
+    setTimeout(() => {
+      window.location.href = `/searched/?query=${encodeURIComponent(q)}`;
+    }, 250);
   });
 
   function filterAndRender(query) {
-    const q = query.toLowerCase().trim();
+    const q = (query || '').toLowerCase().trim();
+    if (!q) { renderResults(allItems); return; }
     const filtered = allItems.filter(item => {
       const title = (item.title || '').toLowerCase();
       const subtitle = (item.subtitle || '').toLowerCase();
@@ -268,13 +281,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderResults(filtered);
   }
 
+  // live-поиск
   searchInput.addEventListener('input', () => filterAndRender(searchInput.value));
+
+  // первичный рендер
   if (initialQuery) filterAndRender(initialQuery);
   else renderResults(allItems);
 
-  requestAnimationFrame(() => {
-    document.querySelector('.blur_overlay')?.classList.remove("active");
-  });
+  requestAnimationFrame(() => blur?.classList.remove('active'));
 });
 </script>
 
