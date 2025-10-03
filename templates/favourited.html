@@ -55,7 +55,7 @@
     .video, .audio, .file { position: relative; cursor: pointer; }
     .no-results { text-align: center; padding: 50px; font-size: 18px; color: #aaa; }
 
-    /* подняли z-index попапа выше навбара */
+    /* popup поверх навбара */
     .confirm_popup { display:none; position:fixed; z-index:10010; inset:0; background:rgba(0,0,0,.6); justify-content:center; align-items:center; }
     .confirm_popup.show { display:flex; }
     .popup_box { background:#fff; border-radius:8px; padding:20px 30px; text-align:center; }
@@ -163,7 +163,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // disable submit navigation (поиск — live)
+  // блокируем submit (поиск — live)
   document.querySelector('.searcher')?.addEventListener('submit', e => e.preventDefault());
 
   // 1) Получаем fav IDs
@@ -178,13 +178,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // 2) Собираем контент по всем жанрам (первая страница)
+  // 2) Тянем жанры (нужен kind: default / special)
   const genres = await getJson('/api/genres/');
   let allItems = [];
+
   if (Array.isArray(genres) && genres.length) {
-    const tasks = genres.map(g => getJson(`/api/content/${g.id}/?page=1`));
-    const results = await Promise.all(tasks);
-    results.forEach((j) => {
+    // Для обычных жанров — /api/content/<genre_id>/
+    const defaultGenres = genres.filter(g => (g.kind || g.genre_type || 'default') !== 'special');
+    // Для спецжанров — группы /api/groups/<genre_id>/, затем /api/group/<group_id>/
+    const specialGenres = genres.filter(g => (g.kind || g.genre_type || 'default') === 'special');
+
+    // — обычные жанры
+    const defTasks = defaultGenres.map(g => getJson(`/api/content/${g.id}/?page=1`));
+    const defResults = await Promise.all(defTasks);
+    defResults.forEach(j => {
       if (!j) return;
       const items = Array.isArray(j.items) ? j.items : [];
       items.forEach(it => {
@@ -199,10 +206,38 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
       });
     });
+
+    // — спецжанры: группы → контент групп
+    for (const sg of specialGenres) {
+      const glist = await getJson(`/api/groups/${sg.id}/`);
+      const groups = Array.isArray(glist?.groups) ? glist.groups : [];
+      if (!groups.length) continue;
+
+      const groupTasks = groups.map(gr => getJson(`/api/group/${gr.id}/?page=1`));
+      const groupResults = await Promise.all(groupTasks);
+
+      groupResults.forEach(j => {
+        if (!j) return;
+        const items = Array.isArray(j.items) ? j.items : [];
+        items.forEach(it => {
+          allItems.push({
+            id: toNum(it.id),
+            content_type: it.content_type || it.type || 'file',
+            title: it.title || '',
+            subtitle: it.subtitle || '',
+            duration: it.duration || '',
+            telegram_url: it.telegram_url || it.url || '',
+            thumbnail: it.thumbnail || it.image || ''
+          });
+        });
+      });
+    }
   }
 
-  // 3) Фильтруем только избранные
-  let allFavourites = allItems.filter(it => favIds.includes(it.id));
+  // 3) Фильтруем только избранные (и де-дуплим на всякий)
+  const byId = new Map();
+  allItems.forEach(it => { if (favIds.includes(it.id)) byId.set(it.id, it); });
+  let allFavourites = Array.from(byId.values());
   let favourites = [...allFavourites];
 
   // ===== POPUP CONFIRM HANDLERS =====
@@ -303,7 +338,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       wrap.innerHTML = inner;
       container.appendChild(wrap);
 
-      // теперь не удаляем сразу — сначала попап
+      // попап удаления из избранного
       const favIcon = wrap.querySelector('.fav_icon');
       favIcon.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -311,7 +346,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         openConfirm(id, wrap);
       });
 
-      // open content
+      // открыть элемент
       wrap.addEventListener('click', (e) => {
         if (e.target.classList.contains('fav_icon')) return;
         const url = wrap.getAttribute('data-url');
@@ -326,7 +361,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // live search
+  // live search (по всем fav — и из жанров, и из групп)
   function applyFilter(q) {
     const s = (q || '').toLowerCase().trim();
     if (!s) { render(allFavourites); return; }
