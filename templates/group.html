@@ -102,9 +102,6 @@
   <form class="searcher"><img class="search_icon" src="{% static 'images/search icon.png' %}"><input class="searcher_block" id="q" placeholder="Қидириш..." autocomplete="off"></form>
 </div>
 
-<!-- заголовок -->
-<div class="choosed_genre"><span class="red">A </span><span id="genre-title"></span></div>
-
 <!-- список групп -->
 <div class="groups" id="groups">
   <div class="skeleton"></div><div class="skeleton"></div>
@@ -159,7 +156,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="group_cover">
           <img src="${g.cover || '{% static "images/placeholder_wide.jpg" %}'}" alt="">
           <div class="badge">${total}</div>
-          <button class="group_btn" type="button">Курсага қатнашиш</button>
+          
         </div>
         <div class="group_body">
           <div class="group_title">${g.title}</div>
