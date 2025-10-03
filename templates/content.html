@@ -290,7 +290,7 @@ function pickItems(json){
 <script>
 /* ---------- ОСНОВНАЯ ЛОГИКА + улучшенный фильтр ---------- */
 document.addEventListener('DOMContentLoaded', async () => {
-  const DEBUG = true;
+  const DEBUG = false;
   const dbg = document.getElementById('debugbar');
   const dlog = (msg, cls='ok') => { if(!DEBUG) return; dbg.style.display='block'; const s=document.createElement('span'); s.className=cls; s.style.marginRight='10px'; s.textContent=msg; dbg.appendChild(s); };
 
