@@ -99,6 +99,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
+  // блокируем submit (пересылка на этот же роут)
+  document.querySelector(".searcher").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const q = searchInput.value.trim();
+    if (!q) return;
+    blur?.classList.add("active");
+    setTimeout(() => {
+      window.location.href = `/searched/?query=${encodeURIComponent(q)}`;
+    }, 250);
+  });
+
   // ----- избранное -----
   let favIds = [];
   try {
@@ -106,18 +117,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     favIds = Array.isArray(favJ?.favourites) ? favJ.favourites : [];
   } catch {}
 
-  // ----- собираем весь контент по всем жанрам -----
-  // /api/genres/ → далее для каждого: /api/content/<id>/?page=1
+  // ----- собираем весь контент по всем жанрам (default + special groups) -----
+  // /api/genres/ → для default: /api/content/<genre_id>/?page=1
+  //               для special: /api/groups/<genre_id>/ → для каждой: /api/group/<group_id>/?page=1
   const genres = await getJson('/api/genres/');
   let allItems = [];
+
   if (Array.isArray(genres) && genres.length) {
-    // параллельно тянем первые страницы контента
-    const tasks = genres.map(g => getJson(`/api/content/${g.id}/?page=1`));
-    const results = await Promise.all(tasks);
-    results.forEach((j, idx) => {
+    const isSpecial = (g) => (g.kind || g.genre_type || 'default') === 'special';
+    const defaults = genres.filter(g => !isSpecial(g));
+    const specials = genres.filter(isSpecial);
+
+    // обычные жанры
+    const defTasks = defaults.map(g => getJson(`/api/content/${g.id}/?page=1`));
+    const defResults = await Promise.all(defTasks);
+    defResults.forEach(j => {
       if (!j) return;
       const items = Array.isArray(j.items) ? j.items : [];
-      // нормализуем поля
       items.forEach(it => {
         allItems.push({
           id: toNum(it.id),
@@ -130,9 +146,34 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
       });
     });
+
+    // спецжанры → группы → контент групп
+    for (const sg of specials) {
+      const glist = await getJson(`/api/groups/${sg.id}/`);
+      const groups = Array.isArray(glist?.groups) ? glist.groups : [];
+      if (!groups.length) continue;
+
+      const groupTasks = groups.map(gr => getJson(`/api/group/${gr.id}/?page=1`));
+      const groupResults = await Promise.all(groupTasks);
+      groupResults.forEach(j => {
+        if (!j) return;
+        const items = Array.isArray(j.items) ? j.items : [];
+        items.forEach(it => {
+          allItems.push({
+            id: toNum(it.id),
+            content_type: it.content_type || it.type || 'file',
+            title: it.title || '',
+            subtitle: it.subtitle || '',
+            duration: it.duration || '',
+            telegram_url: it.telegram_url || it.url || '',
+            thumbnail: it.thumbnail || it.image || ''
+          });
+        });
+      });
+    }
   }
 
-  // fallback (если API жанров/контента недоступен)
+  // fallback
   if (!allItems.length) {
     container.innerHTML = '<div class="no-results">Ничего не найдено</div>';
   }
@@ -258,17 +299,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const initialQuery = urlParams.get("query") || "";
   searchInput.value = initialQuery;
-
-  // отправка формы: всегда на /searched/?query=...
-  document.querySelector(".searcher").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const q = searchInput.value.trim();
-    if (!q) return;
-    blur?.classList.add("active");
-    setTimeout(() => {
-      window.location.href = `/searched/?query=${encodeURIComponent(q)}`;
-    }, 250);
-  });
 
   function filterAndRender(query) {
     const q = (query || '').toLowerCase().trim();
