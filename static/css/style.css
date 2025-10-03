@@ -133,7 +133,7 @@ input::placeholder{
   opacity: 54%;
 }
 .container_genre{
-  margin-top: 10px;
+  margin-top: 5px;
   display: flex;
   flex-wrap: wrap !important; 
   justify-content: center;
@@ -150,7 +150,6 @@ input::placeholder{
     inset 0 -20px 30px -20px rgba(255, 255, 255, 0.3); /* низ */
   border-radius: 20px;
   position: relative;
-  margin-top: 0px !important;
 }
 .count{
   border-radius: 50%;
