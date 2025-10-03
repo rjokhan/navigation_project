@@ -15,7 +15,7 @@
   <style>
     .audio_menu, .file_menu { display:flex; flex-direction:column; align-items:center; justify-content:center; }
 
-    /* NAVBAR */
+    /* NAVBAR (как на обычном контенте) */
     .header, .header * { box-sizing: border-box !important; }
     .header {
       position: fixed !important;
@@ -40,7 +40,6 @@
     .header_icon img { display: block !important; width: 34px !important; height: 34px !important; margin: 0 !important; object-fit: contain !important; }
     .header_icon p { margin: 0 !important; font-size: 10px !important; line-height: 1.2 !important; color: #fff !important; text-align: center !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
     .header_icon.active { background-color: #00000066 !important; }
-
     @media (max-width: 360px) {
       .header { height: 80px !important; padding: 4px !important; gap: 4px !important; max-width: none !important; }
       .header_icon { padding: 6px 0 !important; gap: 4px !important; }
@@ -48,42 +47,66 @@
       .header_icon p { font-size: 9px !important; }
     }
 
-    html, body { margin: 0 !important; }
+    /* безопасный отступ под navbar — как на обычном */
+    html, body { margin: 0 !important; padding-bottom: 120px !important; }
 
-    /* Фильтры под строкой поиска */
-    .filters_row { display:flex; gap:10px; align-items:center; padding:8px 14px 4px; }
-    .chip {
-      display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px;
-      background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12);
-      color:#fff; font-weight:700; font-size:14px; cursor:pointer; user-select:none;
-      transition: transform .05s ease, background .15s ease, border-color .15s ease;
+    /* ===== FILTER CHIPS (1-в-1) ===== */
+    .filter_bar{
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 55px;
+      gap: 5px;
+      padding: 10px 0 0;
+      align-items: center;
     }
-    .chip:active{ transform:scale(.98); }
-    .chip.active{ background:#ff155d; border-color:#ff155d; }
-    .chip img{ width:18px; height:18px; object-fit:contain; filter:invert(1); }
-    .chip.active img{ filter:none; }
-    .chip.blind{ margin-left:auto; }
-
-    /* Тост */
-    .filter_toast{
-      position:fixed; top:10px; left:50%; transform:translate(-50%,-30px);
-      background:#28a745; color:#fff; font-weight:800; padding:10px 16px;
-      border-radius:999px; box-shadow:0 6px 20px rgba(0,0,0,.25); opacity:0; pointer-events:none; z-index:99999;
-      transition:transform .35s ease, opacity .35s ease;
+    @media (max-width:360px){
+      .filter_bar{ gap: 8px; grid-template-columns: 1fr 1fr 1fr 44px; }
     }
-    .filter_toast.show{ transform:translate(-50%,0); opacity:1; }
+    .chip{
+      min-width: 0;
+      display: inline-flex; align-items: center; justify-content: left; gap: 10px; padding-left: 10px !important;
+      padding: 10px 0; border-radius: 999px;
+      border: 1px solid #fff; background: transparent; color: #fff;
+      font: 600 15px/1 Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+      white-space: nowrap; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+      transition: background .2s ease, transform .1s ease;
+    }
+    .chip:active{ transform: translateY(1px) scale(.98); }
+    .chip__dot{
+      width: 28px; height: 24px; border-radius: 50%;
+      display: grid; place-items: center; background: #ff155d;
+      flex: 0 0 24px;
+    }
+    .chip__icon{ width: 15px; height: 15px; object-fit: contain; filter: invert(1) brightness(200%); }
+    .chip.active{ background: #ff155d; }
+    .chip.active .chip__dot{ background: #fff; }
+    .chip.active .chip__icon{ filter: none; }
+    .chip--filter{
+      grid-column: 4 / 5;
+      padding: 10px; width: 100%; height: 44px; border-radius: 999px; justify-content: center;
+      background: #ff155d; border: 1px solid #fff;
+    }
+    .chip--filter .chip__dot{ background: transparent; }
+    .chip--filter .chip__icon{ filter: none; width: 18px; height: 18px; }
+    .chip--filter span.label{ display: none; }
+    @media (max-width: 360px){
+      .chip{ padding: 9px 12px; font-size: 14px; gap: 8px; }
+      .chip__dot{ width: 22px; height: 22px; }
+      .chip--filter{ height: 40px; }
+    }
 
-    /* Пагинация */
-    .load_more_wrap{ padding:10px 14px 110px; }
-    .load_more{ width:100%; height:44px; border-radius:12px; border:none; font-weight:800; color:#fff; background:#ff155d; cursor:pointer; }
+    /* Toast (тот же) */
+    #toast{
+      position: fixed; top: -56px; left: 50%; transform: translateX(-50%);
+      background: #38b000; color: #fff; font-size: 14px; font-weight: 600;
+      padding: 10px 16px; border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,.25);
+      z-index: 10000; transition: top .35s;
+    }
+    #toast.show{ top: 18px; }
   </style>
 </head>
 <body>
 
-<!-- тост -->
-<div id="filterToast" class="filter_toast">Выберите формат фильтра</div>
-
-<!-- попап подтверждения удаления из избранного -->
+<!-- попап избранного (тот же) -->
 <div id="popup" class="confirm_popup">
   <div class="popup_box">
     <p>Севимлилардан олиб ташлашни хоҳлайсизми?</p>
@@ -95,10 +118,7 @@
 </div>
 
 <div class="blur_overlay active"></div>
-
-<div class="vertical-waves">
-  <div class="wave"></div><div class="wave"></div><div class="wave"></div>
-</div>
+<div class="vertical-waves"><div class="wave"></div><div class="wave"></div><div class="wave"></div></div>
 
 <!-- NAVBAR -->
 <div class="header">
@@ -118,260 +138,228 @@
   </form>
 </div>
 
-<!-- Фильтры -->
-<div class="filters_row">
-  <div class="chip" id="chip-audio" data-type="audio">
-    <img src="{% static 'images/filter_audio.png' %}" alt=""><span>Audio</span>
-  </div>
-  <div class="chip" id="chip-video" data-type="video">
-    <img src="{% static 'images/filter_video.png' %}" alt=""><span>Video</span>
-  </div>
-  <div class="chip" id="chip-file" data-type="file">
-    <img src="{% static 'images/filter_file.png' %}" alt=""><span>File</span>
-  </div>
-  <div class="chip blind" id="chip-blind">
-    <img src="{% static 'images/filter_blind.png' %}" alt="">
-  </div>
+<!-- ===== FILTER BAR (иконки те же) ===== -->
+<div class="filter_bar" id="filterBar">
+  <button class="chip" data-type="audio" aria-pressed="false">
+    <span class="chip__dot"><img class="chip__icon" src="{% static 'images/ic_audio2.png' %}" alt=""></span>
+    <span>Audio</span>
+  </button>
+  <button class="chip" data-type="video" aria-pressed="false">
+    <span class="chip__dot"><img class="chip__icon" src="{% static 'images/ic_video2.png' %}" alt=""></span>
+    <span>Video</span>
+  </button>
+  <button class="chip" data-type="file" aria-pressed="false">
+    <span class="chip__dot"><img class="chip__icon" src="{% static 'images/ic_file2.png' %}" alt=""></span>
+    <span>File</span>
+  </button>
+  <button class="chip chip--filter" id="chipFilter" aria-label="Filter">
+    <span class="chip__dot">
+      <img class="chip__icon" id="chipFilterIcon" src="{% static 'images/ic_filter2.png' %}" alt="">
+    </span>
+    <span class="label">Filter</span>
+  </button>
 </div>
 
-<!-- Заголовок группы -->
+<div id="toast">Выберите формат фильтра</div>
+
+<!-- Заголовок группы (как у жанра) -->
 <div class="choosed_genre"><span class="red">A </span><span id="group-title"></span></div>
 
-<!-- Контент группы -->
+<!-- Контент -->
 <div class="content_body" id="contentBody"></div>
 
-<!-- LOAD MORE -->
-<div class="load_more_wrap" id="loadWrap" style="display:none;">
-  <button class="load_more" id="loadMoreBtn">Показать ещё</button>
-</div>
+<script>
+/* ---------- рендер карточек (как на обычном контенте) ---------- */
+function renderItems(container, items, favourites, groupId, groupTitle) {
+  items.forEach(item => {
+    const isFav = favourites.includes(item.id);
+    const favClass = isFav ? 'favourited' : 'not_favourited';
+    const safeTitle = String(item.title || '').replace(/'/g,"&#39;");
+    const open = `openTelegramAndCollapse('${item.telegram_url}', '${groupId}', '${groupTitle}', '${safeTitle}', '${item.id}')`;
+
+    let block = '';
+    if (item.content_type === 'video') {
+      block = `<div class="video">
+        <div class="video_thumbnail" onclick="${open}">
+          <img src="${item.thumbnail || ''}"/>
+          <div class="video_duration">${item.duration || ''}</div>
+        </div>
+        <div class="fav_icon ${favClass}" data-id="${item.id}"></div>
+        <div class="video_info">
+          <div class="title">${item.title || ''}</div>
+          <div class="subtitle">${item.subtitle ? item.subtitle.replace(/\n/g,'<br>') : ''}</div>
+        </div>
+      </div>`;
+    } else if (item.content_type === 'audio') {
+      block = `<div class="audio" onclick="${open}">
+        <div class="audio_menu">
+          <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}" /></div>
+          <div class="audio_duration">${item.duration || ''}</div>
+        </div>
+        <div class="fav_icon ${favClass}" data-id="${item.id}"></div>
+        <div class="audio_info">
+          <div class="title">${item.title || ''}</div>
+          <div class="subtitle">${item.subtitle ? item.subtitle.replace(/\n/g,'<br>') : ''}</div>
+        </div>
+      </div>`;
+    } else {
+      block = `<div class="file" onclick="${open}">
+        <div class="file_menu">
+          <div class="static_icon"><img src="{% static 'images/file_icon.png' %}" /></div>
+          <div class="file_duration">${item.duration || ''}</div>
+        </div>
+        <div class="fav_icon ${favClass}" data-id="${item.id}"></div>
+        <div class="file_info">
+          <div class="title">${item.title || ''}</div>
+          <div class="subtitle">${item.subtitle ? item.subtitle.replace(/\n/g,'<br>') : ''}</div>
+        </div>
+      </div>`;
+    }
+
+    container.insertAdjacentHTML('beforeend', block);
+    const favEl = container.lastElementChild.querySelector('.fav_icon');
+    favEl.addEventListener('click', async e => {
+      e.stopPropagation();
+      const id = parseInt(favEl.dataset.id);
+      const popup = document.getElementById('popup');
+
+      if (favEl.classList.contains('favourited')) {
+        popup.classList.add('show');
+        document.getElementById('popup_yes').onclick = async () => {
+          await fetch(`/api/favourites/remove/${id}/`, {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            credentials: 'same-origin',
+            body: JSON.stringify({ telegram_id: window.__uid })
+          });
+          favEl.classList.remove('favourited'); favEl.classList.add('not_favourited');
+          popup.classList.remove('show');
+        };
+        document.getElementById('popup_no').onclick = () => popup.classList.remove('show');
+      } else {
+        await fetch(`/api/favourites/add/${id}/`, {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          credentials: 'same-origin',
+          body: JSON.stringify({ telegram_id: window.__uid })
+        });
+        favEl.classList.remove('not_favourited'); favEl.classList.add('favourited');
+        const host = favEl.closest('.video, .audio, .file');
+        const explosion = document.createElement('div'); explosion.classList.add('fav_explosion'); host.appendChild(explosion); setTimeout(() => explosion.remove(), 600);
+      }
+    });
+  });
+}
+</script>
 
 <script>
+/* ---------- логика страницы группы + фильтр Clear ---------- */
 document.addEventListener('DOMContentLoaded', async () => {
-  // last session title
-  const session = localStorage.getItem('last_session');
-  const lastTitle = session ? JSON.parse(session).itemTitle : null;
-
   const tg = window.Telegram.WebApp;
-  const user = tg?.initDataUnsafe?.user;
+  const user = tg.initDataUnsafe?.user;
   const contentBody = document.getElementById('contentBody');
-  const loadWrap = document.getElementById('loadWrap');
-  const loadMoreBtn = document.getElementById('loadMoreBtn');
+  if (!user || !user.id) { contentBody.innerHTML = '<p>Ошибка авторизации</p>'; return; }
+  window.__uid = user.id;
 
-  if (!user || !user.id) {
-    contentBody.innerHTML = '<p style="padding:16px;color:#fff;opacity:.85;">Ошибка авторизации</p>';
-    return;
-  }
-
-  // group params
-  const params = new URLSearchParams(window.location.search);
-  const groupId = params.get('group_id');
-  const groupTitleRaw = params.get('group_title') || '';
-  const groupTitle = groupTitleRaw.trim();
+  const qs = new URLSearchParams(location.search);
+  const groupId = qs.get('group_id');
+  const groupTitle = (qs.get('group_title') || '').trim();
   document.getElementById('group-title').textContent = decodeURIComponent(groupTitle || '');
-
-  if (!groupId) {
-    contentBody.innerHTML = '<p style="padding:16px;color:#fff;opacity:.85;">Группа не указана</p>';
-    return;
-  }
+  if (!groupId) { contentBody.innerHTML = '<p>Группа не указана</p>'; return; }
 
   // favourites
-  const favRes = await fetch(`/api/favourites/?telegram_id=${user.id}`);
-  const favData = await favRes.json();
-  const favIds = favData.favourites || [];
+  let favourites = [];
+  try{
+    const favRes = await fetch(`/api/favourites/?telegram_id=${encodeURIComponent(user.id)}`, { credentials:'same-origin' });
+    const favData = await favRes.json();
+    favourites = favData?.favourites || [];
+  }catch{}
 
-  // pagination + filter
-  let page = 1;
-  let total = 0;
-  const perPage = 20;
-  let currentType = null; // audio|video|file|null
-  let allLoadedItems = []; // локальный поиск
-
-  // filters
-  const chips = document.querySelectorAll('.chip[data-type]');
-  const blind = document.getElementById('chip-blind');
-  const toast = document.getElementById('filterToast');
-  const searchInput = document.getElementById('searchInput');
-
-  function showToast(msg) {
-    if (msg) toast.textContent = msg;
+  const toast = document.getElementById('toast');
+  function showToast(text, duration=2000){
+    const prev = toast.textContent;
+    toast.textContent = text;
     toast.classList.add('show');
-    setTimeout(() => {
-      toast.classList.remove('show');
-      toast.textContent = 'Выберите формат фильтра';
-    }, 1800);
+    setTimeout(() => { toast.classList.remove('show'); setTimeout(()=>toast.textContent = prev, 350); }, duration);
   }
-  blind.addEventListener('click', () => showToast(currentType ? 'Фильтр очищен' : 'Выберите формат фильтра'));
+
+  // FILTER UI
+  const bar = document.getElementById('filterBar');
+  const chips = [...bar.querySelectorAll('.chip:not(.chip--filter)')];
+  const filterBtn = document.getElementById('chipFilter');
+  const filterIcon = document.getElementById('chipFilterIcon');
+  const ICON_FILTER = "{% static 'images/ic_filter2.png' %}";
+  const ICON_CLEAR  = "{% static 'images/clear_filters.png' %}";
+
+  let currentType = null; // audio|video|file|null
+  function anyActive(){ return chips.some(c => c.classList.contains('active')); }
+  function updateFilterIcon(){ filterIcon.setAttribute('src', anyActive() ? ICON_CLEAR : ICON_FILTER); }
+  function setActiveChip(el){
+    chips.forEach(c => {
+      const a = (c===el);
+      c.classList.toggle('active', a);
+      c.setAttribute('aria-pressed', a ? 'true' : 'false');
+    });
+    currentType = el ? el.dataset.type : null;
+    updateFilterIcon();
+  }
+  async function clearFilters(){
+    chips.forEach(c => { c.classList.remove('active'); c.setAttribute('aria-pressed','false'); });
+    currentType = null; updateFilterIcon(); await fetchAndRender();
+  }
 
   chips.forEach(chip => {
-    chip.addEventListener('click', () => {
-      if (chip.classList.contains('active')) {
-        chip.classList.remove('active');
-        currentType = null;
-      } else {
-        chips.forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-        currentType = chip.dataset.type;
-      }
-      // reset & reload
-      page = 1; total = 0; allLoadedItems = [];
-      contentBody.innerHTML = '';
-      fetchAndRender();
+    chip.addEventListener('click', async () => {
+      setActiveChip(chip);
+      await fetchAndRender();
     });
   });
 
-  loadMoreBtn.addEventListener('click', fetchAndRender);
+  filterBtn.addEventListener('click', async () => {
+    if (!anyActive()) { showToast('Выберите формат фильтра'); return; }
+    await clearFilters(); showToast('Фильтр очищен');
+  });
 
-  async function fetchAndRender() {
-    let url = `/api/group/${groupId}/?page=${page}`;
-    if (currentType) url += `&content_type=${currentType}`;
-
-    const r = await fetch(url);
+  // pagination (как у обычного)
+  let page = 1, total = 0;
+  let allLoadedItems = [];
+  async function fetchAndRender(){
+    contentBody.innerHTML = page===1 ? '<div class="loading">Юкланяпти...</div>' : contentBody.innerHTML;
+    let url = `/api/group/${encodeURIComponent(groupId)}/?page=${page}`;
+    if (currentType) url += `&content_type=${encodeURIComponent(currentType)}`;
+    const r = await fetch(url, { credentials:'same-origin' });
     const data = await r.json();
-    total = data.total || 0;
 
+    total = data.total || 0;
     const items = data.items || [];
+    if (page===1) contentBody.innerHTML = '';
+    renderItems(contentBody, items, favourites, groupId, groupTitle);
+
     allLoadedItems = allLoadedItems.concat(items);
 
-    renderItems(items);
-
-    const shown = allLoadedItems.length;
-    const hasMore = shown < total;
-    loadWrap.style.display = hasMore ? '' : 'none';
-    if (hasMore) page += 1;
-
-    // scroll to last opened title
-    if (page === 2 && lastTitle) {
+    // скролл к последней карточке (если вернулись из TG)
+    const session = localStorage.getItem('last_session');
+    const lastTitle = session ? JSON.parse(session).itemTitle : null;
+    if (page === 1 && lastTitle) {
       setTimeout(() => {
         const cards = document.querySelectorAll('.video, .audio, .file');
         for (let card of cards) {
-          const titleEl = card.querySelector('.title');
-          if (titleEl && titleEl.textContent.trim() === lastTitle.trim()) {
-            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          const t = card.querySelector('.title');
+          if (t && t.textContent.trim() === lastTitle.trim()) {
+            card.scrollIntoView({ behavior:'smooth', block:'start' });
             localStorage.removeItem('last_session');
             break;
           }
         }
-      }, 200);
+      }, 250);
     }
   }
 
-  function renderItems(items) {
-    if (!items.length && page === 1) {
-      contentBody.innerHTML = '<p style="padding:16px;color:#fff;opacity:.8;">Ҳозирча контент йўқ</p>';
-      return;
-    }
-
-    items.forEach(item => {
-      const isFavourited = favIds.includes(item.id);
-      const favClass = isFavourited ? 'favourited' : 'not_favourited';
-      const safeTitle = String(item.title || '').replace(/'/g, '&#39;');
-      const open = `openTelegramAndCollapse('${item.telegram_url}', '${groupId}', '${groupTitle}', '${safeTitle}', '${item.id}')`;
-
-      let block = '';
-      if (item.content_type === 'video') {
-        block = `<div class="video">
-          <div class="video_thumbnail" onclick="${open}">
-            <img src="${item.thumbnail || ''}" />
-            <div class="video_duration">${item.duration || ''}</div>
-          </div>
-          <div class="fav_icon ${favClass}" data-id="${item.id}"></div>
-          <div class="video_info">
-            <div class="title">${item.title || ''}</div>
-            <div class="subtitle">${(item.subtitle || '').replace(/\n/g, '<br>')}</div>
-          </div>
-        </div>`;
-      } else if (item.content_type === 'audio') {
-        block = `<div class="audio" onclick="${open}">
-          <div class="audio_menu">
-            <div class="static_icon"><img src="{% static 'images/audio_icon.png' %}" /></div>
-            <div class="audio_duration">${item.duration || ''}</div>
-          </div>
-          <div class="fav_icon ${favClass}" data-id="${item.id}"></div>
-          <div class="audio_info">
-            <div class="title">${item.title || ''}</div>
-            <div class="subtitle">${(item.subtitle || '').replace(/\n/g, '<br>')}</div>
-          </div>
-        </div>`;
-      } else {
-        block = `<div class="file" onclick="${open}">
-          <div class="file_menu">
-            <div class="static_icon"><img src="{% static 'images/file_icon.png' %}" /></div>
-            <div class="file_duration">${item.duration || ''}</div>
-          </div>
-          <div class="fav_icon ${favClass}" data-id="${item.id}"></div>
-          <div class="file_info">
-            <div class="title">${item.title || ''}</div>
-            <div class="subtitle">${(item.subtitle || '').replace(/\n/g, '<br>')}</div>
-          </div>
-        </div>`;
-      }
-
-      contentBody.insertAdjacentHTML('beforeend', block);
-      const favEl = contentBody.lastElementChild.querySelector('.fav_icon');
-      attachFavHandler(favEl);
-    });
-  }
-
-  // избранное
-  const popup = document.getElementById('popup');
-  const popupYes = document.getElementById('popup_yes');
-  const popupNo = document.getElementById('popup_no');
-  let targetToRemove = null;
-
-  function attachFavHandler(favEl) {
-    favEl.addEventListener('click', async e => {
-      e.stopPropagation();
-      const id = parseInt(favEl.dataset.id, 10);
-
-      if (favEl.classList.contains('favourited')) {
-        targetToRemove = { favEl, id };
-        popup.classList.add('show');
-      } else {
-        await fetch(`/api/favourites/add/${id}/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegram_id: user.id })
-        });
-
-        favEl.classList.remove('not_favourited');
-        favEl.classList.add('favourited');
-
-        const explosion = document.createElement('div');
-        explosion.classList.add('fav_explosion');
-        favEl.parentElement.appendChild(explosion);
-        setTimeout(() => explosion.remove(), 600);
-      }
-    });
-  }
-
-  popupNo.onclick = () => popup.classList.remove('show');
-  popupYes.onclick = async () => {
-    if (!targetToRemove) return;
-    const { favEl, id } = targetToRemove;
-
-    await fetch(`/api/favourites/remove/${id}/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telegram_id: user.id })
-    });
-
-    favEl.classList.remove('favourited');
-    favEl.classList.add('not_favourited');
-    popup.classList.remove('show');
-    targetToRemove = null;
-  };
-
-  // снять блюр после первого рендера
-  const overlay = document.querySelector('.blur_overlay');
-  requestAnimationFrame(() => overlay.classList.remove('active'));
-
-  // локальный поиск по загруженному
+  // Поиск по загруженному (локально)
+  const searchInput = document.getElementById('searchInput');
   searchInput.addEventListener('input', () => {
     const q = searchInput.value.trim().toLowerCase();
     if (!q) {
       contentBody.innerHTML = '';
-      renderItems(allLoadedItems);
-      loadWrap.style.display = (allLoadedItems.length < total) ? '' : 'none';
+      renderItems(contentBody, allLoadedItems, favourites, groupId, groupTitle);
       return;
     }
     const filtered = allLoadedItems.filter(i => {
@@ -380,14 +368,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       return t.includes(q) || s.includes(q);
     });
     contentBody.innerHTML = '';
-    loadWrap.style.display = 'none';
-    filtered.forEach(i => renderItems([i]));
+    renderItems(contentBody, filtered, favourites, groupId, groupTitle);
   });
 
   // первая загрузка
   await fetchAndRender();
 
-  // плавная навигация
+  // снять блюр и плавная навигация
+  const overlay = document.querySelector('.blur_overlay');
+  requestAnimationFrame(() => overlay.classList.remove('active'));
   document.querySelectorAll('.header a').forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();
@@ -398,7 +387,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
-// открыть Telegram и запомнить позицию
+/* открыть Telegram и запомнить позицию */
 function openTelegramAndCollapse(url, groupId, groupTitle, itemTitle, itemId) {
   localStorage.setItem('last_session', JSON.stringify({ groupId, groupTitle, itemTitle, itemId }));
   window.location.href = url;
