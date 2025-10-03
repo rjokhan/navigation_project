@@ -20,6 +20,9 @@ urlpatterns = [
     path("searched/", TemplateView.as_view(template_name="searched.html"), name="searched"),
     path("chat/", TemplateView.as_view(template_name="chat.html"), name="chat"),
     path("rules/", TemplateView.as_view(template_name="rules.html"), name="rules"),
+
+    path("group/", views.group_page, name="group_page"),
+    path("group_content/", views.group_content_page, name="group_content_page"),
 ]
 
 # Медиа и статика
