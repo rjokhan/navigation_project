@@ -240,3 +240,12 @@ def group_page(request):
     Дальше фронт сам ходит в /api/groups/<genre_id>/ и рисует карточки.
     """
     return render(request, "group.html")
+
+
+def group_content_page(request):
+    """
+    HTML-страница контента конкретной группы.
+    Ожидает query-параметры: ?group_id=...&group_title=... (и опционально genre_*).
+    Дальше фронт сам дергает /api/group/<group_id>/ и отрисовывает карточки.
+    """
+    return render(request, "group_content.html")

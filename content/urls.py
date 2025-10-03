@@ -24,4 +24,7 @@ urlpatterns = [
 
     # ✅ Поиск (HTML-страница)
     path("searched/", views.searched_view, name="searched_view"),
+
+    path("group/", views.group_page, name="group_page"),
+    path("group_content/", views.group_content_page, name="group_content_page"),
 ]
