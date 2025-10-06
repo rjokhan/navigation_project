@@ -11,7 +11,52 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
-    
+    /* FIX: выравнивание иконок в навбаре на странице группы */
+.header > a{
+  display:block !important;
+  min-width:0 !important;      /* важно для grid, чтобы не распирало колонку */
+  height:100% !important;
+}
+
+.header_icon{
+  width:100% !important;
+  height:100% !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:8px 0 !important;    /* даёт равные отступы сверху/снизу */
+  gap:6px !important;
+  border-radius:32px !important;
+  box-sizing:border-box !important;
+}
+
+.header_icon img{
+  display:block !important;    /* убираем «базовую линию» у картинки */
+  width:34px !important;
+  height:34px !important;
+  object-fit:contain !important;
+  margin:0 !important;
+}
+
+.header_icon p{
+  margin:0 !important;
+  font-size:10px !important;
+  line-height:1.2 !important;  /* чтобы текст не растягивал колонку */
+  color:#fff !important;
+  text-align:center !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+
+@media (max-width:360px){
+  .header{ height:80px !important; padding:4px !important; gap:4px !important; }
+  .header_icon{ padding:6px 0 !important; gap:4px !important; }
+  .header_icon img{ width:30px !important; height:30px !important; }
+  .header_icon p{ font-size:9px !important; }
+}
+
 
     /* фон */
     body{ background:#4f0017; color:#fff; font-family:"Raleway",sans-serif; }
