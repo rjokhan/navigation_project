@@ -76,12 +76,6 @@ html, body { margin: 0 !important; }
   background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.15); border-radius: 12px; padding: 8px; display:none;
 }
 #debug-panel .ok{ color: #7CFC9A; } .warn{ color: #FFD166; } .err{ color: #FF6B6B; }
-
-/* --- ДОБАВЛЕНО: доступ к навигации --- */
-/* По умолчанию навбар скрыт */
-.header { display: none !important; }
-/* Для резидентов включаем */
-.resident .header { display: grid !important; }
   </style>
 </head>
 
@@ -102,7 +96,7 @@ html, body { margin: 0 !important; }
 <div class="vertical-waves"><div class="wave"></div><div class="wave"></div><div class="wave"></div></div>
 
 <!-- NAVIGATION -->
-<div class="header" data-role="nav">
+<div class="header">
   <a href="{% url 'index' %}"><div class="header_icon active"><img src="{% static 'images/home_page.png' %}" alt="Home"><p>A CLUB</p></div></a>
   <a href="{% url 'favourited' %}"><div class="header_icon"><img src="{% static 'images/fav.png' %}" alt="Fav"><p>Севимли</p></div></a>
   <a href="{% url 'profile' %}"><div class="header_icon"><img src="{% static 'images/profile.png' %}" alt="Profile"><p>Профиль</p></div></a>
@@ -125,18 +119,13 @@ html, body { margin: 0 !important; }
 <!-- GENRES -->
 <div class="container_genre"><div class="loading">Юкланяпти...</div></div>
 
-<!-- POPUP for non-residents -->
+<!-- POPUP for non-residents (больше не используется, но оставлен в DOM) -->
 <div id="noAccessPopup" style="display:none;z-index:99999;position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.9);color:white;align-items:center;justify-content:center;font-size:24px;font-weight:600;font-family:'Raleway',sans-serif;text-align:center;">
   <div style="width: 60vw; margin: 0 auto;">Навигация платформасини сиз учун янада қулай қилиш мақсадида янгилаяпмиз.</div>
 </div>
 
 <!-- DEBUG 
 <div id="debug-panel"></div>-->
-
-<!-- (опционально) прокинуть токен из Django: -->
-<script>
-  window.ACLUB_API_TOKEN = window.ACLUB_API_TOKEN || "{{ ACLUB_API_TOKEN|default_if_none:'' }}";
-</script>
 
 <script>
 /* WHAT'S NEW */
@@ -228,6 +217,7 @@ async function loadGenres() {
 
       // считаем в фоне, сразу показываем скелет
       if (g.kind === "special") {
+        // groups -> sum of totals across all groups
         (async () => {
           const groupsResp = await getJson(`/api/groups/${g.id}/`);
           const groups = Array.isArray(groupsResp?.groups) ? groupsResp.groups : [];
@@ -243,6 +233,7 @@ async function loadGenres() {
           cntEl.title = `sum of ${groups.length} groups`;
         })();
       } else {
+        // default: content for genre
         (async () => {
           const j = await getJson(`/api/content/${g.id}/?page=1`);
           const total = num(j?.total ?? j?.count ?? (Array.isArray(j?.items) ? j.items.length : 0));
@@ -272,73 +263,31 @@ async function loadGenres() {
 </script>
 
 <script>
-/* --- ДОБАВЛЕНО: проверка резидентства + переключатель доступа --- */
-async function checkResidency(telegramId) {
-  const url = 'https://api.ayolclub.uz/en/api/v1/telegram-bot/check-user/';
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Token': window.ACLUB_API_TOKEN || 'b0e63095ee9d51fd0188f1877d63c0b850bc4965a61527c9'
-      },
-      body: JSON.stringify({ telegram_id: String(Telegram.WebApp?.initDataUnsafe?.user?.id || telegramId) })
-    });
-    if (!res.ok) throw new Error('API ' + res.status);
-    const data = await res.json();
-    return !!data?.success; // при расширении API можно сузить условие
-  } catch (e) {
-    console.error('Residency check failed:', e);
-    return false;
-  }
-}
+/* init — НАВИГАЦИЯ ОБЩЕДОСТУПНА */
+document.addEventListener("DOMContentLoaded", async function () {
+  const tg = window.Telegram?.WebApp;
+  const user = tg?.initDataUnsafe?.user || null;
 
-function showAccess(isResident) {
-  const html = document.documentElement;
+  const genreContainer = document.querySelector(".container_genre");
   const popup = document.getElementById("noAccessPopup");
   const overlay = document.querySelector(".blur_overlay");
-
-  html.classList.toggle('resident', isResident);
-  html.classList.toggle('not-resident', !isResident);
-
-  if (isResident) {
-    overlay?.classList.remove("active");
-    if (popup) popup.style.display = "none";
-  } else {
-    setTimeout(() => { if (popup) popup.style.display = "flex"; }, 800);
-  }
-}
-</script>
-
-<script>
-/* init */
-document.addEventListener("DOMContentLoaded", async function () {
-  const tg = window.Telegram.WebApp;
-  const user = tg.initDataUnsafe?.user;
-  const genreContainer = document.querySelector(".container_genre");
   const nameBlock = document.getElementById("user-name"); // может отсутствовать
 
-  if (!user || !user.id) {
-    if (genreContainer) genreContainer.innerHTML = "<div class='error'>Упс, қандайдир хатолик юз берди</div>";
-    showAccess(false);
-    return;
+  // Общедоступный режим: скрываем оверлей и попап, грузим контент для всех
+  overlay.classList.remove("active");
+  if (popup) popup.style.display = "none";
+  if (nameBlock) nameBlock.textContent = (user?.first_name || "Гость");
+
+  // необязательное сохранение ID, если доступен Telegram WebApp
+  if (user?.id) {
+    try {
+      localStorage.setItem("telegram_id", String(user.id));
+      localStorage.setItem("name", user.first_name || "");
+    } catch(e) {}
   }
 
-  // сохраняем в localStorage как раньше
-  localStorage.setItem("telegram_id", user.id);
-  localStorage.setItem("name", user.first_name || "");
-
-  // реальная проверка резидентства
-  const isResident = await checkResidency(user.id);
-  showAccess(isResident);
-
-  if (isResident) {
-    if (nameBlock) nameBlock.textContent = user.first_name || "Гость";
-    await loadWhatsNew();
-    await loadGenres();
-  } else {
-    // не резидент — контент не грузим, попап уже показан в showAccess
-  }
+  await loadWhatsNew();
+  await loadGenres();
 });
 </script>
 
@@ -357,11 +306,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  const tg = window.Telegram.WebApp;
-  const user = tg.initDataUnsafe?.user;
+  const tg = window.Telegram?.WebApp;
+  const user = tg?.initDataUnsafe?.user;
   if (user?.id) {
-    localStorage.setItem("telegram_id", user.id);
-    localStorage.setItem("name", user.first_name || "");
+    try {
+      localStorage.setItem("telegram_id", String(user.id));
+      localStorage.setItem("name", user.first_name || "");
+    } catch(e) {}
   }
 
   const form = document.querySelector(".searcher");
