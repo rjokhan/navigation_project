@@ -1,6 +1,13 @@
-@font-face {
-  font-family: BEBAS;
-  src: url("../static/fonts/BebasNeue_Bold.otf");
+@font-face{
+  font-family: 'BEBAS';
+  src: url('/static/fonts/BebasNeue-Bold.woff2') format('woff2'),
+       url('/static/fonts/BebasNeue_Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  /* латиница + базовая Latin-Extended; кириллицу не трогаем */
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC,
+                 U+2013-2014, U+2018-201A, U+201C-201E, U+2020, U+2022, U+2026, U+2030, U+2039-203A;
 }
 * {
   scrollbar-width: none;            /* Firefox */
