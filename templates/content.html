@@ -300,23 +300,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.__uid = user.id;
 
   const qs = new URLSearchParams(location.search);
-const genreId = qs.get('genre_id');
-
-const genreTitleRaw = qs.get('genre_title') || '';
-const decodedTitle = decodeURIComponent(genreTitleRaw);
-
-// спецжанр: в URL приходит строка, начинающаяся с "A "
-let finalTitle;
-if (decodedTitle.startsWith('A ')) {
-  // СПЕЦЖАНР → показываем A COURSE
-  finalTitle = 'COURSE';
-} else {
-  // обычный жанр → A + само название жанра
-  finalTitle = decodedTitle;
-}
-
-document.getElementById('genre-title').textContent = finalTitle;
-
+  const genreId = qs.get('genre_id');
+  const genreTitleRaw = qs.get('genre_title');
+  const genreTitle = genreTitleRaw?.startsWith('A ') ? genreTitleRaw.slice(2).trim() : (genreTitleRaw || '');
+  document.getElementById('genre-title').textContent = decodeURIComponent(genreTitle || '');
 
   const contentBody = document.querySelector('.content_body');
   if (!genreId) { contentBody.innerHTML = '<p>Не указан жанр</p>'; return; }
