@@ -170,12 +170,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>`;
       // Переход в контент ГРУППЫ (HTML-страница группового контента)
       card.addEventListener('click', () => {
-        const params = new URLSearchParams({ group_id: g.id, group_title: g.title });
-        document.querySelector('.blur_overlay').classList.add('active');
-        setTimeout(() => { window.location.href = `/group_content/?${params}`; }, 250);
-      });
-      list.appendChild(card);
-    });
+  const params = new URLSearchParams({
+    group_id: g.id,
+    group_title: g.title,
+    is_special: '1'          // <- вот здесь добавляется флаг
+  });
+  document.querySelector('.blur_overlay').classList.add('active');
+  setTimeout(() => { window.location.href = `/group_content/?${params}`; }, 250);
+});
+
   }
 
   // первый рендер
