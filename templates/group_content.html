@@ -260,10 +260,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.__uid = user.id;
 
   const qs = new URLSearchParams(location.search);
-  const groupId = qs.get('group_id');
-  const groupTitle = (qs.get('group_title') || '').trim();
-  document.getElementById('group-title').textContent = decodeURIComponent(groupTitle || '');
-  if (!groupId) { contentBody.innerHTML = '<p>Группа не указана</p>'; return; }
+const groupId = qs.get('group_id');
+
+const rawGroupTitle = qs.get('group_title') || '';
+const decodedGroupTitle = decodeURIComponent(rawGroupTitle).trim();
+
+// тут решаем: обычная группа или "спецжанр"
+let displayTitle;
+if (decodedGroupTitle.startsWith('A ')) {
+  // СПЕЦЖАНР: в URL пришло "A ..." → показываем A COURSE
+  displayTitle = 'COURSE';      // вместе с <span class="red">A </span> получится "A COURSE"
+} else {
+  // обычная группа: показываем как есть
+  displayTitle = decodedGroupTitle;
+}
+
+document.getElementById('group-title').textContent = displayTitle;
+
+if (!groupId) {
+  contentBody.innerHTML = '<p>Группа не указана</p>';
+  return;
+}
+
 
   // favourites
   let favourites = [];
