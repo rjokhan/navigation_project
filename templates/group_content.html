@@ -262,20 +262,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   const qs = new URLSearchParams(location.search);
 const groupId = qs.get('group_id');
 
-const rawGroupTitle = qs.get('group_title') || '';
+const rawGroupTitle     = qs.get('group_title') || '';
 const decodedGroupTitle = decodeURIComponent(rawGroupTitle).trim();
+const isSpecial         = qs.get('is_special') === '1';  // <— ключ
 
-// 1) что отображаем в UI
-// 2) какое "реальное" имя группы считаем внутренним
 let displayTitle;
 let groupTitle;
 
-if (decodedGroupTitle.startsWith('A ')) {
-  // СПЕЦЖАНР: в URL пришло "A ..." → в UI показываем A COURSE
-  displayTitle = 'COURSE';          // вместе с <span class="red">A </span> будет "A COURSE"
-  groupTitle  = decodedGroupTitle;  // внутренне оставляем оригинальное имя (A МЕН ЭНЕРГИЯ)
+if (isSpecial) {
+  // СПЕЦЖАНР → в UI всегда A COURSE
+  displayTitle = 'COURSE';          // вместе с <span class="red">A </span> получится "A COURSE"
+  groupTitle  = decodedGroupTitle;  // внутренняя метка остаётся реальным именем
 } else {
-  // обычная группа: и в UI, и внутренняя — одно и то же
+  // обычная группа → показываем реальное название
   displayTitle = decodedGroupTitle;
   groupTitle  = decodedGroupTitle;
 }
