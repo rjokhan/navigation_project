@@ -153,33 +153,38 @@ document.addEventListener('DOMContentLoaded', async () => {
   }));
 
   function render(arr){
-    list.innerHTML = '';
-    arr.forEach(g => {
-      const total = g.total > 99 ? '99+' : String(g.total || 0);
-      const card = document.createElement('div');
-      card.className = 'group_card';
-      card.innerHTML = `
-        <div class="group_cover">
-          <img src="${g.cover || '{% static "images/placeholder_wide.jpg" %}'}" alt="">
-          <div class="badge">${total}</div>
-        </div>
-        <div class="group_body">
-          <div class="group_title">${g.title}</div>
-          <div class="group_desc">${(g.description || '').replace(/\\n/g,'<br>')}</div>
-          ${g.expert ? `<div class="group_expert">Expert: ${g.expert}</div>` : ``}
-        </div>`;
-      // Переход в контент ГРУППЫ (HTML-страница группового контента)
-      card.addEventListener('click', () => {
-  const params = new URLSearchParams({
-    group_id: g.id,
-    group_title: g.title,
-    is_special: '1'          // <- вот здесь добавляется флаг
-  });
-  document.querySelector('.blur_overlay').classList.add('active');
-  setTimeout(() => { window.location.href = `/group_content/?${params}`; }, 250);
-});
+  list.innerHTML = '';
+  arr.forEach(g => {
+    const total = g.total > 99 ? '99+' : String(g.total || 0);
+    const card = document.createElement('div');
+    card.className = 'group_card';
+    card.innerHTML = `
+      <div class="group_cover">
+        <img src="${g.cover || '{% static "images/placeholder_wide.jpg" %}'}" alt="">
+        <div class="badge">${total}</div>
+      </div>
+      <div class="group_body">
+        <div class="group_title">${g.title}</div>
+        <div class="group_desc">${(g.description || '').replace(/\\n/g,'<br>')}</div>
+        ${g.expert ? `<div class="group_expert">Expert: ${g.expert}</div>` : ``}
+      </div>`;
 
-  }
+    // Переход в контент ГРУППЫ (HTML-страница группового контента)
+    card.addEventListener('click', () => {
+      const params = new URLSearchParams({
+        group_id: g.id,
+        group_title: g.title,
+        is_special: '1' // флаг спецгруппы
+      });
+      document.querySelector('.blur_overlay').classList.add('active');
+      setTimeout(() => { window.location.href = `/group_content/?${params}`; }, 250);
+    });
+
+    // важно: добавить карточку в DOM
+    list.appendChild(card);
+  });
+}
+
 
   // первый рендер
   render(view);
